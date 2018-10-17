@@ -117,6 +117,42 @@ public final class UtilsFile {
 	}
 
 	/**
+	 * 通过RandomAccessFile读文件 按行读 randomFile.readLine<br>
+	 * 按utf-9进行读取<br>
+	 * 过滤以"#"为开始的行,
+	 * @param filenamepath String
+	 * @param enterStr String
+	 * @return StringBuilder
+	 */
+	public static final StringBuilder readFile(String filenamepath, String enterStr) {
+		StringBuilder sb = new StringBuilder(400);
+		File file = new File(filenamepath);
+		if (!file.exists()) return sb;
+		try (RandomAccessFile randomFile = new RandomAccessFile(file, "r"); FileChannel filechannel = randomFile.getChannel();) {
+			randomFile.seek(0);
+			FileLock lock;
+			do {
+				lock = filechannel.tryLock(0L, Long.MAX_VALUE, true);
+			} while (null == lock);
+			Thread.sleep(10);
+			while (randomFile.getFilePointer() < randomFile.length()) {
+				String str = UtilsCode.changedLine(randomFile.readLine());
+				if (str == null) continue;
+				str = str.trim();
+				if (str.length() == 0) continue;
+				if (str.indexOf('#') == 0) continue;
+				sb.append(str);
+				if (randomFile.getFilePointer() < randomFile.length()) sb.append(enterStr);
+			}
+			lock.release();
+			randomFile.close();
+		} catch (Exception e) {
+		}
+
+		return sb;
+	}
+
+	/**
 	 * 建立output目录下的随机文件。需要输入扩展名
 	 * @param proFolder String
 	 * @param fileExt String

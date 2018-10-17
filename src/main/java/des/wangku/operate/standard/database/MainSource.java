@@ -24,14 +24,17 @@ public class MainSource {
 	/** 日志 */
 	static Logger logger = Logger.getLogger(MainSource.class);
 	public static SqlSessionFactory sessionFactory;
+	static final boolean booleanLinkMysql = false;
 	static {
-		try {
-			//使用MyBatis提供的Resources类加载mybatis的配置文件
-			Reader reader = Resources.getResourceAsReader("mybatis/mybatis.cfg.xml");
-			//构建sqlSession的工厂
-			sessionFactory = new SqlSessionFactoryBuilder().build(reader);
-		} catch (Exception e) {
-			e.printStackTrace();
+		//使用MyBatis提供的Resources类加载mybatis的配置文件
+		if (booleanLinkMysql) {
+			try {
+				Reader reader = Resources.getResourceAsReader("mybatis/mybatis.cfg.xml");
+				//构建sqlSession的工厂
+				sessionFactory = new SqlSessionFactoryBuilder().build(reader);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -41,7 +44,8 @@ public class MainSource {
 	 * @return SqlSession
 	 */
 	public static SqlSession getSession() {
-		return sessionFactory.openSession();
+		if (booleanLinkMysql) return sessionFactory.openSession();
+		return null;
 	}
 
 	/**
