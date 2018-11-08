@@ -32,6 +32,7 @@ public class AIBaidurank {
 		AIInfor aiInfor=new AIInfor();
 		try {
 			String aizhan = "https://baidurank.aizhan.com/" + type + "/" + urlPath + "/-1/0/1/position/1/";
+			logger.debug("aizhan:"+aizhan);
 			URL url = new URL(aizhan);
 			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
 			if (doc == null) return aiInfor;
@@ -64,7 +65,7 @@ public class AIBaidurank {
 		List<AIInforUnit> list = new ArrayList<AIInforUnit>();
 		try {
 			Thread.sleep(1000);
-			logger.debug("urlPath:" + aizhan);
+			//logger.debug("urlPath:" + aizhan);
 			URL url = new URL(aizhan);
 			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
 			Elements lis = doc.getElementsByClass("baidurank-list");
@@ -118,6 +119,12 @@ public class AIBaidurank {
 		}
 		public final void setList(List<AIInforUnit> list) {
 			this.list = list;
+		}
+		public final String getPosid(String key) {
+			for(AIInforUnit e:list) {
+				if(e.key.equals(key))return e.posid;
+			}
+			return "--";
 		}
 		
 	}

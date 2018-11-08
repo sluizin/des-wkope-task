@@ -35,6 +35,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	String filename = null;
 	/** excel */
 	Workbook workbook = null;
+	boolean isRADIO=false;
 
 	/**
 	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"
@@ -43,7 +44,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	 */
 	public ExcelCTabFolder(Composite parent, int style) {
 		super(parent, style);
-		structureInit(parent,style);
+		structureInit(parent,style,null);
 	}
 	/**
 	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"
@@ -53,20 +54,32 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	 */
 	public ExcelCTabFolder(Composite parent, int style,String title) {
 		super(parent, style,title);
-		structureInit(parent,style);
+		structureInit(parent,style,null);
+	}
+	/**
+	 * AbstractTask 项目组中的各项目自定义
+	 * @param parent Composite
+	 * @param style int
+	 * @param filename String
+	 * @param title String
+	 */
+	public ExcelCTabFolder(Composite parent, int style,boolean isRADIO,String filename,String title) {
+		super(parent, style,title);
+		this.isRADIO=isRADIO;
+		structureInit(parent,style,filename);
 	}
 	/**
 	 * 构造初始化
 	 * @param parent Composite
 	 * @param style int
+	 * @param filename String
 	 */
-	void structureInit(Composite parent,int style) {
-		String filename = null;
+	void structureInit(Composite parent,int style,String filename) {
 		AbstractTask t = UtilsSWTTools.getParentObjSuperclass(parent, AbstractTask.class);
 		if (t == null) return;
 		this.properties = t.getProProperties();
 		this.pc = t.getPc();
-		filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
+		if(filename==null)filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
 		logger.debug("filename:"+filename);
 		Init(parent, style, 1, filename);		
 	}
@@ -122,8 +135,14 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		try {
 			File file = new File(filename);
 			workbook = new XSSFWorkbook(file);
+			int type;
+			if(isRADIO) {
+				type=ResultTable.ACC_ResultTableStateRadio;
+			}else {
+			type=ResultTable.ACC_ResultTableState;}
+			
 			for (int sheetnum = 0; sheetnum < workbook.getNumberOfSheets(); sheetnum++) {
-				ResultTable t = new ResultTable(this, ResultTable.ACC_ResultTableState, properties, workbook.getSheetName(sheetnum));
+				ResultTable t = new ResultTable(this, type, properties, workbook.getSheetName(sheetnum));
 				makeCTabFolderFromExcel(this, t, workbook.getSheetAt(sheetnum));
 				t.initialization();
 			}
@@ -160,7 +179,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			list.clear();
 			for (int ii = 0; ii < cellLen; ii++) {
 				Cell cell = r.getCell(ii);
-				String value = UtilsSWTPOI.getCellValueByCell(cell);
+				String value = UtilsSWTPOI.getCellValueByString(cell,true);
 				if (t.getEctpara().isTrim) value = value.trim();
 				list.add(value);
 			}
@@ -183,7 +202,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		String value = null;
 		String[] newArray = new String[cellLen];
 		for (int i = 0; i < cellLen; i++) {
-			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByCell(first.getCell(i));
+			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByString(first.getCell(i),true);
 			else value = "" + i;
 			newArray[i] = value;
 		}

@@ -278,7 +278,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 					String sheetName = getSheetName(table, "信息" + i);
 					UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, table);
 				}
-				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook, true);
+				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook,true, true);
 				if (file == null) return;
 				logger.debug("copyCTabFolderToexcel:" + file.getAbsolutePath());
 			}
@@ -299,7 +299,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 				if (!(c instanceof ResultTable)) return;
 				ResultTable table = (ResultTable) c;
 				UtilsSWTPOI.addWorkbookSheet(workbook, table);
-				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook, true);
+				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook,true, true);
 				if (file == null) return;
 				logger.debug("copySelectSheetToexcel:" + file.getAbsolutePath());
 			}

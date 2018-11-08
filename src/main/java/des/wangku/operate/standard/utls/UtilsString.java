@@ -40,7 +40,7 @@ public final class UtilsString {
 	}
 
 	/**
-	 * 判断关键字是否在数组中
+	 * 判断关键字是否在数组中，区分大小写
 	 * @param key String
 	 * @param arrs String[]
 	 * @return boolean
@@ -49,6 +49,30 @@ public final class UtilsString {
 		if (key == null) return false;
 		for (int i = 0; i < arrs.length; i++)
 			if (key.equals(arrs[i])) return true;
+		return false;
+	}
+
+	/**
+	 * 判断关键字是否在数组中
+	 * @param key int
+	 * @param arrs int[]
+	 * @return boolean
+	 */
+	public static final boolean isExist(int key, int... arrs) {
+		for (int i = 0; i < arrs.length; i++)
+			if (key==arrs[i]) return true;
+		return false;
+	}
+	/**
+	 * 判断字符串中是否含有关键字数组中的元素
+	 * @param str String
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public static final boolean isContain(String str, String... arrs) {
+		if (str == null || str.length() == 0) return false;
+		for (String key : arrs)
+			if (str.indexOf(key) > -1) return true;
 		return false;
 	}
 
@@ -99,6 +123,9 @@ public final class UtilsString {
 		System.out.println("======" + UtilsString.getUrlDomain(url));
 		System.out.println("======" + UtilsString.getUrlDomain(url2));
 		System.out.println("======" + UtilsString.getUrlDomain("   "));
+		String shortstr = "abcdefghijklmnopqrestuvwxyz123456789";
+		String result = getShortenedString(shortstr, 19);
+		System.out.println("result:" + result);
 	}
 
 	/**
@@ -197,35 +224,8 @@ public final class UtilsString {
 		return "";
 	}
 
-	/**
-	 * 判断数值数组是否在最小与最大值之间，有一个元素成功则返回true
-	 * @param min int
-	 * @param max int
-	 * @param arrs int[]
-	 * @return boolean
-	 */
-	public static final boolean isEffective(int min, int max, int... arrs) {
-		for (int e : arrs) {
-			if (e >= min && e <= max) return true;
-		}
-		return false;
-	}
 
-	/**
-	 * 判断字符串是否整型
-	 * @param string String
-	 * @return boolean
-	 */
-	public static boolean isDigital(String string) {
-		if (string == null || string.length() == 0) return false;
-		String regEx1 = "\\d+";
-		Pattern p;
-		Matcher m;
-		p = Pattern.compile(regEx1);
-		m = p.matcher(string);
-		if (m.matches()) return true;
-		else return false;
-	}
+
 	/**
 	 * 判断字符串含有多少个字符串，即字符串重复数量
 	 * @param str String
@@ -240,5 +240,44 @@ public final class UtilsString {
 			count++;
 		}
 		return count;
+	}
+
+	static final char[] SHORTARR = { '.', '.', '.' };
+
+	/**
+	 * 把长字符串缩短成指定长度的字符串，中间以...进行省略
+	 * @param sourceStr String
+	 * @param maxlen int
+	 * @return String
+	 */
+	public static final String getShortenedString(final String sourceStr, int maxlen) {
+		if (sourceStr == null) return sourceStr;
+		String str = sourceStr.trim();
+		if (str.length() == 0 || str.length() <= maxlen) return str;
+		char[] arr = new char[maxlen];
+		int p = (maxlen - 3) / 2;
+		char[] h = str.substring(0, p).toCharArray();
+		char[] e = str.substring(str.length() - (maxlen - (h.length + 3)), str.length()).toCharArray();
+		System.out.println("p:" + p);
+		System.out.println("e:" + e.length);
+		System.arraycopy(h, 0, arr, 0, p);
+		System.arraycopy(SHORTARR, 0, arr, p, 3);
+		System.arraycopy(e, 0, arr, p + 3, e.length);
+		return new String(arr);
+	}
+	/**
+	 * 判断字符串是否含有以 intervalkey 为间隔的字符数组
+	 * @param str String
+	 * @param arr String
+	 * @param intervalkey String
+	 * @return boolean
+	 */
+	public static final boolean isContainSplit(String str,String arr,String intervalkey) {
+		if(str==null || str.length()==0)return false;
+		String[] arrs=arr.split(intervalkey);
+		for(String e:arrs) {
+			if(str.indexOf(e)!=-1)return true;
+		}
+		return false;
 	}
 }

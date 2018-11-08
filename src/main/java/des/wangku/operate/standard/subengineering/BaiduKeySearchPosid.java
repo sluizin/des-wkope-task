@@ -63,69 +63,94 @@ public class BaiduKeySearchPosid {
 
 	/**
 	 * 得到baidu中的排名 如没检索到，则返回-1<br>
+	 * url以intervalkey分组<br>
 	 * 如检索到，则返回第N条 以0为第1条<br>
 	 * 默认timeout:20000
 	 * @param type String
 	 * @param maxPage int
 	 * @param key String
 	 * @param url String
+	 * @param intervalkey String
 	 * @param cutUrl int
 	 * @return String
 	 */
-	public static final int getBaiduPosid(String type, int maxPage, String key, String url, int cutUrl) {
-		return getBaiduPosid(type, maxPage, key, url, 20000, cutUrl);
+	public static final int getBaiduPosid(String type, int maxPage, String key, String url,String intervalkey, int cutUrl) {
+		return getBaiduPosid(type, maxPage, key, url,intervalkey, 20000, cutUrl);
 	}
 
 	/**
+	 * url 必须 为 "abc.99114.com" 不能有协议与空格，并已截取
 	 * 得到baidu中的排名 如没检索到，则返回-1<br>
 	 * 如检索到，则返回第N条 以0为第1条
 	 * @param type String
 	 * @param maxPage int
 	 * @param key String
 	 * @param url String
+	 * @param intervalkey String
 	 * @param timeout int
 	 * @param cutUrl int
 	 * @return String
 	 */
-	public static final int getBaiduPosid(String type, int maxPage, String key, String url, int timeout, int cutUrl) {
+	public static final int getBaiduPosid(String type, int maxPage, String key, String url,String intervalkey, int timeout, int cutUrl) {
 		int maxbaiduPage = (maxPage - 1) * 10;
-		int p = -1;
 		if (key == null || key.length() == 0) return -1;
 		if (url == null || url.length() == 0) return -1;
-		url = url.toLowerCase();
+		/*
+		 * url = url.toLowerCase();
+		 * String newUrl = url;
+		 * if (newUrl.indexOf("http://") > -1) newUrl = newUrl.replaceAll("http://", "");
+		 * if (newUrl.indexOf("https://") > -1) newUrl = newUrl.replaceAll("https://", "");
+		 * newUrl = newUrl.toLowerCase();
+		 */
 		String newUrl = url;
-		newUrl = newUrl.replaceAll("http://", "");
-		newUrl = newUrl.replaceAll("https://", "");
-		newUrl = newUrl.toLowerCase();
-		if (cutUrl > 0) newUrl = newUrl.substring(0, cutUrl);
+		//if (cutUrl > 0 && cutUrl <= newUrl.length()) newUrl = newUrl.substring(0, cutUrl);
+		int p = -1;
+		StringBuilder sb=new StringBuilder(50);
+		String baiduUrlHref=null;
 		for (int i = 0; i <= maxbaiduPage; i += 10) {
-			String urlString = "https://" + type + ".baidu.com/s?wd=" + key + "&pn=" + i;
+			sb.setLength(0);
+			sb.append("https://");
+			sb.append(type);
+			sb.append(".baidu.com/s?wd=");
+			sb.append(key);
+			sb.append("&pn=" );
+			sb.append(i);
+			baiduUrlHref=sb.toString();
+			//String urlString = "https://" + type + ".baidu.com/s?wd=" + key + "&pn=" + i;
+			//logger.debug("urlString:"+urlString);
+			//logger.debug("newUrl:"+newUrl);
 			try {
-				Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.header_a);
+				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.header_a);
 				Document document = connect.timeout(timeout).maxBodySize(0).get();
-				if (document == null) return -1;
-				if (document.html().toLowerCase().indexOf(newUrl) == -1) {
+				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
+				if (document == null) continue;
+				if(!UtilsString.isContainSplit(document.html().toLowerCase(), newUrl,intervalkey)) {
 					p += 10;
-					continue;
+					continue;					
 				}
-				Elements es = document.getElementsByClass("result");
+				document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
+				//logger.debug("newUrl:"+document.html());
+				//logger.debug("newUrl:"+newUrl);
+				//String aa=UtilsReadURL.getReadUrlJsDefault(urlString);
+				//logger.debug("aaaaaaaaaaaaaaaa:"+aa);
+				//Elements es = document.getElementsByClass("result");
+				Elements es = document.select(".result");
+				String searchurl = "";
 				for (int x = 0; x < es.size(); x++) {
 					Element e = es.get(x);
 					p++;
-					if (e.html().toLowerCase().indexOf(newUrl) > -1) {
+					if(UtilsString.isContainSplit(e.html().toLowerCase(), newUrl,intervalkey)) {
+					//if (e.html().toLowerCase().indexOf(newUrl) > -1) {
 						if (cutUrl > 0) {
 							Elements showurl = e.getElementsByClass("c-showurl");
 							Elements as = showurl.select("a[href]");
-							String searchurl = "";
 							for (Element t1 : as) {
 								String baiduUrl = t1.attr("abs:href");
 								searchurl = UtilsReadURL.getRealLocation(baiduUrl);
-								if (searchurl.toLowerCase().indexOf(url) > -1) return p;
+								if (searchurl.toLowerCase().indexOf(url) > -1) {
+									return p;
+								}
 							}
-							/*
-							 * logger.debug("oldurl:"+url);
-							 * logger.debug("serurl:"+searchurl);
-							 */
 							continue;
 						}
 						return p;
@@ -158,7 +183,7 @@ public class BaiduKeySearchPosid {
 	}
 
 	public static void main(String[] args) {
-		int pp = getBaiduPosid("www", 10, "朝天椒", "ctj.99114.com", 0);
+		int pp = getBaiduPosid("www", 10, "朝天椒", "ctj.99114.com","\\|", 0);
 		System.out.println("pp:" + pp);
 		System.out.println("posid:" + getBaiduPosidString(pp));
 
@@ -198,7 +223,7 @@ public class BaiduKeySearchPosid {
 		}
 
 		public void run() {
-			int p = BaiduKeySearchPosid.getBaiduPosid(type, 10, keyword, url, cutUrl);
+			int p = BaiduKeySearchPosid.getBaiduPosid(type, 10, keyword, url,"\\|", cutUrl);
 			if (p == -1) value = NoFindNull;
 			else value = "" + (p + 1);
 			//value = BaiduSearch.getPosid(keyword, url);
@@ -218,6 +243,7 @@ public class BaiduKeySearchPosid {
 			return 1000;
 		}
 	}
+
 	/**
 	 * 得到某列的结果，总数与结果总数(排除没有结果数量)
 	 * @param table ResultTable

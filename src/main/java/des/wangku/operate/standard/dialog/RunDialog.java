@@ -2,9 +2,13 @@ package des.wangku.operate.standard.dialog;
 
 import org.eclipse.swt.widgets.Canvas;
 
+//import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
@@ -43,12 +47,16 @@ public final class RunDialog extends Dialog {
 	final Display display = Display.getDefault();
 	ProgressBar progressBar = null;
 	/** 转圈图片的间隔 */
-	public static final long millis = 500;
-	long timeFirst = 0;
+	private static final long millis = 500;
+	/** 开始计时 */
+	long timeFirst = System.currentTimeMillis();;
 	Label label_Time = null;
 	InterfaceRunDialog parentObj = null;
+	/** 线程池 */
+	ThreadPoolExecutor threadPool=null;
 	/** 线程停止 */
 	public volatile AtomicBoolean isBreak = new AtomicBoolean(false);
+
 	/**
 	 * 设置值
 	 * @param maxNum int
@@ -108,6 +116,7 @@ public final class RunDialog extends Dialog {
 	 * @param style int
 	 * @param obj AbstractTask
 	 * @param maxNum int
+	 * @wbp.parser.constructor
 	 */
 	public RunDialog(Shell parent, int style, InterfaceRunDialog obj, int maxNum) {
 		super(parent, style);
@@ -117,9 +126,7 @@ public final class RunDialog extends Dialog {
 		progressBar = new ProgressBar(shell, SWT.NONE);
 		progressBar.setMaximum(maxNum);
 		Initialization();
-
 	}
-
 
 	/**
 	 * Create the dialog.
@@ -151,11 +158,9 @@ public final class RunDialog extends Dialog {
 			public void handleEvent(Event event) {
 				logger.debug("break Thread!!!!!!!!!");
 				mclabel.setText("进程停止中....[线程依次退出]");
-				/* parentObj.isBreak.compareAndSet(false, true); */
 				if (parentObj != null) parentObj.setIsBreakChange(true);//isBreak.compareAndSet(false, true);
 				isBreak.compareAndSet(false, true);
 				logger.debug("break Thread!!!!!!!!!:" + isBreak.get());
-				/* parentObj.mainWorkThreadBreak(); */
 			}
 		});
 		jdlabel = new Label(shell, SWT.NONE);
@@ -167,7 +172,8 @@ public final class RunDialog extends Dialog {
 		label.setText("用时:");
 
 		label_Time = new Label(shell, SWT.NONE);
-		label_Time.setBounds(46, 10, 148, 12);
+		label_Time.setAlignment(SWT.LEFT);
+		label_Time.setBounds(46, 10, 183, 12);
 		label_Time.setText("");
 	}
 
@@ -179,20 +185,18 @@ public final class RunDialog extends Dialog {
 		timeFirst = System.currentTimeMillis();
 		createContents();
 		shell.open();
-		/*
-		 * Runnable showTime = new Runnable() {
-		 * public void run() {
-		 * Date date = new Date();
-		 * DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
-		 * label_Time.setText(dateFormat.format(date));//已定义的用于显示时钟的label
-		 * System.gc();
-		 * display.timerExec(time, this);
-		 * }
-		 * };
-		 * display.timerExec(time, showTime);//你的swt程序的display
-		 */
 		shell.layout();
 		Display display = getParent().getDisplay();
+		shell.addDisposeListener(new DisposeListener () {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				long nowNow = System.currentTimeMillis();
+				long betweentime = nowNow - timeFirst;
+				String useTime = UtilsDate.formatDuring(betweentime);
+				logger.debug("线程运行:线程数量["+getThreadSort()+"]\t单元数量:["+ (progressBar.getSelection() - progressBar.getMinimum()) +"]\t用时:"+useTime);
+			}
+			
+		});
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -200,8 +204,18 @@ public final class RunDialog extends Dialog {
 		}
 		return result;
 	}
-
-	Thread t;
+	/**
+	 * 得到线程数量，总数
+	 * @return int
+	 */
+	public int getThreadSort() {
+		if(threadPool!=null) {
+			return threadPool.getMaximumPoolSize();
+		}
+		return 1;
+	}
+	/** 自转图片线程 */
+	private Thread canvasAutoThread;
 
 	/**
 	 * Create contents of the dialog.
@@ -220,7 +234,7 @@ public final class RunDialog extends Dialog {
 		jdlabel.setText("初始化...");
 
 		mclabel.setBounds(10, 146, 216, 12);
-		t = new Thread() {
+		canvasAutoThread = new Thread() {
 			public void run() {
 				while (!isBreak.get()) {
 					try {
@@ -232,7 +246,7 @@ public final class RunDialog extends Dialog {
 				}
 			}
 		};
-		t.start();
+		canvasAutoThread.start();
 
 	}
 
@@ -271,8 +285,21 @@ public final class RunDialog extends Dialog {
 				if (isBreak.get()) return;
 				UtilsSWTTools.changePaintListener(paintArray, canvas);
 				long nowNow = System.currentTimeMillis();
-				label_Time.setText(UtilsDate.formatDuring(nowNow - timeFirst));//已定义的用于显示时钟的label
+				long betweentime = nowNow - timeFirst;
+				String useTime = UtilsDate.formatDuring(betweentime);
+				String allTime = "";
+				if (progressBar.getSelection() > progressBar.getMinimum()) {
+					long pertime = betweentime / (long) (progressBar.getSelection() - progressBar.getMinimum());
+					long alltime = pertime * (long) (progressBar.getMaximum() - progressBar.getMinimum());
+					allTime = "/" + UtilsDate.formatDuring(alltime);
+				}
+				label_Time.setText(useTime + allTime);//已定义的用于显示时钟的label
 			}
 		});
 	}
+
+	public final void setThreadPool(ThreadPoolExecutor threadPool) {
+		this.threadPool = threadPool;
+	}
+	
 }

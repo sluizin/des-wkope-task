@@ -5,11 +5,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+//import java.util.concurrent.ExecutorService;
+//import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -27,15 +31,17 @@ import des.wangku.operate.standard.dialog.SearchDialog;
 import des.wangku.operate.standard.dialog.ThreadRun;
 import des.wangku.operate.standard.swt.AbstractCTabFolder.ParaClass;
 import des.wangku.operate.standard.utls.UtilsShiftCompare;
+import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJar;
-import des.wangku.operate.standard.utls.UtilsListThreadPool;
+import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPathFile;
 import des.wangku.operate.standard.utls.UtilsSWTComposite;
 import des.wangku.operate.standard.utls.UtilsSWTListener;
 import des.wangku.operate.standard.utls.UtilsSWTMenu;
 
 /**
- * 容器任务主父类
+ * 容器任务主父类<br>
+ * 使用线程池。具体的池化没有做。运行一次，建立一次线程池，同线程组
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -97,7 +103,14 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	 * @return String
 	 */
 	public abstract String getMenuNameHead();
-
+	/**
+	 * 得到pX，把前缀最小写
+	 * @return String
+	 */
+	public String getMenuNameHeadLowerCase() {
+		if(getMenuNameHead()==null)return "";
+		return getMenuNameHead().toLowerCase();
+	}
 	/**
 	 * 得到完整项目名称 [P02]XXXXXXXXXXXX
 	 * @return String
@@ -151,7 +164,9 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		this.setToolTipText(getMenuName());
 		if (parent != null) {
 			Composite p = parent.getParent();
-			if (p != null) p.getShell().setText(getMenuText());
+			if (p != null) {
+				p.getShell().setText(getMenuText());
+			}
 		}
 	}
 
@@ -234,7 +249,8 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	public abstract void multiThreadOnRunEnd();
 
 	/** 线程池 */
-	protected ExecutorService ThreadPool = Executors.newFixedThreadPool(10);
+	//protected ThreadPoolExecutor ThreadPool =Executors.newFixedThreadPool(5);// Executors.newFixedThreadPool(10);
+	protected ThreadPoolExecutor ThreadPool = new ThreadPoolExecutor(5, 10, 10, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(5), new ThreadPoolExecutor.CallerRunsPolicy());
 
 	/**
 	 * 关闭运行对话框
@@ -293,6 +309,7 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		parentDisplay.asyncExec(new Runnable() {
 			public void run() {
 				ThreadRunDialog = new RunDialog(parentComposite.getShell(), 0, obj, max);
+				ThreadRunDialog.setThreadPool(ThreadPool);
 				ThreadRunDialog.open();
 			}
 		});
@@ -334,7 +351,7 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	protected void startECTFRunThread(AbstractTask base, int selectNum, List<InterfaceThreadRunUnit> workList) {
 		if (workList == null || workList.size() == 0) return;
 		if (selectNum <= 0) selectNum = 2;
-		int threadNum = UtilsListThreadPool.getMaxThreadPoolCount(workList.size(), selectNum);
+		int threadNum = UtilsList.getMaxThreadPoolCount(workList.size(), selectNum);
 		List<InterfaceThreadRunUnit> newList = new ArrayList<>(workList.size());
 		for (InterfaceThreadRunUnit ee : workList) {
 			newList.add(ee);
@@ -350,13 +367,19 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	 */
 	private void startECTFRunThreadWork(AbstractTask base, List<InterfaceThreadRunUnit> workList, int maxThreadNum) {
 		setIsBreakChange(false);
+		allControlEnabledChange(false);
+		/*
 		parentControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(base, true);
 		for (int i = 0; i < parentControlThreadClose.length; i++)
 			parentControlThreadClose[i].setEnabled(false);
+		 */
 		multiThreadOnRun();
 		ThreadStart(base, workList.size());
-		ThreadPool = Executors.newFixedThreadPool(maxThreadNum);
-		List<List<InterfaceThreadRunUnit>> list2 = UtilsListThreadPool.averageAssign(workList, maxThreadNum);
+		//ThreadPool = Executors.newFixedThreadPool(maxThreadNum);
+		ThreadPool = new ThreadPoolExecutor(maxThreadNum, maxThreadNum, 1000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(5), new ThreadPoolExecutor.CallerRunsPolicy());
+		ThreadPool.allowCoreThreadTimeOut(true);
+
+		List<List<InterfaceThreadRunUnit>> list2 = UtilsList.averageAssign(workList, maxThreadNum);
 		for (int i = 0; i < maxThreadNum; i++) {
 			Runnable task = new ThreadRun(base, list2.get(i));
 			ThreadPool.submit(task);
@@ -364,6 +387,15 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		ThreadPool.shutdown();
 		getCommonThreadCheckGroup().start();
 
+	}
+	/**
+	 * 设置所有对象关闭或打开
+	 * @param enabled boolean
+	 */
+	protected void allControlEnabledChange(boolean enabled) {
+		parentControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(this, !enabled);
+		for (int i = 0; i < parentControlThreadClose.length; i++)
+			parentControlThreadClose[i].setEnabled(enabled);
 	}
 
 	@Override
@@ -397,12 +429,51 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		}
 		return properties;
 	}
+
 	/**
 	 * 得到此项目相关不同文件 des-wkope-task-XXXX.YYY
 	 * @param fileExt String
 	 * @return String
 	 */
 	public final String getNewModelFile(String fileExt) {
-		return AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "."+fileExt;
+		return AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "." + fileExt;
+	}
+
+	/**
+	 * 得到本地jar包中resources目录里的文件
+	 * @param filename String
+	 * @return String
+	 */
+	protected final String getSourcesFileContent(String filename) {
+		if (basicClass == null) return null;
+		try {
+			URL url = UtilsJar.getJarSourceURL(basicClass, filename);/* "/update.info" */
+			if (url == null) return null;
+			InputStream is = url.openStream();
+			String content = UtilsFile.readFile(is).toString();
+			return content;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * 得到与model同目录的资源文件{des-wkope-task-}XXXX.xlsx
+	 * @param fileExt String
+	 * @return String
+	 */
+	public final String getBaseSourceFile(String fileExt) {
+		String filename = AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "."+fileExt;
+		filename = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
+		return filename;
+	}
+	/**
+	 * 得到与model目录下的具体项目里的资源文件 如"d:/XXXXX/model/Px/XXX"
+	 * @param filename String
+	 * @return String
+	 */
+	public final String getSubSourceFile(String filename) {
+		filename = UtilsPathFile.getModelJarBasicPath() + "/"+getMenuNameHead()+"/" + filename;
+		return filename;
 	}
 }

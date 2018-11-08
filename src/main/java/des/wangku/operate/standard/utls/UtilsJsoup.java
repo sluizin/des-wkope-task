@@ -15,6 +15,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import static des.wangku.operate.standard.utls.UtilsShiftCompare.isCompare;
+
 /**
  * Jsoup工具
  * @author Sunjian
@@ -73,14 +75,18 @@ public final class UtilsJsoup {
 		return null;
 	}
 
+	public static final int MODE_Jsoup = 1;
+	public static final int MODE_Socket = 2;
+	public static final int MODE_URL = 4;
+
 	/**
-	 * 提取jsoup [1] &gt; Document socket[2] &gt; URL[4] 全部信息
+	 * 提取jsoup [1(MODE_Jsoup)] &gt; Document socket[2(MODE_Socket)] &gt; URL[4(MODE_URL)] 全部信息
 	 * @param url URL
 	 * @param mode int
 	 * @return Document
 	 */
 	public static final Document getDoc(URL url, int mode) {
-		if ((mode & 1) > 0) {
+		if (isCompare(mode, MODE_Jsoup)) {
 			try {
 				Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
 				Document document = connect.timeout(20000).maxBodySize(0).get();
@@ -92,12 +98,12 @@ public final class UtilsJsoup {
 		}
 		String newCode = getCode(url);
 		logger.debug("newCode:" + newCode);
-		if ((mode & 2) > 0) {
+		if (isCompare(mode, MODE_Socket)) {
 			String content = UtilsReadURL.getSocketContent(url, newCode, 20000);
 			if (content != null && content.length() > 0) return Jsoup.parse(content);
 			return null;
 		}
-		if ((mode & 4) > 0) {
+		if (isCompare(mode, MODE_URL)) {
 			String content = UtilsReadURL.getUrlContent(url, newCode, 20000);
 			if (content != null && content.length() > 0) return Jsoup.parse(content);
 			return null;
@@ -106,7 +112,7 @@ public final class UtilsJsoup {
 	}
 
 	/**
-	 * 得到编码。 自检索  &gt;  默认[utf-8]
+	 * 得到编码。 自检索 &gt; 默认[utf-8]
 	 * @param url URL
 	 * @return String
 	 */
@@ -117,7 +123,7 @@ public final class UtilsJsoup {
 	}
 
 	/**
-	 * 按照className从body中提取链接组  &lt; a href="" &gt;  &lt; /a &gt; 
+	 * 按照className从body中提取链接组 &lt; a href="" &gt; &lt; /a &gt;
 	 * @param body Element
 	 * @param className String
 	 * @return String[]
@@ -140,7 +146,7 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getElementsFirst(Elements es) {
-		return getElementsFirst(es,"");
+		return getElementsFirst(es, "");
 	}
 
 	/**
@@ -149,12 +155,13 @@ public final class UtilsJsoup {
 	 * @param def String
 	 * @return String
 	 */
-	public static final String getElementsFirst(Elements es,String def) {
+	public static final String getElementsFirst(Elements es, String def) {
 		if (es == null || es.size() == 0) return def;
 		Element e = es.first();
 		if (e == null) return def;
 		return e.text();
 	}
+
 	/**
 	 * 从数组中提取第一个text()值，如为空,则返回def
 	 * @param doc Element
@@ -162,11 +169,12 @@ public final class UtilsJsoup {
 	 * @param def String
 	 * @return String
 	 */
-	public static final String getElementsFirst(Element doc,String classname,String def) {
+	public static final String getElementsFirst(Element doc, String classname, String def) {
 		Elements es = doc.getElementsByClass(classname);
 		if (es == null || es.size() == 0) return def;
-		return getElementsFirst(es,def);
+		return getElementsFirst(es, def);
 	}
+
 	/**
 	 * 按classname提取第一个text()值，如为空,则返回空串
 	 * @param doc Element

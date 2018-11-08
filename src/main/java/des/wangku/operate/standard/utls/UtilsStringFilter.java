@@ -81,13 +81,13 @@ public class UtilsStringFilter {
 		content = UtilsStringFilter.getReplaceHTML(content);
 		content = UtilsJsoup.cleanHtml(content);
 		content = UtilsStringFilter.getReplaceHTMLReversal(content);
-		content = content.replaceAll("\\<p\\>[\\s]*\\</p\\>", "").trim();/* 过滤掉<p></p>之间含有多个空格 */
+		content = content.replaceAll("\\<p\\>[\\s|\\t]*\\</p\\>", "").trim();/* 过滤掉<p></p>之间含有多个空格 */
 		return content;
 	}
 
 	public static void main(String[] args) {
 		System.out.println("Hello World!");
-		String content = "D<p>    </p>EF<p></p>1<p>3</p>4<p> </p>a<div>bc<p>d<br>e</div>f</p>c(def)hij(lmn)km()n[123]d<p>e<div>e<br/>e</p>dd{cc}<p class='t'>123<p a>34<br>5<pl>";
+		String content = "D<p>    </p>EF<p></p>1<p>3</p>4<p> 	 </p><p></p>a<div>bc<p>d<br>e</div>f</p>c(def)hij(lmn)km()n[123]d<p>e<div>e<br/>e</p>dd{cc}<p class='t'>123<p a>34<br>5<pl>";
 		//String str=content.replaceAll("\\(.*?\\)|\\{.*?}|\\[.*?]|（.*?）", "");
 		System.out.println(content);
 		System.out.println(getHtmlContent(content));

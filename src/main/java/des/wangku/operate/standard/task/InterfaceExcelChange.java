@@ -94,7 +94,7 @@ public interface InterfaceExcelChange {
 		Sheet sheet = cell.getSheet();
 		int downX = x;
 		for (int i = x + 1; i <= sheet.getLastRowNum(); i++) {
-			String value = UtilsSWTPOI.getCellValueByCell(sheet.getRow(i).getCell(y));
+			String value = UtilsSWTPOI.getCellValueByString(sheet.getRow(i).getCell(y),true);
 			if (value == null || value.length() == 0) downX = i;
 			else break;
 		}

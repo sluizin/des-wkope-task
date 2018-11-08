@@ -129,11 +129,13 @@ public final class UtilsSWTTable {
 	 * @param itemArr TableItem[]
 	 * @return List&lt;List&lt;String&gt;&gt;
 	 */
-	public static final List<List<String>> getTableItemList(boolean isHead,ResultTable table, TableItem... itemArr) {
+	public static final List<List<String>> getTableItemList(boolean isHead, ResultTable table, TableItem... itemArr) {
 		List<List<String>> list = new ArrayList<List<String>>();
 		if (isHead) {
-			/*List<String> ll = getTableHeadList(itemArr);
-			if (ll != null) list.add(ll);*/
+			/*
+			 * List<String> ll = getTableHeadList(itemArr);
+			 * if (ll != null) list.add(ll);
+			 */
 			list.add(UtilsSWTTable.getTableColumnList(table));
 		}
 		if (itemArr == null || itemArr.length == 0) return list;
@@ -149,16 +151,17 @@ public final class UtilsSWTTable {
 		}
 		return list;
 	}
+
 	/**
 	 * 得到头部列表，如果头部不显示则返回空列表
 	 * @param table ResultTable
 	 * @return List&lt;String&gt;
 	 */
 	public static final List<String> getTableColumnList(ResultTable table) {
-		if(!table.getHeaderVisible())return new ArrayList<>();
+		if (!table.getHeaderVisible()) return new ArrayList<>();
 		List<String> list = new ArrayList<>(table.getColumnCount());
-		TableColumn[]  arr=table.getColumns();
-		for(int i=0;i<arr.length;i++)
+		TableColumn[] arr = table.getColumns();
+		for (int i = 0; i < arr.length; i++)
 			list.add(arr[i].getText());
 		return list;
 	}
@@ -515,5 +518,42 @@ public final class UtilsSWTTable {
 			if (value != null && value.length() > 0) return value;
 		}
 		return null;
+	}
+
+	/**
+	 * 得到表格某列深度 是否过滤空格
+	 * @param table Table
+	 * @param y int
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public static final int getDepth(Table table, int y, boolean isTrim) {
+		for (int i = table.getItemCount() - 1; i > -1; i--) {
+			String value = table.getItem(i).getText(y);
+			if (value == null || value.length() == 0) continue;
+			if (isTrim && value.trim().length() == 0) continue;
+			return i;
+		}
+		return table.getItemCount() - 1;
+	}
+	/**
+	 * 得到表格最大/最小层数
+	 * @param table Table
+	 * @param isMax boolean
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public static final int getDepth(Table table, boolean isMax, boolean isTrim) {
+		int len = table.getColumnCount();
+		int extremum = 0;
+		for (int i = 0; i < len; i++) {
+			int deep = getDepth(table, i, isTrim);
+			if (isMax) {/* 最大深度 */
+				if (deep > extremum) extremum = deep;
+			} else {/* 最小深度 */
+				if (extremum==0 || deep < extremum) extremum = deep;
+			}
+		}
+		return extremum;
 	}
 }

@@ -77,7 +77,9 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	/** 数据保存 */
 	List<String[]> data = new ArrayList<>();
 	/** ResultTable的标准样式 */
-	public static final int ACC_ResultTableState = SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.MULTI;
+	public static final int ACC_ResultTableState = SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL;
+	/** ResultTable的标准样式 单选 */
+	public static final int ACC_ResultTableStateRadio = SWT.BORDER | SWT.RADIO | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL;
 
 	/**
 	 * 构造函数
@@ -95,10 +97,12 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		this.parent = parent;
 		Init();
 	}
-	public String getString(int x,int y) {
-		
+
+	public String getString(int x, int y) {
+
 		return null;
 	}
+
 	/**
 	 * 插入数据
 	 * @param list List&lt;List&lt;String&gt;&gt;
@@ -194,8 +198,9 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	public final void setEctpara(String jsonStr) {
-		this.ectpara=ResultTableParameter.getRTP(jsonStr);
+		this.ectpara = ResultTableParameter.getRTP(jsonStr);
 	}
+
 	public final void setEctpara(ResultTableParameter ectpara) {
 		this.ectpara = ectpara;
 	}
@@ -607,13 +612,14 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @return TableItem[]
 	 */
 	public TableItem[] getCheckedTableItem() {
-		List<TableItem> list=new ArrayList<>();
+		List<TableItem> list = new ArrayList<>();
 		for (TableItem e : this.getItems()) {
 			if (e.getChecked()) list.add(e);
-		}		
-		TableItem[] arrs= {};
+		}
+		TableItem[] arrs = {};
 		return list.toArray(arrs);
 	}
+
 	/**
 	 * 得到check=true行数
 	 * @return int
@@ -648,7 +654,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		}
 	}
 
-
 	/**
 	 * 更新内容里需要修改的信息
 	 * @param x int
@@ -671,5 +676,5 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		}
 		UtilsSWTTableSQL.update(base, x, y, newValue);
 	}
-	
+
 }

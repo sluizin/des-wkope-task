@@ -55,7 +55,7 @@ public final class NewsMapping {
 	/** 编码 */
 	String code = "";
 	/** 板块标号 */
-	List<String> blockid = new ArrayList<String>(1);
+	public List<String> blockid = new ArrayList<String>(1);
 	/** 板块区间 */
 	List<String> blocklabel = new ArrayList<String>(2);
 	/**

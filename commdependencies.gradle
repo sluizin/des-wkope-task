@@ -38,8 +38,13 @@ ext{
 			/* commons-dbcp 数据库缓冲池 */
 			'commons-dbcp:commons-dbcp:1.4',
 			'org.apache.httpcomponents:httpclient:4.5.3',
-			/*'org.eclipse:jface:3.3.0-I20070606-0010',
-			'org.eclipse.jface:org.eclipse.jface:3.5.0.I20090525-2000',*/
+			'net.sourceforge.javacsv:javacsv:2.0',
+			/*
+			'org.jumpmind.symmetric:symmetric-csv:3.5.19',
+			'com.epam:parso:2.0.10',
+			'org.eclipse:jface:3.3.0-I20070606-0010',
+			'org.eclipse.jface:org.eclipse.jface:3.5.0.I20090525-2000',
+			*/
 			'log4j:log4j:1.2.17'
 	    )
 		compile fileTree(dir: 'libs', include: ['*.jar'])

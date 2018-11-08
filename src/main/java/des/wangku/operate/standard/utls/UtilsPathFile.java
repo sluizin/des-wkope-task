@@ -57,6 +57,21 @@ public final class UtilsPathFile {
 	}
 
 	/**
+	 * 得到某个目录里所有的文件 indexof()==0
+	 * @param list List &lt; String &gt; 
+	 * @param path String
+	 */
+	public static final void getFilesNameList(List<String> list,String leftkeyword, String path) {
+		File or = new File(path);
+		File[] files = or.listFiles();
+		if (files == null) return;
+		for (File file : files) {
+			if (file.isFile() && file.getName().indexOf(leftkeyword)==0) list.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFilesNameList(list,leftkeyword, file.getAbsolutePath());
+		}
+	}
+	
+	/**
 	 * 得到某个目录里所有的jar文件
 	 * @param jarList List &lt; String &gt; 
 	 * @param path String

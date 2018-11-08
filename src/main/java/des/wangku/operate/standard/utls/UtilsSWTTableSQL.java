@@ -2,6 +2,7 @@ package des.wangku.operate.standard.utls;
 
 import java.util.List;
 import org.apache.log4j.Logger;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import des.wangku.operate.standard.swt.ResultTable;
 
@@ -87,6 +88,20 @@ public final class UtilsSWTTableSQL {
 		e.getItem(x).setText(y, value);
 	}
 
+	/**
+	 * 更新
+	 * @param e Table
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 */
+	public static final synchronized void update(Table e, int x, int y, String value) {
+		if (e == null || value == null) return;
+		if (x < 0 || x >= e.getItemCount()) return;
+		if (y < 0 || y >= e.getColumnCount()) return;
+		//e.getData().get(x)[y]=value;
+		//e.redrawTable();
+	}
 	/**
 	 * 更新
 	 * @param e TableItem

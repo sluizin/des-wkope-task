@@ -113,6 +113,76 @@ public final class UtilsReadURL {
 	}
 
 	/**
+	 * 从url中判断是否含有关键字数组，在html之间<br>
+	 * 只支持http与https协议
+	 * @param url String
+	 * @param code String
+	 * @param timeout int
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public static boolean isSocketContainKeywords(String href, String code, int timeout, String... arrs) {
+		if (href == null || href.length() == 0) return false;
+		try {
+			URL url = new URL(href);
+			return isSocketContainKeywords(url, code, timeout, arrs);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * 从url中判断是否含有关键字数组，在html之间<br>
+	 * 只支持http与https协议
+	 * @param url URL
+	 * @param code String
+	 * @param timeout int
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public static boolean isSocketContainKeywords(URL url, String code, int timeout, String... arrs) {
+		if (url == null) return false;
+		String http = url.getProtocol().toLowerCase();
+		/* 只支持http与https协议 */
+		if (!UtilsString.isExist(http, "http", "https")) return false;
+		//int port = url.getPort();
+		String host = url.getHost();
+		if (host == null) return false;
+		try {
+			Socket socket = null;
+			if ("http".equals(http)) {
+				socket = new Socket(InetAddress.getByName(host), 80);
+			} else {
+				socket = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(InetAddress.getByName(host), 443);
+			}
+			socket.setSoTimeout(timeout);
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			bw.write("GET /" + url.getPath() + " HTTP/1.1\r\n");
+			bw.write("Host:" + host + "\r\n");
+			bw.write("Content-Type: text/html\r\n");
+			bw.write("User-Agent:Mozila/4.0(compatible;MSIE5.01;Window NT5.0)\r\n");
+			bw.write("Accept:image/gif.image/jpeg.*/*\r\n");
+			bw.write("Accept-Language:zh-cn\r\n");
+			bw.write("\r\n");
+			bw.flush();
+			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), code));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				if (UtilsString.isContain(line, arrs)) return true;
+				if (line.contains("</html>")) break;
+			}
+			br.close();
+			bw.close();
+			if (socket != null && !socket.isClosed()) socket.close();
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
 	 * @param url URL
 	 * @param code String
 	 * @return String
@@ -224,6 +294,24 @@ public final class UtilsReadURL {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 通过URL得到文件内容
+	 * @param url String
+	 * @param code String
+	 * @param timeout int
+	 * @return String
+	 */
+	public static final String getUrlContent(final String url, final String code, int timeout) {
+		if (url == null || url.length() == 0) return "";
+		try {
+			URL urla = new URL(url);
+			return getUrlContent(urla, code, timeout);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	/**
@@ -409,7 +497,7 @@ public final class UtilsReadURL {
 	static final WebClient webClient = new WebClient(BrowserVersion.FIREFOX_52);
 	static {
 		webClient.getOptions().setJavaScriptEnabled(true); //启用JS解释器，默认为true  
-		webClient.getOptions().setCssEnabled(true); //禁用css支持  
+		webClient.getOptions().setCssEnabled(false); //禁用css支持  
 		webClient.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
 		webClient.getOptions().setTimeout(10000); //设置连接超时时间 ，这里是10S。如果为0，则无限期等待  
 		webClient.waitForBackgroundJavaScript(8000);
@@ -487,8 +575,7 @@ public final class UtilsReadURL {
 	 * @return Document
 	 */
 	public static final Document getReadUrlJsDocument(String url) {
-		String pageXml2 = UtilsReadURL.getReadUrlJs(url, true, true, 10000, 10000);
-		//logger.debug("pageXml2:"+pageXml2);
+		String pageXml2 = UtilsReadURL.getReadUrlJs(url, true, true, 20000, 20000);
 		String baseuri = UtilsString.getUrlDomain(url);
 		return Jsoup.parse(pageXml2, baseuri);
 	}

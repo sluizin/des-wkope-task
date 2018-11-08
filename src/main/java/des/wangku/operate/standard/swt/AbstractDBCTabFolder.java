@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import des.wangku.operate.standard.utls.UtilsProperties;
 import des.wangku.operate.standard.utls.UtilsSQL;
-import des.wangku.operate.standard.utls.UtilsString;
+import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
  * 自定义mysql转成多页表格 UI组件<br>
@@ -347,7 +347,7 @@ public abstract class AbstractDBCTabFolder extends AbstractCTabFolder {
 		DBPara f = this.getDBPara(base.title);
 		if (f.pkSuffix.length == 0) return true;
 		try {
-			if (!UtilsString.isEffective(0, rsmd.getColumnCount() - 1, f.pkSuffix)) return true;
+			if (!UtilsVerification.isEffective(0, rsmd.getColumnCount() - 1, f.pkSuffix)) return true;
 			Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			StringBuilder sb = new StringBuilder();
 			sb.append("update ");

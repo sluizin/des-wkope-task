@@ -33,29 +33,36 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
  */
 public final class UtilsSWTPOI {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTPOI.class);
+	private static Logger logger = Logger.getLogger(UtilsSWTPOI.class);
 
 	/**
-	 * 保存workbook到model目录里的随机数文件
+	 * 保存workbook到model目录里的随机数文件，是否关闭Workbook
 	 * @param saveFolder String
 	 * @param shell Shell
 	 * @param workbook Workbook
+	 * @param isClose boolean
 	 * @param isAlert boolean
 	 * @return File
 	 */
-	public static File save(String saveFolder, Shell shell, Workbook workbook, boolean isAlert) {
+	public static File save(String saveFolder, Shell shell, Workbook workbook,boolean isClose, boolean isAlert) {
 		//AbstractTask e=UtilsSWTTools.getParentObj(shell, AbstractTask.class);
 		String proFolder = "";
 		if (saveFolder != null) proFolder = saveFolder;
 		File file = UtilsFile.mkModelRNDFile(proFolder, "xlsx");
 		if (file == null) {
-			if (isAlert) UtilsSWTMessageBox.Alert(shell, "文件生成失败");
+			if (isAlert) {
+				logger.debug("文件生成失败");
+				UtilsSWTMessageBox.Alert(shell, "文件生成失败");
+			}
 			return null;
 		}
-		boolean t = UtilsSWTPOI.save(workbook, file);
+		boolean t = UtilsSWTPOI.save(workbook,isClose, file);
 		if (t) {
 			String filename = UtilsFile.getFileName(file);
-			if (isAlert) UtilsSWTMessageBox.Alert(shell, filename + "生成成功");
+			if (isAlert) {
+				logger.debug("文件生成成功");
+				UtilsSWTMessageBox.Alert(shell, filename + "生成成功");
+			}
 			return file;
 		}
 		if (isAlert) UtilsSWTMessageBox.Alert(shell, "文件生成失败");
@@ -63,17 +70,19 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
-	 * 保存Workbook到File，但关闭Workbook
+	 * 保存Workbook到File，，是否关闭Workbook
 	 * @param workbook Workbook
+	 * @param isClose boolean
 	 * @param file File
 	 * @return boolean
 	 */
-	public static final boolean save(Workbook workbook, File file) {
+	public static final boolean save(Workbook workbook,boolean isClose, File file) {
 		try {
 			if (workbook == null || file == null) return false;
 			FileOutputStream fileoutputStream = new FileOutputStream(file);
 			workbook.write(fileoutputStream);
 			fileoutputStream.close();
+			if(isClose)
 			workbook.close();
 			return true;
 		} catch (Exception e) {
@@ -141,6 +150,25 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
+	 * 通过文件名与sheetname得到sheet
+	 * @param filename String
+	 * @param sheetName String
+	 * @return Sheet
+	 */
+	@SuppressWarnings({ "unused", "resource" })
+	public static final Sheet getSheet(String filename, String sheetName) {
+		try {
+			File file = new File(filename);
+			Workbook workbook = new XSSFWorkbook(file);
+			if (workbook == null) return null;
+			return workbook.getSheet(sheetName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
 	 * @param filename String
 	 * @param list List&lt;List&lt;String&gt;&gt;
 	 * @param sheetName String
@@ -178,50 +206,166 @@ public final class UtilsSWTPOI {
 		workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
 		return UtilsFile.writeWorkbookFile(filename, workbook);
 	}
+	/**
+	 * 获取单元格各类型值，返回字符串类型<br>
+	 * 如果没有单元格，则返回null<br>
+	 * 如果有单元格，则返回值，如值为null，则返回def
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @param isTrim boolean
+	 * @param def String
+	 * @return String
+	 */
+	public static String getCellValueByString(Sheet sheet,int x,int y,boolean isTrim, String def) {
+		if (sheet == null) return null;
+		Row row = sheet.getRow(x);
+		if (row == null) return null;
+		Cell cell = row.getCell(y);
+		if (cell==null) return null;
+		return getCellValueByString(cell,isTrim,def);
+	}
+
+	/**
+	 * 获取单元格各类型值，返回字符串类型<br>
+	 * 如果为null，则返回 空串 ""<br>
+	 * 默认不过滤Trim
+	 * @param cell Cell
+	 * @return String
+	 */
+	public static String getCellValueByString(Cell cell) {
+		return getCellValueByString(cell,false, "");
+	}
 
 	/**
 	 * 获取单元格各类型值，返回字符串类型<br>
 	 * 如果为null，则返回 空串 ""
 	 * @param cell Cell
+	 * @param isTrim boolean
 	 * @return String
 	 */
-	public static String getCellValueByCell(Cell cell) {
-		//判断是否为null或空串
-		if (cell == null || cell.toString().trim().equals("")) return "";
+	public static String getCellValueByString(Cell cell,boolean isTrim) {
+		return getCellValueByString(cell,isTrim, "");
+	}
+
+	/**
+	 * 获取单元格各类型值，返回字符串类型<br>
+	 * 如果为null，则返回 空串 def
+	 * @param cell Cell
+	 * @param isTrim boolean
+	 * @param def String
+	 * @return String
+	 */
+	public static String getCellValueByString(Cell cell,boolean isTrim, String def) {
+		if (cell == null || cell.toString().length() == 0) return def;
+		if (isTrim && cell.toString().trim().length() == 0) return def;
 		CellType cellType = cell.getCellTypeEnum();
-		if (cellType == null) return "";
+		if (cellType == null) return def;
 		String value = "";
 		switch (cellType) {
 		case STRING:
 			value = cell.getStringCellValue();
 			break;
-		case NUMERIC:
-			if (HSSFDateUtil.isCellDateFormatted(cell)) {  //判断日期类型
-				/*
-				 * Date ee = cell.getDateCellValue();
-				 * return ee.toString();
-				 * double dd = cell.getNumericCellValue();
-				 * return String.valueOf(dd);
-				 * return (new DecimalFormat("#.######").format(cell.getNumericCellValue()));
-				 * cellValue = DateUtil.formatDateByFormat(cell.getDateCellValue(), "yyyy-MM-dd");
-				 */
+		case NUMERIC://判断日期类型
+			if (HSSFDateUtil.isCellDateFormatted(cell)) {
 				value = convertCellToString(cell);
-			} else {
-				double dd = cell.getNumericCellValue();
-				value = (decimalFormat.format(dd));/* return String.valueOf(dd); */
+				break;
 			}
+			double dd = cell.getNumericCellValue();
+			value = decimalFormat.format(dd);
 			break;
 		case BOOLEAN:
 			boolean bb = cell.getBooleanCellValue();
 			value = String.valueOf(bb);
 			break;
 		default:
-			return "";
+			return def;
 		}
-		if (value == null) return "";
-		return value.trim();
+		if (value == null) return def;
+		return isTrim?value.trim():value;
 	}
 
+	/**
+	 * 获取单元格各类型值，返回字符串类型<br>
+	 * 如果为null，则返回 空串 def
+	 * @param cell Cell
+	 * @param def double
+	 * @return double
+	 */
+	public static double getCellValueByDouble(Cell cell, double def) {
+		if (cell == null || cell.toString().trim().length() == 0) return def;
+		CellType cellType = cell.getCellTypeEnum();
+		if (cellType == null) return def;
+		if (cellType != CellType.NUMERIC) return def;
+		if (HSSFDateUtil.isCellDateFormatted(cell)) return def;
+		return cell.getNumericCellValue();
+	}
+
+	/**
+	 * 获取单元格各类型值，返回字符串类型<br>
+	 * 如果为null，则返回 空串 def
+	 * @param cell Cell
+	 * @param def int
+	 * @return int
+	 */
+	public static int getCellValueByInteger(Cell cell, int def) {
+		if (cell == null || cell.toString().trim().length() == 0) return def;
+		CellType cellType = cell.getCellTypeEnum();
+		if (cellType == null) return def;
+		if (cellType != CellType.NUMERIC) return def;
+		if (HSSFDateUtil.isCellDateFormatted(cell)) return def;
+		double d = cell.getNumericCellValue();
+		if (d - (int) d < Double.MIN_VALUE) return (int) d;
+		return def;
+	}
+	/**
+	 * 设置单元格内容，如果没有单元格，则返回false<br>
+	 * 如果isCreate为true，则直接建立单元格，并赋值
+	 * @param sheet Sheet
+	 * @param isCreate boolean
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 * @return boolean
+	 */
+	public static boolean setCellValue(Sheet sheet,boolean isCreate,int x,int y,String value) {
+		if (sheet == null) return false;
+		if(isCreate) {
+			Cell cell=createCell(sheet,x,y);
+			if (cell==null) return false;
+			cell.setCellValue(value);
+			return true;
+		}
+		Row row = sheet.getRow(x);
+		if (row == null) return false;
+		Cell cell = row.getCell(y);
+		if (cell==null) return false;
+		if (value.length() >= 32767) value = value.substring(0, 32766);
+		cell.setCellValue(value);
+		return true;
+	}
+
+	
+	
+	
+
+	/**
+	 * 添加新单元。并得到某个单元格
+	 * @param x int
+	 * @param y int
+	 * @return Cell
+	 */
+	public static final Cell createCell(Sheet sheet,int x, int y) {
+		if(sheet==null)return null;
+		Row row = sheet.getRow(x);
+		if (row == null) sheet.createRow(x);
+		row = sheet.getRow(x);
+		Cell cell = row.getCell(y);
+		if (cell == null) row.createCell(y);
+		return row.getCell(y);
+	}
+	
+	
 	static final DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
 
 	/**
@@ -236,7 +380,7 @@ public final class UtilsSWTPOI {
 		 * POI对单元格日期处理很弱，没有针对的类型，日期类型取出来的也是一个double值，所以同样作为数值类型
 		 * 解决日期2006/11/02格式读入后出错的问题，POI读取后变成“02-十一月-2006”格式
 		 */
-		if (cell.toString().contains("-") && checkDate(cell.toString())) {
+		if (cell.toString().contains("-") && UtilsVerification.isDate(cell.toString())) {
 			String ans = "";
 			try {
 				ans = new SimpleDateFormat("yyyy/MM/dd").format(cell.getDateCellValue());
@@ -249,22 +393,5 @@ public final class UtilsSWTPOI {
 		return cell.getStringCellValue();
 	}
 
-	/**
-	 * 判断是否是“02-十一月-2006”格式的日期类型
-	 * @param str String
-	 * @return boolean
-	 */
-	public static boolean checkDate(String str) {
-		String[] dataArr = str.split("-");
-		if (dataArr.length != 3) return false;
-		try {
-			int x = Integer.parseInt(dataArr[0]);
-			String y = dataArr[1];
-			int z = Integer.parseInt(dataArr[2]);
-			if (x > 0 && x < 32 && z > 0 && z < 10000 && y.endsWith("月")) return true;
-		} catch (Exception e) {
-			return false;
-		}
-		return false;
-	}
+	
 }
