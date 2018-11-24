@@ -405,7 +405,7 @@ public final class NewsMapping {
 	}
 
 	/**
-	 * 得到编码。自定义 > 自检索 > 默认[utf-8]
+	 * 得到编码。自定义 &gt; 自检索 &gt; 默认[utf-8]
 	 * @param url URL
 	 * @return String
 	 */
@@ -417,7 +417,7 @@ public final class NewsMapping {
 	}
 
 	/**
-	 * 提取jsoup>Document socket>URL 全部信息
+	 * 提取jsoup &gt; Document socket &gt;URL 全部信息
 	 * @param url URL
 	 * @return Document
 	 */
@@ -475,7 +475,7 @@ public final class NewsMapping {
 	 * @param mode int
 	 * @param obj Element
 	 * @param key String
-	 * @return Set<Element>
+	 * @return Set&lt;Element&gt;
 	 */
 	public final static Set<Element> getBlockElementKey(int mode, Element obj, String key) {
 		if (key == null || key.length() == 0) return new HashSet<Element>();
@@ -548,7 +548,7 @@ public final class NewsMapping {
 	 * @param mode int
 	 * @param obj Element
 	 * @param arrs String[]
-	 * @return Set<Element>
+	 * @return Set&lt;Element&gt;
 	 */
 	public final static Set<Element> getBlockElementSet(int mode, Element obj, String... arrs) {
 		Set<Element> set = new HashSet<Element>();

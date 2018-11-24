@@ -2,7 +2,7 @@ package des.wangku.operate.standard.dialog;
 
 import org.eclipse.swt.widgets.Canvas;
 
-//import java.util.concurrent.ExecutorService;
+// import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
@@ -53,7 +53,7 @@ public final class RunDialog extends Dialog {
 	Label label_Time = null;
 	InterfaceRunDialog parentObj = null;
 	/** 线程池 */
-	ThreadPoolExecutor threadPool=null;
+	ThreadPoolExecutor threadPool = null;
 	/** 线程停止 */
 	public volatile AtomicBoolean isBreak = new AtomicBoolean(false);
 
@@ -68,7 +68,7 @@ public final class RunDialog extends Dialog {
 		progressBar.setMaximum(maxNum);
 		progressBar.setSelection(num);
 		jdlabel.setText("[" + num + "/" + maxNum + "]");
-		mclabel.setText(mc);
+		mclabel.setText(mc == null ? "" : mc);
 		autoChange();
 	}
 
@@ -83,8 +83,8 @@ public final class RunDialog extends Dialog {
 		num++;
 		progressBar.setSelection(num);
 		jdlabel.setText("[" + num + "/" + maxNum + "]");
-		mclabel.setText(mc);
-		mclabel.setToolTipText(mc);
+		mclabel.setText(mc == null ? "" : mc);
+		mclabel.setToolTipText(mc == null ? "" : mc);
 		autoChange();
 	}
 
@@ -116,7 +116,6 @@ public final class RunDialog extends Dialog {
 	 * @param style int
 	 * @param obj AbstractTask
 	 * @param maxNum int
-	 * @wbp.parser.constructor
 	 */
 	public RunDialog(Shell parent, int style, InterfaceRunDialog obj, int maxNum) {
 		super(parent, style);
@@ -187,15 +186,15 @@ public final class RunDialog extends Dialog {
 		shell.open();
 		shell.layout();
 		Display display = getParent().getDisplay();
-		shell.addDisposeListener(new DisposeListener () {
+		shell.addDisposeListener(new DisposeListener() {
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
 				long nowNow = System.currentTimeMillis();
 				long betweentime = nowNow - timeFirst;
 				String useTime = UtilsDate.formatDuring(betweentime);
-				logger.debug("线程运行:线程数量["+getThreadSort()+"]\t单元数量:["+ (progressBar.getSelection() - progressBar.getMinimum()) +"]\t用时:"+useTime);
+				logger.debug("线程运行:线程数量[" + getThreadSort() + "]\t单元数量:[" + (progressBar.getSelection() - progressBar.getMinimum()) + "]\t用时:" + useTime);
 			}
-			
+
 		});
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -204,16 +203,16 @@ public final class RunDialog extends Dialog {
 		}
 		return result;
 	}
+
 	/**
 	 * 得到线程数量，总数
 	 * @return int
 	 */
 	public int getThreadSort() {
-		if(threadPool!=null) {
-			return threadPool.getMaximumPoolSize();
-		}
+		if (threadPool != null) { return threadPool.getMaximumPoolSize(); }
 		return 1;
 	}
+
 	/** 自转图片线程 */
 	private Thread canvasAutoThread;
 
@@ -301,5 +300,5 @@ public final class RunDialog extends Dialog {
 	public final void setThreadPool(ThreadPoolExecutor threadPool) {
 		this.threadPool = threadPool;
 	}
-	
+
 }

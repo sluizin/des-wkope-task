@@ -60,9 +60,10 @@ public final class UtilsString {
 	 */
 	public static final boolean isExist(int key, int... arrs) {
 		for (int i = 0; i < arrs.length; i++)
-			if (key==arrs[i]) return true;
+			if (key == arrs[i]) return true;
 		return false;
 	}
+
 	/**
 	 * 判断字符串中是否含有关键字数组中的元素
 	 * @param str String
@@ -224,8 +225,6 @@ public final class UtilsString {
 		return "";
 	}
 
-
-
 	/**
 	 * 判断字符串含有多少个字符串，即字符串重复数量
 	 * @param str String
@@ -265,6 +264,7 @@ public final class UtilsString {
 		System.arraycopy(e, 0, arr, p + 3, e.length);
 		return new String(arr);
 	}
+
 	/**
 	 * 判断字符串是否含有以 intervalkey 为间隔的字符数组
 	 * @param str String
@@ -272,12 +272,24 @@ public final class UtilsString {
 	 * @param intervalkey String
 	 * @return boolean
 	 */
-	public static final boolean isContainSplit(String str,String arr,String intervalkey) {
-		if(str==null || str.length()==0)return false;
-		String[] arrs=arr.split(intervalkey);
-		for(String e:arrs) {
-			if(str.indexOf(e)!=-1)return true;
+	public static final boolean isContainSplit(String str, String arr, String intervalkey) {
+		if (str == null || str.length() == 0) return false;
+		String[] arrs = arr.split(intervalkey);
+		for (String e : arrs) {
+			if (str.indexOf(e) != -1) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * 过滤掉小数点右侧数字。保留完整整数
+	 * @param str String
+	 * @return String
+	 */
+	public static final String getLeftPoint(String str) {
+		if (str == null) return null;
+		int index = str.indexOf(".");
+		if (index == -1) return str;
+		return str.substring(0, index);
 	}
 }

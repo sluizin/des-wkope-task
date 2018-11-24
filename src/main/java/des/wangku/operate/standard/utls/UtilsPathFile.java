@@ -4,8 +4,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import des.wangku.operate.standard.PV;
 import des.wangku.operate.standard.PV.Env;
@@ -57,23 +60,89 @@ public final class UtilsPathFile {
 	}
 
 	/**
-	 * 得到某个目录里所有的文件 indexof()==0
-	 * @param list List &lt; String &gt; 
+	 * 得到某个目录里所有的文件 indexof()==0<br>
+	 * 按名称进行排序
+	 * @param list List &lt; String &gt;
+	 * @param leftkeyword String
 	 * @param path String
 	 */
-	public static final void getFilesNameList(List<String> list,String leftkeyword, String path) {
+	public static final void getFilesNameList(List<String> list, String leftkeyword, String path) {
+		File or = new File(path);
+		File[] files = or.listFiles();
+		if (files == null) return;
+		Arrays.sort(files, new Comparator<File>() {
+			@Override
+			public int compare(File o1, File o2) {
+				if (o1.isDirectory() && o2.isFile()) return -1;
+				if (o1.isFile() && o2.isDirectory()) return 1;
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		for (File file : files) {
+			if (file.isFile() && file.getName().indexOf(leftkeyword) == 0) list.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFilesNameList(list, leftkeyword, file.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回null<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @return String
+	 */
+	public static final String getFilesNameFirst(String leftkeyword, String path) {
+		List<String> fileslist = new ArrayList<>();
+		getFilesNameList(fileslist, leftkeyword, path);
+		if (fileslist.size() == 0) return null;
+		Collections.sort(fileslist, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		return fileslist.get(0);
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第N个 indexof()==0 如没找到，则返回null<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @param index int
+	 * @return String
+	 */
+	public static final String getFilesName(String leftkeyword, String path, int index) {
+		List<String> fileslist = new ArrayList<>();
+		getFilesNameList(fileslist, leftkeyword, path);
+		if (fileslist.size() == 0 || index < 0 || index >= fileslist.size()) return null;
+		Collections.sort(fileslist, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		return fileslist.get(index);
+	}
+
+	/**
+	 * 得到某个目录里所有的扩展名文件
+	 * @param jarList List &lt; String &gt;
+	 * @param path String
+	 * @param fileExt String
+	 */
+	public static final void getFileList(List<String> jarList, String path,String fileExt) {
 		File or = new File(path);
 		File[] files = or.listFiles();
 		if (files == null) return;
 		for (File file : files) {
-			if (file.isFile() && file.getName().indexOf(leftkeyword)==0) list.add(file.getAbsolutePath());
-			if (file.isDirectory()) getFilesNameList(list,leftkeyword, file.getAbsolutePath());
+			if (file.isFile() && file.getName().endsWith("."+fileExt)) jarList.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFileList(jarList, file.getAbsolutePath(),fileExt);
 		}
 	}
-	
 	/**
 	 * 得到某个目录里所有的jar文件
-	 * @param jarList List &lt; String &gt; 
+	 * @param jarList List &lt; String &gt;
 	 * @param path String
 	 */
 	public static final void getJarList(List<String> jarList, String path) {

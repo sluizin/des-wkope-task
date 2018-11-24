@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -168,16 +170,21 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 				p.getShell().setText(getMenuText());
 			}
 		}
+		addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				logger.debug("DisposeListener 被调用 任务完成，进行回收资源！");
+				disposeResources();
+			}
+		});
 	}
 
 	public final ParaClass getPc() {
 		return pc;
 	}
-
-	/*
-	 * 线程停止
-	 * public volatile AtomicBoolean isBreak = new AtomicBoolean(false);
+	/**
+	 * 任务关闭时，关闭相应的资源信息
 	 */
+	public abstract void disposeResources();
 	/**
 	 * 让主工作线程停止
 	 */
@@ -476,4 +483,5 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		filename = UtilsPathFile.getModelJarBasicPath() + "/"+getMenuNameHead()+"/" + filename;
 		return filename;
 	}
+
 }

@@ -99,6 +99,7 @@ public final class UtilsSWTTableSQL {
 		if (e == null || value == null) return;
 		if (x < 0 || x >= e.getItemCount()) return;
 		if (y < 0 || y >= e.getColumnCount()) return;
+		e.getItem(x).setText(y, value);
 		//e.getData().get(x)[y]=value;
 		//e.redrawTable();
 	}

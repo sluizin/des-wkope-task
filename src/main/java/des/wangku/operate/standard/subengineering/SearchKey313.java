@@ -1,9 +1,6 @@
 package des.wangku.operate.standard.subengineering;
 
-import java.net.URL;
-
 import org.apache.log4j.Logger;
-
 import com.alibaba.fastjson.JSON;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsRnd;

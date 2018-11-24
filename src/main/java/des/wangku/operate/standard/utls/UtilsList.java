@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+ * 对list进行分割，或线程池的分配
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -16,6 +17,7 @@ public final class UtilsList {
 	 * 将一个list均分成n个list,主要通过偏移量来实现的
 	 * @param source List&lt;T&gt;
 	 * @param n int
+	 * @param <T> T
 	 * @return List&lt;List&lt;T&gt;&gt;
 	 */
 	public static <T> List<List<T>> averageAssign(List<T> source, int n) {
@@ -53,6 +55,7 @@ public final class UtilsList {
 	/**
 	 * 数组list按长度进行倒序输出
 	 * @param list list&lt;T&gt;
+	 * @param <T> T
 	 * @return list&lt;T&gt;
 	 */
 	public static final <T> List<T> getOrderListByLenDESC(List<T> list) {

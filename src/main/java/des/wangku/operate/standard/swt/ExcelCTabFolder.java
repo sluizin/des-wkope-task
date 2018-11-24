@@ -44,7 +44,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	 */
 	public ExcelCTabFolder(Composite parent, int style) {
 		super(parent, style);
-		structureInit(parent,style,null);
+		structureInit(parent,style,1,null);
 	}
 	/**
 	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"
@@ -54,19 +54,22 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	 */
 	public ExcelCTabFolder(Composite parent, int style,String title) {
 		super(parent, style,title);
-		structureInit(parent,style,null);
+		structureInit(parent,style,1,null);
 	}
+
 	/**
 	 * AbstractTask 项目组中的各项目自定义
 	 * @param parent Composite
 	 * @param style int
+	 * @param type int
+	 * @param isRADIO boolean
 	 * @param filename String
 	 * @param title String
 	 */
-	public ExcelCTabFolder(Composite parent, int style,boolean isRADIO,String filename,String title) {
+	public ExcelCTabFolder(Composite parent, int style ,int type,boolean isRADIO,String filename,String title) {
 		super(parent, style,title);
 		this.isRADIO=isRADIO;
-		structureInit(parent,style,filename);
+		structureInit(parent,style,type,filename);
 	}
 	/**
 	 * 构造初始化
@@ -74,14 +77,13 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	 * @param style int
 	 * @param filename String
 	 */
-	void structureInit(Composite parent,int style,String filename) {
+	void structureInit(Composite parent,int style, int type,String filename) {
 		AbstractTask t = UtilsSWTTools.getParentObjSuperclass(parent, AbstractTask.class);
 		if (t == null) return;
 		this.properties = t.getProProperties();
 		this.pc = t.getPc();
 		if(filename==null)filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
-		logger.debug("filename:"+filename);
-		Init(parent, style, 1, filename);		
+		Init(parent, style, type, filename);		
 	}
 
 	/**
@@ -112,9 +114,11 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	}
 
 	/**
-	 * 初始化
-	 * @param parent Composite 父容器
-	 * @param filename String excel文件绝对路径
+	 * 初始化 type:1 本地包文件
+	 * @param parent Composite
+	 * @param style int
+	 * @param type int
+	 * @param filename String
 	 */
 	private void Init(Composite parent, int style, int type, String filename) {
 		String newString = filename;

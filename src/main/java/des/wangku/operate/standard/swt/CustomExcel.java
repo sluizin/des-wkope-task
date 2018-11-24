@@ -148,7 +148,16 @@ public class CustomExcel {
 	public void save() {
 		save(saveFolder);
 	}
-
+	/**
+	 * 关闭资源，注意，关闭这个UI时，excel自动保存
+	 */
+	public void close() {
+		try {
+			if(workbook!=null)workbook.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * 保存文件
 	 * @param saveFolder String
@@ -169,6 +178,10 @@ public class CustomExcel {
 
 	public final Sheet getSheet() {
 		return sheet;
+	}
+
+	public final Workbook getWorkbook() {
+		return workbook;
 	}
 	
 }

@@ -54,6 +54,7 @@ public final class UtilsSWTTools {
 	 * 从某个对象反推父对象找到相应的接口
 	 * @param obj Composite
 	 * @param clazz Class &lt; T &gt;  接口
+	 * @param <T> T
 	 * @return T t
 	 */
 	@SuppressWarnings("unchecked")
@@ -72,6 +73,7 @@ public final class UtilsSWTTools {
 	 * 从某个对象反推父对象的父类
 	 * @param obj Composite
 	 * @param clazz Class  &lt; T &gt; 
+	 * @param <T> T
 	 * @return T t
 	 */
 	@SuppressWarnings("unchecked")
@@ -90,6 +92,7 @@ public final class UtilsSWTTools {
 	 * 从某个对象反推父对象
 	 * @param obj Composite
 	 * @param clazz Class&lt;T&gt;
+	 * @param <T> T
 	 * @return T
 	 */
 	@SuppressWarnings("unchecked")

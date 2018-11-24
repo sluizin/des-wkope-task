@@ -24,6 +24,7 @@ public final class UtilsProperties {
 	 * @param properties Properties
 	 * @param clazz Class&lt;T&gt;
 	 * @param key String
+	 * @param <T> T
 	 * @return T
 	 */
 	public static final <T> T getPropValueObject(Properties properties, Class<T> clazz,String key){
@@ -36,6 +37,7 @@ public final class UtilsProperties {
 	 * @param properties Properties
 	 * @param clazz Class&lt;T&gt;
 	 * @param key String
+	 * @param <T> T
 	 * @return List&lt;T&gt;
 	 */
 	public static <T> List<T> getPropValueList(Properties properties, Class<T> clazz,String key){
