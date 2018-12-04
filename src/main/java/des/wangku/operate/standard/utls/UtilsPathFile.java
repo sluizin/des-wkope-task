@@ -162,7 +162,7 @@ public final class UtilsPathFile {
 	public static final String getModelJarBasicPath() {
 		if (PV.ACC_ENV == Env.DEV) return "D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/model";
 		URL c = UtilsPathFile.class.getClassLoader().getResource("");
-		logger.debug(" UtilsPathFile.class.getClassLoader().getResource:" + c);
+		//logger.debug(" UtilsPathFile.class.getClassLoader().getResource:" + c);
 		if (c == null) return UtilsPathFile.getJarBasicPath() + "/model";
 		try {
 			File file = new File(c.toURI().getPath());

@@ -6,6 +6,7 @@ ext{
 	    maven {url "http://www.ebi.ac.uk/intact/maven/nexus/content/repositories/ebi-repo/"}
 		maven {url "http://maven.nuiton.org/release/"}
 		maven {url "http://central.maven.org/maven2/"}
+		maven {url "http://maven.geotoolkit.org/"}
 		maven {url "http://dist.wso2.org/maven2/"}
 		maven {url "https://plugins.gradle.org/m2/"}
 		maven {url "http://repository.jspresso.org/maven2/"}
@@ -44,6 +45,7 @@ ext{
 			'com.epam:parso:2.0.10',
 			'org.eclipse:jface:3.3.0-I20070606-0010',
 			'org.eclipse.jface:org.eclipse.jface:3.5.0.I20090525-2000',
+			'javax.media:jai_codec:1.1.3',
 			*/
 			'log4j:log4j:1.2.17'
 	    )

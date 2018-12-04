@@ -34,15 +34,14 @@ public final class UtilsSWTPOIChartPicture {
 		List<CTTwoCellAnchor> list = new ArrayList<>();
 		if (sheet == null || name == null) return arr;
 		for (POIXMLDocumentPart dr : ((XSSFSheet) sheet).getRelations()) {
-			if (dr instanceof XSSFDrawing) {
-				XSSFDrawing drawing = (XSSFDrawing) dr;
-				List<XSSFShape> shapes = drawing.getShapes();
-				for (XSSFShape shape : shapes) {
-					CTDrawing cc = shape.getDrawing().getCTDrawing();
-					CTTwoCellAnchor[] arrss = cc.getTwoCellAnchorArray();
-					for (CTTwoCellAnchor ctAnchor : arrss) {
-						if (name.equals(ctAnchor.getGraphicFrame().getNvGraphicFramePr().getCNvPr().getName())) list.add(ctAnchor);
-					}
+			if (!(dr instanceof XSSFDrawing)) continue;
+			XSSFDrawing drawing = (XSSFDrawing) dr;
+			List<XSSFShape> shapes = drawing.getShapes();
+			for (XSSFShape shape : shapes) {
+				CTDrawing cc = shape.getDrawing().getCTDrawing();
+				CTTwoCellAnchor[] arrss = cc.getTwoCellAnchorArray();
+				for (CTTwoCellAnchor ctAnchor : arrss) {
+					if (name.equals(ctAnchor.getGraphicFrame().getNvGraphicFramePr().getCNvPr().getName())) list.add(ctAnchor);
 				}
 			}
 		}
@@ -62,14 +61,8 @@ public final class UtilsSWTPOIChartPicture {
 		CTTwoCellAnchor[] arr = getCTTwoCellAnchor(sheet, name);
 		if (arr.length == 0) return false;
 		for (CTTwoCellAnchor e : arr) {
-			if (from != null) {
-				CTMarker a = e.getFrom();
-				from.output(a);
-			}
-			if (to != null) {
-				CTMarker a = e.getTo();
-				to.output(a);
-			}
+			if (from != null) from.output(e.getFrom());
+			if (to != null) to.output(e.getTo());
 		}
 		return true;
 	}
@@ -83,7 +76,7 @@ public final class UtilsSWTPOIChartPicture {
 	 * @param y int
 	 */
 	public static final void moveChart(Sheet sheet, String name, int index, int x, int y) {
-		moveChart(sheet, name, index, x, y,0,0);
+		moveChart(sheet, name, index, x, y, 0, 0);
 	}
 
 	/**
@@ -96,15 +89,16 @@ public final class UtilsSWTPOIChartPicture {
 	 * @param xOff long
 	 * @param yOff long
 	 */
-	public static final void moveChart(Sheet sheet, String name, int index, int x, int y,long xOff,long yOff) {
+	public static final void moveChart(Sheet sheet, String name, int index, int x, int y, long xOff, long yOff) {
 		CTTwoCellAnchor e = getCTTwoCellAnchor(sheet, name, index);
 		if (e == null) return;
 		int rowsize = x - e.getFrom().getRow();
-		long xSize=xOff-e.getFrom().getRowOff();
+		long xSize = xOff - e.getFrom().getRowOff();
 		int colsize = y - e.getFrom().getCol();
-		long ySize=yOff-e.getFrom().getColOff();
-		moveChartOff(sheet, name, index, rowsize, colsize,xSize,ySize);
+		long ySize = yOff - e.getFrom().getColOff();
+		moveChartOff(sheet, name, index, rowsize, colsize, xSize, ySize);
 	}
+
 	/**
 	 * 指定图表移动位置，以行，列为标准，允许正负值
 	 * @param sheet Sheet
@@ -114,8 +108,9 @@ public final class UtilsSWTPOIChartPicture {
 	 * @param ySize int
 	 */
 	public static final void moveChartOff(Sheet sheet, String name, int index, int xSize, int ySize) {
-		moveChartOff(sheet,name,index,xSize,ySize,0,0);
+		moveChartOff(sheet, name, index, xSize, ySize, 0, 0);
 	}
+
 	/**
 	 * 指定图表移动位置，允许正负值
 	 * @param sheet Sheet
@@ -257,6 +252,5 @@ public final class UtilsSWTPOIChartPicture {
 		public final void setColOff(long colOff) {
 			this.colOff = colOff;
 		}
-
 	}
 }

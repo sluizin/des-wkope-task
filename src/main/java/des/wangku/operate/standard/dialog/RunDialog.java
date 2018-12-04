@@ -22,6 +22,7 @@ import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.task.InterfaceRunDialog;
 import des.wangku.operate.standard.utls.UtilsDate;
 import des.wangku.operate.standard.utls.UtilsDialogState;
+import des.wangku.operate.standard.utls.UtilsMusic;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 
 import org.eclipse.swt.widgets.ProgressBar;
@@ -37,6 +38,8 @@ import org.eclipse.swt.widgets.Listener;
 public final class RunDialog extends Dialog {
 	/** 日志 */
 	static Logger logger = Logger.getLogger(RunDialog.class);
+
+	public static boolean VOICE_RUNDIALOG = false;
 
 	protected Object result;
 	Shell parent;
@@ -186,9 +189,11 @@ public final class RunDialog extends Dialog {
 		shell.open();
 		shell.layout();
 		Display display = getParent().getDisplay();
+		/* 关闭系统时提示 */
 		shell.addDisposeListener(new DisposeListener() {
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
+				if (VOICE_RUNDIALOG) UtilsMusic.play("/voice/Processcompletion.wav");
 				long nowNow = System.currentTimeMillis();
 				long betweentime = nowNow - timeFirst;
 				String useTime = UtilsDate.formatDuring(betweentime);

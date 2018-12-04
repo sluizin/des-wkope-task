@@ -41,7 +41,7 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
  */
 public final class UtilsSWTPOI {
 	/** 日志 */
-	private static Logger logger = Logger.getLogger(UtilsSWTPOI.class);
+	static Logger logger = Logger.getLogger(UtilsSWTPOI.class);
 
 	/**
 	 * 保存workbook到model目录里的随机数文件，是否关闭Workbook
@@ -162,12 +162,12 @@ public final class UtilsSWTPOI {
 	 * @param sheetName String
 	 * @return Sheet
 	 */
-	@SuppressWarnings({ "unused", "resource" })
 	public static final Sheet getSheet(String filename, String sheetName) {
 		try {
 			File file = new File(filename);
+			if (file == null || !file.isFile()) return null;
+			@SuppressWarnings({ "resource" })
 			Workbook workbook = new XSSFWorkbook(file);
-			if (workbook == null) return null;
 			return workbook.getSheet(sheetName);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -181,13 +181,35 @@ public final class UtilsSWTPOI {
 	 * @param sheetNum int
 	 * @return Sheet
 	 */
-	@SuppressWarnings({ "unused", "resource" })
 	public static final Sheet getSheet(String filename, int sheetNum) {
 		try {
 			File file = new File(filename);
+			if (file == null || !file.isFile()) return null;
+			@SuppressWarnings({ "resource" })
 			Workbook workbook = new XSSFWorkbook(file);
-			if (workbook == null) return null;
 			return workbook.getSheetAt(sheetNum);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 通过文件名与sheetName 的indexof得到sheet
+	 * @param filename String
+	 * @param sheetName String
+	 * @return Sheet
+	 */
+	public static final Sheet getSheetIndexOf(String filename, String sheetName) {
+		try {
+			File file = new File(filename);
+			if (file == null || !file.isFile()) return null;
+			@SuppressWarnings("resource")
+			Workbook workbook = new XSSFWorkbook(file);
+			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = workbook.getSheetAt(i);
+				if (sheet.getSheetName().indexOf(sheetName) > -1) return sheet;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -232,6 +254,7 @@ public final class UtilsSWTPOI {
 		workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
 		return UtilsFile.writeWorkbookFile(filename, workbook);
 	}
+
 	/**
 	 * 获取单元格<br>
 	 * 如果没有单元格，则返回null<br>
@@ -676,25 +699,16 @@ public final class UtilsSWTPOI {
 	public static final boolean move(Sheet sheet, boolean isNullOver, int ax, int ay, int bx, int by) {
 		if (sheet == null) return false;
 		Cell fromCell = getCell(sheet, ax, ay);
-		if (fromCell == null) {
-			if (isNullOver) {
-				Cell toCell = getCell(sheet, bx, by);
-				if (toCell == null) {
-					return true;
-				} else {
-					delete(sheet, toCell);
-				}
-			} else {
-				return true;
-			}
-		} else {
+		if (fromCell != null) {
 			Cell toCell = createCell(sheet, bx, by);
 			getCellCopy(fromCell, toCell);
 			delete(sheet, fromCell);
 			return true;
 		}
-
-		return true;
+		if (!isNullOver) return true;
+		Cell toCell = getCell(sheet, bx, by);
+		if (toCell == null) return true;
+		return delete(sheet, toCell);
 	}
 
 	/**
@@ -709,7 +723,6 @@ public final class UtilsSWTPOI {
 		Row row = cell.getRow();
 		row.removeCell(cell);
 		return true;
-
 	}
 
 	/**
@@ -744,7 +757,7 @@ public final class UtilsSWTPOI {
 			for (int y = ay; y <= by; y++) {
 				int nx = tox + (x - ax);
 				int ny = toy + (y - ay);
-				logger.debug("[" + x + "," + y + "]->[" + nx + "," + ny + "]");
+				//logger.debug("[" + x + "," + y + "]->[" + nx + "," + ny + "]");
 				move(sheet, isNullOver, x, y, nx, ny);
 			}
 		}
@@ -752,7 +765,7 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
-	 * 复制单元格，不复制合并单元格的合并命令
+	 * 复制单元格
 	 * @param fromCell Cell
 	 * @param toCell Cell
 	 * @return Cell
@@ -769,28 +782,30 @@ public final class UtilsSWTPOI {
 		toCell.setCellStyle(fromCell.getCellStyle());
 		toCell.setCellType(fromCell.getCellType());
 		toCell.setCellType(fromCell.getCellTypeEnum());
-		logger.debug("obj："+obj.toString());
-		CellRangeAddress range=getMergedRegion(fromCell);
-		CellRangeAddress rangenew=getMergedRegion(toCell);
-		if(range!=null && rangenew==null) {
-			int xsize=range.getLastRow()-fromCell.getRowIndex();
-			int ysize=range.getLastColumn()-fromCell.getColumnIndex();
-			int nx1=toCell.getRowIndex();
-			int nx2=nx1+xsize;
-			int ny1=toCell.getColumnIndex();
-			int ny2=ny1+ysize;
-			logger.debug("nx1:"+nx1);
-			logger.debug("nx2:"+nx2);
-			logger.debug("xsize:"+xsize);
-			logger.debug("ny1:"+ny1);
-			logger.debug("ny2:"+ny2);
-			logger.debug("ysize"+ysize);
-			
-			CellRangeAddress region1 = new CellRangeAddress(nx1,nx2,ny1,ny2);
-			toCell.getSheet().addMergedRegion(region1);
-		}
+		//logger.debug("obj：" + obj.toString());
+		copyRange(fromCell, toCell);
 		setCellValue(toCell, obj);
 		return toCell;
+	}
+
+	/**
+	 * 拷贝合并单元格信息，如果目标单元有单元合并，则返回
+	 * @param fromCell Cell
+	 * @param toCell Cell
+	 */
+	public static final void copyRange(Cell fromCell, Cell toCell) {
+		CellRangeAddress range = getMergedRegion(fromCell);
+		if (range == null) return;
+		CellRangeAddress rangenew = getMergedRegion(toCell);
+		if (rangenew != null) return;
+		int xsize = range.getLastRow() - fromCell.getRowIndex();
+		int ysize = range.getLastColumn() - fromCell.getColumnIndex();
+		int nx1 = toCell.getRowIndex();
+		int nx2 = nx1 + xsize;
+		int ny1 = toCell.getColumnIndex();
+		int ny2 = ny1 + ysize;
+		CellRangeAddress region1 = new CellRangeAddress(nx1, nx2, ny1, ny2);
+		toCell.getSheet().addMergedRegion(region1);
 	}
 
 	/**
@@ -889,7 +904,7 @@ public final class UtilsSWTPOI {
 		for (int i = 0; i <= sheet.getLastRowNum(); i++) {
 			Row row = sheet.getRow(i);
 			if (row == null) continue;
-			for (int ii = row.getFirstCellNum(); ii <= row.getLastCellNum(); ii++) {
+			for (int ii = 0; ii <= row.getLastCellNum(); ii++) {
 				Cell cell = row.getCell(ii);
 				if (cell == null) continue;
 				Comment comment = cell.getCellComment();
@@ -915,7 +930,7 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
-	 * 按批注作者查单元格
+	 * 按批注作者查单元格，忽略大小写
 	 * @param sheet Sheet
 	 * @param author String
 	 * @return Cell[]
@@ -1016,16 +1031,18 @@ public final class UtilsSWTPOI {
 		cell.setCellType(CellType.STRING);
 		return cell.getStringCellValue();
 	}
+
 	/**
 	 * 判断单元格是否在合并单元格中，-1为不在，0为第一个元素，1为合并格中非左上角的单元格
 	 * @param cell Cell
 	 * @return int
 	 */
 	public static final int isMergedRegion(Cell cell) {
-		if(cell==null)return -1;
-		Sheet sheet=cell.getSheet();
-		return isMergedRegion(sheet,cell.getRowIndex(),cell.getColumnIndex());
+		if (cell == null) return -1;
+		Sheet sheet = cell.getSheet();
+		return isMergedRegion(sheet, cell.getRowIndex(), cell.getColumnIndex());
 	}
+
 	/**
 	 * 判断单元格是否在合并单元格中，-1为不在，0为第一个元素，1为合并格中非左上角的单元格
 	 * @param sheet Sheet
@@ -1048,14 +1065,16 @@ public final class UtilsSWTPOI {
 		}
 		return -1;
 	}
+
 	/**
 	 * 得到某个单元格所在的合并单元格
 	 * @param cell Cell
 	 * @return CellRangeAddress
 	 */
 	public static final CellRangeAddress getMergedRegion(Cell cell) {
-		return getMergedRegion(cell.getSheet(),cell.getRowIndex(),cell.getColumnIndex());
+		return getMergedRegion(cell.getSheet(), cell.getRowIndex(), cell.getColumnIndex());
 	}
+
 	/**
 	 * 得到某个单元格所在的合并单元格
 	 * @param sheet Sheet
@@ -1071,9 +1090,7 @@ public final class UtilsSWTPOI {
 			int y2 = range.getLastColumn();
 			int x1 = range.getFirstRow();
 			int x2 = range.getLastRow();
-			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-				 return range;
-			}
+			if (x >= x1 && x <= x2 && y >= y1 && y <= y2) return range;
 		}
 		return null;
 	}

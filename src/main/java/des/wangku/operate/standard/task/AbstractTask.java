@@ -1,5 +1,6 @@
 package des.wangku.operate.standard.task;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
-//import java.util.concurrent.ExecutorService;
-//import java.util.concurrent.Executors;
+// import java.util.concurrent.ExecutorService;
+// import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -105,14 +106,16 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	 * @return String
 	 */
 	public abstract String getMenuNameHead();
+
 	/**
 	 * 得到pX，把前缀最小写
 	 * @return String
 	 */
 	public String getMenuNameHeadLowerCase() {
-		if(getMenuNameHead()==null)return "";
+		if (getMenuNameHead() == null) return "";
 		return getMenuNameHead().toLowerCase();
 	}
+
 	/**
 	 * 得到完整项目名称 [P02]XXXXXXXXXXXX
 	 * @return String
@@ -181,10 +184,12 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	public final ParaClass getPc() {
 		return pc;
 	}
+
 	/**
 	 * 任务关闭时，关闭相应的资源信息
 	 */
 	public abstract void disposeResources();
+
 	/**
 	 * 让主工作线程停止
 	 */
@@ -376,9 +381,9 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		setIsBreakChange(false);
 		allControlEnabledChange(false);
 		/*
-		parentControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(base, true);
-		for (int i = 0; i < parentControlThreadClose.length; i++)
-			parentControlThreadClose[i].setEnabled(false);
+		 * parentControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(base, true);
+		 * for (int i = 0; i < parentControlThreadClose.length; i++)
+		 * parentControlThreadClose[i].setEnabled(false);
 		 */
 		multiThreadOnRun();
 		ThreadStart(base, workList.size());
@@ -395,6 +400,7 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		getCommonThreadCheckGroup().start();
 
 	}
+
 	/**
 	 * 设置所有对象关闭或打开
 	 * @param enabled boolean
@@ -409,12 +415,25 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	public Properties getProProperties() {
 		Properties properties = new Properties();
 		try {
-			String filename = UtilsPathFile.getModelJarBasicPath() + "/des-wkope-task-" + getMenuNameHead() + ".properties";
+			String filename = UtilsPathFile.getModelJarBasicPath() + "/des-wkope-task-" + getMenuNameHeadLowerCase() + ".properties";
 			File file = new File(filename);
-			if (!file.exists()) return properties;
+			if (!file.exists()) {
+				logger.debug("未发现配置文件:" + filename);
+				return properties;
+			}
 			if (!file.isFile()) return properties;
 			InputStream is2 = new FileInputStream(file);
-			properties.load(new InputStreamReader(is2, "UTF-8"));
+			InputStream in = new BufferedInputStream(is2);
+			InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+			properties.load(isr);
+			isr.close();
+			is2.close();
+			/*
+			 * for (String key : properties.stringPropertyNames()) {
+			 * logger.debug(key + ":::::" + properties.getProperty(key));
+			 * logger.debug( "::::"+key+":");
+			 * }
+			 */
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -464,24 +483,25 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 		}
 		return null;
 	}
+
 	/**
 	 * 得到与model同目录的资源文件{des-wkope-task-}XXXX.xlsx
 	 * @param fileExt String
 	 * @return String
 	 */
 	public final String getBaseSourceFile(String fileExt) {
-		String filename = AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "."+fileExt;
+		String filename = AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "." + fileExt;
 		filename = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
 		return filename;
 	}
+
 	/**
 	 * 得到与model目录下的具体项目里的资源文件 如"d:/XXXXX/model/Px/XXX"
 	 * @param filename String
 	 * @return String
 	 */
 	public final String getSubSourceFile(String filename) {
-		filename = UtilsPathFile.getModelJarBasicPath() + "/"+getMenuNameHead()+"/" + filename;
+		filename = UtilsPathFile.getModelJarBasicPath() + "/" + getMenuNameHead() + "/" + filename;
 		return filename;
 	}
-
 }
