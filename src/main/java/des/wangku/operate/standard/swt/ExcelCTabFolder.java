@@ -23,7 +23,8 @@ import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 
 /**
- * 自定义excel转成多页表格 UI组件
+ * 自定义excel转成多页表格 UI组件<br>
+ * 请使用initialization()进行初始化
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -31,99 +32,73 @@ import des.wangku.operate.standard.utls.UtilsSWTTools;
 public class ExcelCTabFolder extends AbstractCTabFolder {
 	/** 日志 */
 	static Logger logger = Logger.getLogger(ExcelCTabFolder.class);
+	/** 父容器 */
+	Composite parent;
+	/** 样式 */
+	int style = 0;
+	/** 0:本地model目录(默认) 1:绝对地址 */
+	int type = 0;
 	/** excel文件 */
 	String filename = null;
 	/** excel */
 	Workbook workbook = null;
-	boolean isRADIO=false;
+	/** 是否多选 */
+	boolean isRADIO = false;
 
 	/**
-	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"
+	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"<br>
+	 * 请使用initialization()进行初始化
 	 * @param parent Composite
 	 * @param style int
 	 */
 	public ExcelCTabFolder(Composite parent, int style) {
 		super(parent, style);
-		structureInit(parent,style,1,null);
-	}
-	/**
-	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"
-	 * @param parent Composite
-	 * @param style int
-	 * @param title String
-	 */
-	public ExcelCTabFolder(Composite parent, int style,String title) {
-		super(parent, style,title);
-		structureInit(parent,style,1,null);
+		this.parent = parent;
 	}
 
 	/**
-	 * AbstractTask 项目组中的各项目自定义
+	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"<br>
+	 * 请使用initialization()进行初始化
 	 * @param parent Composite
 	 * @param style int
-	 * @param type int
-	 * @param isRADIO boolean
-	 * @param filename String
 	 * @param title String
 	 */
-	public ExcelCTabFolder(Composite parent, int style ,int type,boolean isRADIO,String filename,String title) {
-		super(parent, style,title);
-		this.isRADIO=isRADIO;
-		structureInit(parent,style,type,filename);
+	public ExcelCTabFolder(Composite parent, int style, String title) {
+		super(parent, style, title);
+		this.parent = parent;
 	}
+
 	/**
 	 * 构造初始化
-	 * @param parent Composite
-	 * @param style int
-	 * @param filename String
 	 */
-	void structureInit(Composite parent,int style, int type,String filename) {
+	public void initialization() {
 		AbstractTask t = UtilsSWTTools.getParentObjSuperclass(parent, AbstractTask.class);
 		if (t == null) return;
 		this.properties = t.getProProperties();
 		this.pc = t.getPc();
-		if(filename==null)filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
-		Init(parent, style, type, filename);		
+		if (filename == null) filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
+		init();
 	}
 
 	/**
-	 * 直接录入配置信息
+	 * 直接录入配置信息<br>
+	 * 请使用initialization()进行初始化
 	 * @param parent Composite
 	 * @param style int
-	 * @param type int
-	 * @param filename String
 	 * @param properties Properties
 	 */
-	public ExcelCTabFolder(Composite parent, int style, int type, String filename, Properties properties) {
+	public ExcelCTabFolder(Composite parent, int style, Properties properties) {
 		super(parent, style, properties);
-		Init(parent, style, type, filename);
+		this.parent = parent;
 	}
 
 	/**
-	 * 直接录入配置信息
-	 * @param parent Composite
-	 * @param style int
-	 * @param title String
-	 * @param type int
-	 * @param filename String
-	 * @param properties Properties
+	 * 初始化 type:0 本地model中的文件
 	 */
-	public ExcelCTabFolder(Composite parent, int style,String title, int type, String filename, Properties properties) {
-		super(parent, style,title, properties);
-		Init(parent, style, type, filename);
-	}
-
-	/**
-	 * 初始化 type:1 本地包文件
-	 * @param parent Composite
-	 * @param style int
-	 * @param type int
-	 * @param filename String
-	 */
-	private void Init(Composite parent, int style, int type, String filename) {
+	private void init() {
 		String newString = filename;
 		switch (type) {
-		case 1:
+		case 0:
 			newString = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
 		default:
 		}
@@ -139,12 +114,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		try {
 			File file = new File(filename);
 			workbook = new XSSFWorkbook(file);
-			int type;
-			if(isRADIO) {
-				type=ResultTable.ACC_ResultTableStateRadio;
-			}else {
-			type=ResultTable.ACC_ResultTableState;}
-			
+			int type = isRADIO ? ResultTable.ACC_ResultTableStateRadio : ResultTable.ACC_ResultTableState;
 			for (int sheetnum = 0; sheetnum < workbook.getNumberOfSheets(); sheetnum++) {
 				ResultTable t = new ResultTable(this, type, properties, workbook.getSheetName(sheetnum));
 				makeCTabFolderFromExcel(this, t, workbook.getSheetAt(sheetnum));
@@ -183,7 +153,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			list.clear();
 			for (int ii = 0; ii < cellLen; ii++) {
 				Cell cell = r.getCell(ii);
-				String value = UtilsSWTPOI.getCellValueByString(cell,true);
+				String value = UtilsSWTPOI.getCellValueByString(cell, true);
 				if (t.getEctpara().isTrim) value = value.trim();
 				list.add(value);
 			}
@@ -206,7 +176,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		String value = null;
 		String[] newArray = new String[cellLen];
 		for (int i = 0; i < cellLen; i++) {
-			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByString(first.getCell(i),true);
+			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByString(first.getCell(i), true);
 			else value = "" + i;
 			newArray[i] = value;
 		}
@@ -221,9 +191,38 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			e.printStackTrace();
 		}
 	}
+
 	@Override
-	public boolean resultTableUpdate(ResultTable base,int x, int y,String oldValue, String newValue) {
+	public boolean resultTableUpdate(ResultTable base, int x, int y, String oldValue, String newValue) {
 		return true;
+	}
+
+	public final boolean isRADIO() {
+		return isRADIO;
+	}
+
+	public final void setRADIO(boolean isRADIO) {
+		this.isRADIO = isRADIO;
+	}
+
+	public final int getType() {
+		return type;
+	}
+
+	/**
+	 * 设置excel文件是否在model目录，还是绝对地址。默认为0:model目录
+	 * @param type
+	 */
+	public final void setType(int type) {
+		this.type = type;
+	}
+
+	public final String getFilename() {
+		return filename;
+	}
+
+	public final void setFilename(String filename) {
+		this.filename = filename;
 	}
 
 }

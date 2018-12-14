@@ -149,6 +149,28 @@ public class CustomExcel {
 		save(saveFolder);
 	}
 	/**
+	 * 保存文件 随机文件名
+	 * @param saveFolder String
+	 */
+	public void save(String saveFolder) {
+		save(saveFolder,null,true);
+	}
+	/**
+	 * 保存文件 随机文件名
+	 * @param isAlert boolean
+	 */
+	public void save(boolean isAlert) {
+		save(saveFolder ,null,isAlert);
+	}
+	/**
+	 * 保存文件 指定文件名
+	 * @param filename String
+	 * @param isAlert boolean
+	 */
+	public void save(String filename,boolean isAlert) {
+		save(saveFolder ,filename,isAlert);
+	}
+	/**
 	 * 关闭资源，注意，关闭这个UI时，excel自动保存
 	 */
 	public void close() {
@@ -158,22 +180,22 @@ public class CustomExcel {
 			e.printStackTrace();
 		}
 	}
-	/**
-	 * 保存文件
-	 * @param saveFolder String
-	 */
-	public void save(String saveFolder) {
+	public void save(String saveFolder,String filename,boolean isAlert) {
 		if (saveFolder == null) saveFolder = "";
-		File file = UtilsFile.mkModelRNDFile(saveFolder, "xlsx");
+		File file = UtilsFile.mkModelFile(saveFolder,filename, "xlsx");
+			
 		boolean t = UtilsSWTPOI.save(workbook, false, file);
-		String filename = UtilsFile.getFileName(file);
+		String filename2 = UtilsFile.getFileName(file);
 		if (t) {
 			logger.debug("文件生成成功");
-			UtilsSWTMessageBox.Alert(shell, filename + "生成成功");
+			if(isAlert)
+			UtilsSWTMessageBox.Alert(shell, filename2 + "生成成功");
 		} else {
 			logger.debug("文件生成失败");
-			UtilsSWTMessageBox.Alert(shell, filename + "生成失败");
+			if(isAlert)
+			UtilsSWTMessageBox.Alert(shell, filename2 + "生成失败");
 		}
+		
 	}
 
 	public final Sheet getSheet() {

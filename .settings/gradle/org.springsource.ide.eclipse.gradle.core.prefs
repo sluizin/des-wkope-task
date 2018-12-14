@@ -1,5 +1,5 @@
 #org.springsource.ide.eclipse.gradle.core.preferences.GradleProjectPreferences
-#Mon Nov 05 10:47:46 CST 2018
+#Fri Dec 14 10:57:42 CST 2018
 build.family.org.gradle.tooling.model.eclipse.HierarchicalEclipseProject=;
 org.springsource.ide.eclipse.gradle.linkedresources=
-org.springsource.ide.eclipse.gradle.rootprojectloc=../des-wkope-task-p07-excelIndustryReport
+org.springsource.ide.eclipse.gradle.rootprojectloc=../des-wkope-task-p08-wkstatistics

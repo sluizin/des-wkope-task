@@ -18,6 +18,8 @@ public final class UtilsConsts {
 	public static final Map<String, String> header_a = new HashMap<>();
 
 	public static final Map<String, String> header_b = new HashMap<>();
+	
+	public static final Map<String, String> header_c = new HashMap<>();
 	static {
 		//设置请求头
 		header.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0");
@@ -37,16 +39,16 @@ public final class UtilsConsts {
 		header_a.put("Upgrade-Insecure-Requests", "1");
 		
 
-		header_b.put("Accept", "*/*");
-		header_b.put("Accept-Encoding", "gzip, deflate");
-		header_b.put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
-		header_b.put("Connection", "keep-alive");
-		header_b.put("Host", "www.seodo.cn");
-		header_b.put("Content-Type", "application/json;charset=UTF-8");
-		header_b.put("Referer", "http://www.seodo.cn/Quote");
-		header_b.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.10 Safari/537.36");
-		header_b.put("X-Requested-With", "XMLHttpRequest");
-		header_b.put("Upgrade-Insecure-Requests", "1");
-		header_b.put("Cookie", "yunsuo_session_verify=383809ce78db30d2ad2ff0d3c4686578; Hm_lvt_294353148bfd9c1037daea2fa1c2c537=1542008107; __root_domain_v=.seodo.cn; _qddaz=QD.xz9ou4.cqswqk.joe0qg19; _qdda=3-1.1; _qddab=3-az79v8.joe2tf02; _qddamta_2852061168=3-0; __RequestVerificationToken=xtnqVeX50c5pHpZyf-nVFDWp93sNArwOh7VfA7fJrTg479Do5ZVpKDv8XmqUtWWzdDcm8QhTd6LJk9GjBgWMtKU6d-16hOYeY1TC3Aj5Yk1_a76m8ghy6x_gzwuw4vt-hNHTrRC3vpeOPEusUqG5Sg2; _qddac=3-2-1.1.az79v8.joe2tf02; Hm_lpvt_294353148bfd9c1037daea2fa1c2c537=1542015029");
+		header_c.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+		header_c.put("Accept-Encoding", "gzip, deflate, br");
+		header_c.put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
+		header_c.put("Connection", "keep-alive");
+		header_c.put("Host", "fanyi.baidu.com");
+		header_c.put("Content-Type", "application/json;charset=UTF-8");
+		//header_c.put("Referer", "http://www.seodo.cn/Quote");
+		header_c.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3610.2 Safari/537.36");
+		header_c.put("X-Requested-With", "XMLHttpRequest");
+		//header_b.put("Upgrade-Insecure-Requests", "1");
+		header_c.put("Cookie", "yunsuo_session_verify=383809ce78db30d2ad2ff0d3c4686578; Hm_lvt_294353148bfd9c1037daea2fa1c2c537=1542008107; __root_domain_v=.seodo.cn; _qddaz=QD.xz9ou4.cqswqk.joe0qg19; _qdda=3-1.1; _qddab=3-az79v8.joe2tf02; _qddamta_2852061168=3-0; __RequestVerificationToken=xtnqVeX50c5pHpZyf-nVFDWp93sNArwOh7VfA7fJrTg479Do5ZVpKDv8XmqUtWWzdDcm8QhTd6LJk9GjBgWMtKU6d-16hOYeY1TC3Aj5Yk1_a76m8ghy6x_gzwuw4vt-hNHTrRC3vpeOPEusUqG5Sg2; _qddac=3-2-1.1.az79v8.joe2tf02; Hm_lpvt_294353148bfd9c1037daea2fa1c2c537=1542015029");
 	}
 }

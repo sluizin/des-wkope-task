@@ -17,6 +17,7 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -285,13 +286,154 @@ public final class UtilsReadURL {
 		return 200;
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		String href = "http://www.ebrun.com/20160429/174163.shtml";
+		String href = "https://fanyi.baidu.com/#en/zh/success";
 		try {
 			URL url = new URL(href);
-			System.out.println("result:" + getSocketContentState(url, "GBK"));
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
+			System.out.println("result:" + getSocketContentState(url, "utf-8"));
+
+			/*
+			 * 第一次请求
+			 * grab login form page first
+			 * 获取登陆提交的表单信息，及修改其提交data数据（login，password）
+			 */
+			Connection con = Jsoup.connect(href);  // 获取connection
+			con.headers(UtilsConsts.header_a);// 配置模拟浏览器
+			//Response rs = con.execute();                // 获取响应
+			//Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
+			/*
+			 * 获取cooking和表单属性
+			 * lets make data map containing all the parameters and its values found in the form
+			 */
+			Map<String, String> datas = new HashMap<>();
+			Response login = con.ignoreContentType(true).followRedirects(true).method(Method.GET).execute();
+			/*
+			 * 打印，登陆成功后的信息
+			 * parse the document from response
+			 * System.out.println(login.body());
+			 * 登陆成功后的cookie信息，可以保存到本地，以后登陆时，只需一次登陆即可
+			 */
+			//System.out.println(login.body());
+			
+			String content2=getUrlContent(new URL("https://fanyi.baidu.com/#en/zh/success"),"utf-8",20000);
+			
+			System.out.println(content2);
+			
+			
+			String content=login.body();
+			//System.out.println(content);
+			String lstr="gtk = '";
+			int p=content.indexOf(lstr);
+			if(p>-1) {
+				int p2=content.indexOf("'", p+lstr.length());
+				String keyy=content.substring(p+lstr.length(),p2);
+				System.out.println(keyy);
+			}
+			datas = login.cookies();
+			for (String key : datas.keySet()) {//keySet获取map集合key的集合  然后在遍历key即可
+				String value = datas.get(key).toString();//
+				System.out.println("key:" + key + "\tvalue:" + value);
+			}
+
+			HtmlPage page = webClient.getPage(href);
+			Set<Cookie> set = webClient.getCookies(new URL(href));
+			for (Cookie e : set) {
+				System.out.println(e.getDomain() + "--" + e.getName() + "--" + e.getValue());
+			}
+			String pageXml = page.asXml(); //以xml的形式获取响应文本 
+
+			String newurl = "https://fanyi.baidu.com/v2transapi";
+			Set<Cookie> setold = new HashSet<>();
+			setold.add(new Cookie(".fanyi.baidu.com", "from", "en"));
+			setold.add(new Cookie(".fanyi.baidu.com", "to", "zh"));
+			setold.add(new Cookie(".fanyi.baidu.com", "query", "soon"));
+			setold.add(new Cookie(".fanyi.baidu.com", "transtype", "enter"));
+			setold.add(new Cookie(".fanyi.baidu.com", "simple_means_flag", "3"));
+			setold.add(new Cookie(".fanyi.baidu.com", "sign", "130710.335271"));
+			setold.add(new Cookie(".fanyi.baidu.com", "token", "4edbf8229215f26c6b401aaf693466a3"));
+
+			Map<String, String> datas2 = new HashMap<>();
+			datas2.put("from", "en");
+			datas2.put("to", "zh");
+			datas2.put("query", "success");
+			datas2.put("transtype", "enter");
+			datas2.put("simple_means_flag", "3");
+			datas2.put("sign", "14348.318269");
+			datas2.put("token", "4edbf8229215f26c6b401aaf693466a3");
+
+			//String content=getReadUrlJs(newurl, setold, "utf-8", "https://fanyi.baidu.com/");
+
+			Connection con3 = Jsoup.connect(href);  // 获取connection
+			con3.headers(UtilsConsts.header_a);// 配置模拟浏览器
+			Response rs = con3.execute();                // 获取响应
+			Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
+
+			Connection con2 = Jsoup.connect(newurl);
+			con2.headers(UtilsConsts.header_a);
+			con2.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36");
+
+			// 设置cookie和post上面的map数据
+			//Map<String, String> cookie=rs.cookies();
+			//for(String k:cookie.keySet()) {
+			//System.out.println(k+"=="+cookie.get(k));
+			//}
+			/*
+			 * con2.data("from","en");
+			 * con2.data("to","zh");
+			 * con2.data("query","success");
+			 * con2.data("transtype","enter");
+			 * con2.data("simple_means_flag","3");
+			 * con2.data("sign","883095.629414");
+			 * con2.data("token","9b8bb341109338ba7e875bd9a9dd88ba");
+			 */
+			Response login2 = con2.ignoreContentType(true).followRedirects(false).referrer("https://fanyi.baidu.com/").data(datas2).method(Method.POST).cookies(rs.cookies()).execute();
+			System.out.println(login2.body());
+			//String count=ge;tReadUrlJsDefault(href);
+			//System.out.println(count);
+			System.out.println("===============================================");
+			getJString("jeep");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	static Map<String, String> datas2 = new HashMap<>();
+	static {
+		datas2.put("from", "en");
+		datas2.put("to", "zh");
+		datas2.put("query", "jeep");
+		datas2.put("simple_means_flag", "3");
+		datas2.put("sign", "14348.318269");
+		datas2.put("token", "4edbf8229215f26c6b401aaf693466a3");
+	}
+
+	public static void getJString(String keyword) {
+		try {
+			String href = "https://fanyi.baidu.com/v2transapi";
+			Connection con = Jsoup.connect(href);
+			Map<String, String> header_c = new HashMap<>();
+			//header_c.put("Accept", "*/*");
+			//header_c.put("Accept-Encoding", "gzip, deflate");
+			//header_c.put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
+			//header_c.put("Content-Type", "text/*,application/x-www-form-urlencoded; charset=UTF-8");
+			//header_c.put("Content-Length", "117");
+			//header_c.put("Origin", "https://fanyi.baidu.com");
+			//header_c.put("Host", "fanyi.baidu.com");
+			//header_c.put("Origin", "https://fanyi.baidu.com");
+			//header_c.put("Referer", "https://fanyi.baidu.com/");
+			//header_c.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3610.2 Safari/537.36");
+			//header_c.put("X-Requested-With", "XMLHttpRequest");
+			//header_c.put("Upgrade-Insecure-Requests", "1");
+			header_c.put("Cookie",
+					"BAIDUID=6DC294E63D1D79443EE861C806885497:FG=1; PSTM=1542011390; BIDUPSID=EF309A51D38CDB56B8B7B8F0A9BF85E2; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; BDUSS=kdmc2gtVENnZDJkc3Btdko2ZkNveFRsV3Q4MXljMTBnZWttR2xwWkU4YmRXREZjQVFBQUFBJCQAAAAAAAAAAAEAAABtjdJKX7H5t-LHp8TqvP1fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN3LCVzdywlcY; H_PS_PSSID=1457_21095_28019_22160; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1543971572,1544057384,1544145622,1544403922; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; from_lang_often=%5B%7B%22value%22%3A%22zh%22%2C%22text%22%3A%22%u4E2D%u6587%22%7D%2C%7B%22value%22%3A%22en%22%2C%22text%22%3A%22%u82F1%u8BED%22%7D%5D; to_lang_often=%5B%7B%22value%22%3A%22en%22%2C%22text%22%3A%22%u82F1%u8BED%22%7D%2C%7B%22value%22%3A%22zh%22%2C%22text%22%3A%22%u4E2D%u6587%22%7D%5D; delPer=0; PSINO=1; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; ZD_ENTRY=empty; locale=zh; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1544428883");
+
+			con.headers(header_c);
+			Response login = con.ignoreContentType(true).followRedirects(true).data(datas2).method(Method.GET).execute();
+			System.out.println("login："+login.body());
+			//Document login = con.ignoreContentType(true).followRedirects(true).data(datas2).post();
+			//System.out.println("login：" + login.body());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -624,8 +766,8 @@ public final class UtilsReadURL {
 		try {
 			WebRequest request = new WebRequest(new URL(urlString));
 			request.setCharset(Charset.forName(code));
-			request.setProxyHost("120.120.120.x");
-			request.setProxyPort(8080);
+			//request.setProxyHost("120.120.120.x");
+			//request.setProxyPort(80);
 			request.setAdditionalHeader("Referer", refer);//设置请求报文头里的refer字段  
 			////设置请求报文头里的User-Agent字段  
 			request.setAdditionalHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:6.0.2) Gecko/20100101 Firefox/6.0.2");

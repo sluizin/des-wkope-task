@@ -160,9 +160,22 @@ public final class UtilsFile {
 	 */
 	public static File mkModelRNDFile(String proFolder, String fileExt) {
 		String filename = UtilsRnd.getNewFilenameNow(4, 1) + "." + fileExt;
+		return mkModelFile(proFolder, filename, fileExt);
+	}
+
+	/**
+	 * 建立output目录下的指定文件。需要输入扩展名
+	 * @param proFolder String
+	 * @param filename String
+	 * @param fileExt String
+	 * @return File
+	 */
+	public static File mkModelFile(String proFolder, String filename, String fileExt) {
 		String path = PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 		File filefolder = new File(path);
 		if (!filefolder.exists()) filefolder.mkdirs();
+		if (filename == null) filename = UtilsRnd.getNewFilenameNow(4, 1);
+		filename += "." + fileExt;
 		String filenameAll = path + "/" + filename;
 		return new File(filenameAll);
 	}
