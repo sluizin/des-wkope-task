@@ -2,6 +2,10 @@ package des.wangku.operate.standard.utls;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -227,9 +231,7 @@ public final class UtilsSWTPOI {
 	public static final boolean makeExcel(String filename, String sheetName, List<List<String>> list, InterfaceExcelChange change, ExcelParaClass epc) {
 		Workbook workbook = new XSSFWorkbook();
 		Sheet sheet = workbook.createSheet("0");
-		CellStyle cellStyle = workbook.createCellStyle();/* 设置这些样式 */
-		cellStyle.setAlignment(HorizontalAlignment.LEFT);
-		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		CellStyle cellStyle = getCellStyleBase(workbook);
 		int maxCols = 0;
 		for (int i = 0, len = list.size(); i < len; i++) {
 			List<String> li = list.get(i);
@@ -253,6 +255,86 @@ public final class UtilsSWTPOI {
 		}
 		workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
 		return UtilsFile.writeWorkbookFile(filename, workbook);
+	}
+
+	/**
+	 * ResultSet生成excel
+	 * @param filename String
+	 * @param sheetName String
+	 * @param conn Connection
+	 * @param sql String
+	 * @param isMetaData boolean
+	 * @return boolean
+	 */
+	public static final boolean makeExcel(String filename, String sheetName, Connection conn, String sql, boolean isMetaData) {
+		if (conn == null || sql == null) return false;
+		try (Statement statement = conn.createStatement(); ResultSet rs = statement.executeQuery(sql);) {
+			return makeExcel(filename, sheetName, rs, isMetaData);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * ResultSet生成excel
+	 * @param filename String
+	 * @param sheetName String
+	 * @param rs ResultSet
+	 * @param isMetaData boolean
+	 * @return boolean
+	 */
+	public static final boolean makeExcel(String filename, String sheetName, ResultSet rs, boolean isMetaData) {
+		if (rs == null) return false;
+		try {
+			Workbook workbook = new XSSFWorkbook();
+			Sheet sheet = workbook.createSheet("0123456789");
+			workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
+			CellStyle cellStyle = getCellStyleBase(workbook);
+			int p = 0;
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int count = rsmd.getColumnCount();
+			if (isMetaData) {
+				Row row = sheet.createRow(p++);
+				for (int i = 0; i < count; i++) {
+					String value = rsmd.getColumnName(i + 1);
+					row.createCell(i).setCellStyle(cellStyle);
+					Cell cell = row.createCell(i);
+					cell.setCellValue(value);
+				}
+			}
+			rs.beforeFirst();
+			while (rs.next()) {
+				Row row = sheet.createRow(p++);
+				for (int i = 0; i < count; i++) {
+					Object obj = rs.getObject(i + 1);
+					String value = (obj == null ? "" : obj.toString());
+					//logger.debug("value:"+value);
+					row.createCell(i).setCellStyle(cellStyle);
+					Cell cell = row.createCell(i);
+					cell.setCellValue(value);
+				}
+			}
+			logger.debug("filename:" + filename);
+			return UtilsFile.writeWorkbookFile(filename, workbook);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
+	/**
+	 * 得到通用表格样式
+	 * @param workbook Workbook
+	 * @return CellStyle
+	 */
+	public static final CellStyle getCellStyleBase(Workbook workbook) {
+		if (workbook == null) return null;
+		CellStyle cellStyle = workbook.createCellStyle();/* 设置这些样式 */
+		cellStyle.setAlignment(HorizontalAlignment.LEFT);
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
 	}
 
 	/**

@@ -117,7 +117,8 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	}
 
 	/**
-	 * 得到完整项目名称 [P02]XXXXXXXXXXXX
+	 * 得到完整项目名称 [P02]XXXXXXXXXXXX<br>
+	 * 为null，则不允许加载
 	 * @return String
 	 */
 	public String getMenuText() {
@@ -189,22 +190,23 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 	 * 任务关闭时，关闭相应的资源信息
 	 */
 	public abstract void disposeResources();
-
 	/**
-	 * 让主工作线程停止
+	 * 启动条件 为null时加载模块<br>
+	 * 一些资源的加载状态与安全判断等。如结果为null，则允许平台加载model<br>
+	 * 如果前置的判断出现错误，则返回错误信息以供提示
+	 * @return String 提示内容
 	 */
-	public abstract void mainWorkThreadBreak();
-
+	public abstract String precondition();
 	/**
-	 * 得到线程状态 所有线程线束为true
-	 * @return boolean
+	 * model加载后直接运行的前置程序
 	 */
-	public abstract boolean getMainWorkThreadState();
+	public abstract void startup();
 
 	/** 主框架中的鼠标右键是否显示相关操作值 */
 	protected int abstractMenuValue = 0;
 	/** 主框架中的鼠标右键 */
 	protected Menu abstractMenu = new Menu(this);
+	/** 具体的模块的类 */
 	Class<? extends AbstractTask> basicClass = null;
 
 	/**
@@ -280,12 +282,17 @@ public abstract class AbstractTask extends Composite implements InterfaceRunDial
 			}
 		});
 	}
-
+	/**
+	 * 中断线程
+	 */
 	protected void ThreadMainWorkThreadBreak() {
 		ThreadPool.shutdown();
 		ThreadRunDialogClose();
 	}
-
+	/**
+	 * 得到线程池的状态，是否关闭
+	 * @return boolean
+	 */
 	protected boolean getThreadMainWorkThreadState() {
 		return ThreadPool.isTerminated();
 	}

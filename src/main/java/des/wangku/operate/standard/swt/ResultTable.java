@@ -449,6 +449,25 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
+	 * 得到某列的属性名称，如果没有则返回null
+	 * @param index int
+	 * @return String
+	 */
+	public final String getTableColumnText(int index) {
+		TableColumn obj = this.getColumn(index);
+		if (obj == null) return null;
+		return obj.getText();
+	}
+
+	/**
+	 * 宽度，列数
+	 * @return int
+	 */
+	public final int getWidth() {
+		return this.getColumnCount();
+	}
+
+	/**
 	 * 设置默认列
 	 * @param table ResultTable
 	 * @param len int
@@ -605,6 +624,18 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		/* 锁定前一行 */
 		if (this.getHeaderVisible() && this.getColumnCount() > 0) sheet.createFreezePane(0, 1);
 
+	}
+
+	/**
+	 * 得到check=true 下标
+	 * @return int[]
+	 */
+	public int[] getCheckedTableItemSuffix() {
+		List<Integer> list = new ArrayList<>();
+		TableItem[] arr = this.getItems();
+		for (int i = 0; i < arr.length; i++)
+			if (arr[i].getChecked()) list.add(i);
+		return list.stream().mapToInt(Integer::valueOf).toArray();
 	}
 
 	/**
