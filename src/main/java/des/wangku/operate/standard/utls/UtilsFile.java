@@ -14,7 +14,7 @@ import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import des.wangku.operate.standard.PV;
@@ -27,7 +27,7 @@ import des.wangku.operate.standard.PV;
  */
 public final class UtilsFile {
 	/** 日志 */
-	static final Logger logger = Logger.getLogger(UtilsFile.class);
+	static final Logger logger = LoggerFactory.getLogger(UtilsFile.class);
 
 	/**
 	 * 把excel写到文件中
@@ -180,28 +180,7 @@ public final class UtilsFile {
 		return new File(filenameAll);
 	}
 
-	/**
-	 * 通过文件的绝对地址得到文件全称
-	 * @param filename String
-	 * @return String
-	 */
-	public static final String getFileName(String filename) {
-		int p = filename.lastIndexOf('\\');
-		int p1 = filename.lastIndexOf('/');
-		if (p1 > p) p = p1;
-		if (p == -1) return null;
-		return filename.substring(p + 1);
-	}
 
-	/**
-	 * 通过文件得到文件全称
-	 * @param file File
-	 * @return String
-	 */
-	public static final String getFileName(File file) {
-		if (file == null) return null;
-		return getFileName(file.getAbsolutePath());
-	}
 
 	/**
 	 * 把网上图片保存到地址 文件名不变
@@ -210,7 +189,7 @@ public final class UtilsFile {
 	 */
 	public static final void saveFile(String picurl, String path) {
 		try {
-			String filename = getFileName(picurl);//picurl.substring(picurl.indexOf('/'),picurl.length());
+			String filename = UtilsFileMethod.getFileName(picurl);//picurl.substring(picurl.indexOf('/'),picurl.length());
 			URL url = new URL(picurl);
 			URLConnection con = url.openConnection();
 			con.setConnectTimeout(30000);
@@ -237,7 +216,7 @@ public final class UtilsFile {
 		String[] arr = picurl.split("\\|");
 		StringBuilder sb = new StringBuilder();
 		for (String picurl2 : arr) {
-			String filename = getFileName(picurl2);
+			String filename = UtilsFileMethod.getFileName(picurl2);
 			try {
 				URL url = new URL(picurl2);
 				DataInputStream dataInputStream = new DataInputStream(url.openStream());

@@ -2,7 +2,7 @@ package des.wangku.operate.standard.dialog;
 
 import java.io.InputStream;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -21,7 +21,7 @@ import org.eclipse.swt.SWT;
  */
 public class Version extends Dialog {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(Version.class);
+	static Logger logger = LoggerFactory.getLogger(Version.class);
 	Shell parent;
 	protected Shell shell = null;
 	private Text text;

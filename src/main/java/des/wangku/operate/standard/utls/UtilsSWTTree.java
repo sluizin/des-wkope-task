@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -22,7 +22,7 @@ import des.wangku.operate.standard.swt.SourceTree;
  */
 @SuppressWarnings("rawtypes")
 public final class UtilsSWTTree {
-	static final Logger logger = Logger.getLogger(UtilsSWTTree.class);
+	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTree.class);
 	/** tree显示名称时多项信息的分隔符 */
 	public static final String ACC_IntervalCharacter = "|";
 	/** 解析tree的名称时分组split时的分隔符 */

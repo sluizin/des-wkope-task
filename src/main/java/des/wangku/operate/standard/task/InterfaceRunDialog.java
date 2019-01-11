@@ -28,4 +28,11 @@ public interface InterfaceRunDialog {
 		isThreadBreak.compareAndSet(!t, t);
 	}
 
+	/**
+	 * 步长多少条，回收资源
+	 * @return int
+	 */
+	public default int getSkipGC() {
+		return -1;
+	}
 }

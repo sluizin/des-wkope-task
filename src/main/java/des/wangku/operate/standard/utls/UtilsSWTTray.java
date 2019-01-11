@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.utls;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.TrayItem;
  */
 public final class UtilsSWTTray {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTTray.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTTray.class);
 
 	/**
 	 * 设置显示隐藏托盘

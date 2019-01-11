@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsString;
@@ -13,7 +13,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class SingleproductAmount {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(SingleproductAmount.class);
+	static Logger logger = LoggerFactory.getLogger(SingleproductAmount.class);
 
 	/**
 	 * 得到数量 source[1688,wk,hc360]<br>
@@ -30,23 +30,23 @@ public class SingleproductAmount {
 				String newKeyword = java.net.URLEncoder.encode(keyword, "GBK");
 				if (dtype == 0) {
 					String urlString = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=1";
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "sm-navigatebar-count", 0);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "sm-navigatebar-count", 0);
 				}
 				if (dtype == 1) {
 					String urlString = "https://s.1688.com/selloffer/offer_search.htm?keywords=" + newKeyword + "&button_click=top&earseDirect=false&n=y&netType=1%2C11";
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "sm-widget-offer", 0);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "sm-widget-offer", 0);
 					value = UtilsString.getNumbers(value, "共 \\d+ 件");
 				}
 			}
 			if ("wk".equals(source)) {
 				if (dtype == 0) {
 					String urlString = "http://qiye.99114.com/listing/" + keyword;
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "fr", 2);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "fr", 2);
 					value = UtilsString.getNumbers(value, "到 \\d+ 条");
 				}
 				if (dtype == 1) {
 					String urlString = "http://gongying.99114.com/listing/" + keyword;
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "total", 0);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "total", 0);
 					value = UtilsString.getNumbers(value, "共\\d+件");
 				}
 			}
@@ -54,11 +54,11 @@ public class SingleproductAmount {
 				String newKeyword = java.net.URLEncoder.encode(keyword, "GBK");
 				if (dtype == 0) {
 					String urlString = "https://s.hc360.com/?w=" + newKeyword + "&mc=enterprise";
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "col", 0);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "col", 0);
 				}
 				if (dtype == 1) {
 					String urlString = "https://s.hc360.com/?w=" + newKeyword + "&mc=seller";
-					value = UtilsReadURL.getReadUrlJsTextByClassname(urlString, "col", 0);
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "col", 0);
 				}
 			}
 		} catch (Exception e) {

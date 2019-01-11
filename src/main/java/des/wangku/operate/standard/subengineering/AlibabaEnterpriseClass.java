@@ -3,7 +3,7 @@ package des.wangku.operate.standard.subengineering;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,7 +23,7 @@ import des.wangku.operate.standard.utls.UtilsRnd;
  */
 public class AlibabaEnterpriseClass {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AlibabaEnterpriseClass.class);
+	static Logger logger = LoggerFactory.getLogger(AlibabaEnterpriseClass.class);
 	public static String businessNoHead="sj";
 	int page=0;
 	/** 企业编号 */

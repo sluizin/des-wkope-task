@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.task.InterfaceThreadRunUnit;
 
 public class ThreadRun implements Runnable, Callable<Boolean> {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(ThreadRun.class);
+	static Logger logger = LoggerFactory.getLogger(ThreadRun.class);
 	List<InterfaceThreadRunUnit> list = new ArrayList<>();
 	AbstractTask parent = null;
 
@@ -31,8 +31,7 @@ public class ThreadRun implements Runnable, Callable<Boolean> {
 			for (int i = 0, len = list.size(); (!parent.getIsBreak()) && i < len; i++) {
 				InterfaceThreadRunUnit e = list.get(i);
 				e.run();
-				long sleeptime = e.getSleepTime();
-				if (sleeptime > 0 && sleeptime < 30000) Thread.sleep(e.getSleepTime());
+				if (e.getSleepTime() > 0 && e.getSleepTime() < 30000) Thread.sleep(e.getSleepTime());
 				update(e);
 			}
 		} catch (InterruptedException ee) {
@@ -49,6 +48,7 @@ public class ThreadRun implements Runnable, Callable<Boolean> {
 			@Override
 			public void run() {
 				e.show();
+				e.autoCollect();
 				parent.collect();
 				parent.ThreadRunDialog.setValueAdd(e.getKeyword());
 			}

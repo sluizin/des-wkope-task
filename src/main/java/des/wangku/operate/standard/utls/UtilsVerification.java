@@ -24,7 +24,6 @@ public final class UtilsVerification {
 			int z = Integer.parseInt(dataArr[2]);
 			if (x > 0 && x < 32 && z > 0 && z < 10000 && y.endsWith("月")) return true;
 		} catch (Exception e) {
-			return false;
 		}
 		return false;
 	}
@@ -53,8 +52,8 @@ public final class UtilsVerification {
 		String regEx1 = "\\d+";
 		Pattern p = Pattern.compile(regEx1);
 		Matcher m = p.matcher(string);
-		if (m.matches()) return true;
-		else return false;
+		if (m==null) return false;
+		return m.matches();
 	}
 
 	/**

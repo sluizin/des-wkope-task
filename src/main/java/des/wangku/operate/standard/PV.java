@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsPathFile;
 
@@ -16,7 +16,7 @@ import des.wangku.operate.standard.utls.UtilsPathFile;
  */
 public final class PV {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(PV.class);
+	static Logger logger = LoggerFactory.getLogger(PV.class);
 	/**
 	 * Env.DEV/Env.TEST/Env.ONLINE<br>
 	 * 默认Env.ONLINE

@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -21,7 +21,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class AIBaidurank {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AIBaidurank.class);
+	static Logger logger = LoggerFactory.getLogger(AIBaidurank.class);
 	/**
 	 * 通过要查询的网址与类型得到结果
 	 * @param urlPath String

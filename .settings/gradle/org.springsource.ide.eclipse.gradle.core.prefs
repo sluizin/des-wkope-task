@@ -1,5 +1,5 @@
 #org.springsource.ide.eclipse.gradle.core.preferences.GradleProjectPreferences
-#Fri Dec 14 10:57:42 CST 2018
+#Fri Jan 11 09:27:26 CST 2019
 build.family.org.gradle.tooling.model.eclipse.HierarchicalEclipseProject=;
 org.springsource.ide.eclipse.gradle.linkedresources=
-org.springsource.ide.eclipse.gradle.rootprojectloc=../des-wkope-task-p08-wkstatistics
+org.springsource.ide.eclipse.gradle.rootprojectloc=../des-wkope-task-test

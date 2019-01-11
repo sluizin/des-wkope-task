@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
@@ -38,7 +38,7 @@ import des.wangku.operate.standard.utls.UtilsSWTPOI;
 @SuppressWarnings("resource")
 public abstract class AbstractCTabFolder extends CTabFolder implements InterfaceProperties, InterfaceResultTableUpdate {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AbstractCTabFolder.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractCTabFolder.class);
 	/** 父容器 */
 	Composite parent = null;
 	/** 名称 */

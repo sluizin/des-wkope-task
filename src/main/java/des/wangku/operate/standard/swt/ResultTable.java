@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.eclipse.swt.SWT;
@@ -51,7 +51,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class ResultTable extends Table implements InterfaceExcelChange {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(ResultTable.class);
+	static Logger logger = LoggerFactory.getLogger(ResultTable.class);
 	/** 参数 */
 	Properties properties = null;
 	/** 此表名称 */
@@ -97,10 +97,27 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		this.parent = parent;
 		Init();
 	}
-
+	/**
+	 * 得到某行某列中的字符串
+	 * @param x int
+	 * @param y int
+	 * @return String
+	 */
 	public String getString(int x, int y) {
-
-		return null;
+		TableItem  e=getItem(x);
+		if(e==null)return null;
+		return e.getText(y);
+	}
+	/**
+	 * 设置某行某列中的字符串
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 */
+	public synchronized void setString(int x, int y,String value) {
+		TableItem  e=getItem(x);
+		if(e==null)return;
+		e.setText(y, value);		
 	}
 
 	/**

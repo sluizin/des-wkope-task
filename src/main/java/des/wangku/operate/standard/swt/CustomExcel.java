@@ -1,7 +1,7 @@
 package des.wangku.operate.standard.swt;
 
 import java.io.File;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
@@ -11,6 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.widgets.Shell;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsFile;
+import des.wangku.operate.standard.utls.UtilsFileMethod;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 import des.wangku.operate.standard.utls.UtilsSWTPOI;
 
@@ -22,7 +23,7 @@ import des.wangku.operate.standard.utls.UtilsSWTPOI;
  */
 public class CustomExcel {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(CustomExcel.class);
+	static Logger logger = LoggerFactory.getLogger(CustomExcel.class);
 	Shell shell = null;
 	/** excel */
 	Workbook workbook = null;
@@ -185,7 +186,7 @@ public class CustomExcel {
 		File file = UtilsFile.mkModelFile(saveFolder,filename, "xlsx");
 			
 		boolean t = UtilsSWTPOI.save(workbook, false, file);
-		String filename2 = UtilsFile.getFileName(file);
+		String filename2 = UtilsFileMethod.getFileName(file);
 		if (t) {
 			logger.debug("文件生成成功");
 			if(isAlert)

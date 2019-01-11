@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,7 +25,7 @@ import static des.wangku.operate.standard.utls.UtilsShiftCompare.isCompare;
  */
 public final class UtilsJsoup {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsJsoup.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsJsoup.class);
 
 	/**
 	 * 得到.text()

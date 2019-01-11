@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.utls;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.internal.SWTEventListener;
@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.TypedListener;
  */
 public final class UtilsSWTTools {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTTools.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTTools.class);
 
 	/**
 	 * 在数据组中顺序更改 PaintListener SWT.Paint

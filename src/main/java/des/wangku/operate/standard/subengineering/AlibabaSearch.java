@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.Connection.Method;
@@ -26,7 +26,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class AlibabaSearch {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AlibabaSearch.class);
+	static Logger logger = LoggerFactory.getLogger(AlibabaSearch.class);
 	//static final String username = "sluizin";
 	//static final String password = "Sunjian1978";
 	/**

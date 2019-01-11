@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -31,7 +31,7 @@ import des.wangku.operate.standard.utls.UtilsSWTTools;
  */
 public class ExcelCTabFolder extends AbstractCTabFolder {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(ExcelCTabFolder.class);
+	static Logger logger = LoggerFactory.getLogger(ExcelCTabFolder.class);
 	/** 父容器 */
 	Composite parent;
 	/** 样式 */

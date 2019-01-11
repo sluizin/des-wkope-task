@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.utls;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.alibaba.fastjson.JSONObject;
@@ -16,7 +16,7 @@ import des.wangku.operate.standard.swt.ResultTable;
  */
 public final class UtilsSWTTableUtils {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTTableUtils.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTTableUtils.class);
 	/**
 	 * 把多行选择与选中记录放入粘贴板
 	 * @param table ResultTable

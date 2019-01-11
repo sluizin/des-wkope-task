@@ -3,7 +3,7 @@ package des.wangku.operate.standard.dialog;
 //import java.io.InputStream;
 //import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 //import org.eclipse.swt.graphics.ImageData;
 //import org.eclipse.swt.graphics.ImageLoader;
@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Label;
  */
 public class LoadingProgressBar extends Dialog implements Runnable, Callable<Boolean> {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(LoadingProgressBar.class);
+	static Logger logger = LoggerFactory.getLogger(LoadingProgressBar.class);
 
 	protected Object result;
 	Shell parent;

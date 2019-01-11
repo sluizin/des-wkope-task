@@ -15,7 +15,7 @@ import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Color;
 
 public class SearchDialog extends Dialog {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(SearchDialog.class);
+	static Logger logger = LoggerFactory.getLogger(SearchDialog.class);
 	Shell parent;
 	protected Shell shell = null;
 	private Text searchText = null;

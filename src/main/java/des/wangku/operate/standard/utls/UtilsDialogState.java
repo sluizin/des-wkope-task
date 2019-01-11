@@ -2,7 +2,7 @@ package des.wangku.operate.standard.utls;
 
 import java.awt.Toolkit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 
@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Control;
  */
 public final class UtilsDialogState {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsDialogState.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsDialogState.class);
 
 	/**
 	 * 针对窗口初始化定位，在父窗口的中间位置显示

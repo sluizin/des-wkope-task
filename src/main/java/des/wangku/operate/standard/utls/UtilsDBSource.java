@@ -9,7 +9,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
@@ -24,7 +24,7 @@ import des.wangku.operate.standard.task.AbstractTask;
  */
 public final class UtilsDBSource {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsDBSource.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsDBSource.class);
 	/**
 	 * 得到数据库Connection
 	 * @param driver String

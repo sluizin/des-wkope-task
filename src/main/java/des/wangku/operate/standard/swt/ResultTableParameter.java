@@ -3,7 +3,7 @@ package des.wangku.operate.standard.swt;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
@@ -17,7 +17,7 @@ import des.wangku.operate.standard.utls.UtilsProperties;
  */
 public class ResultTableParameter implements InterfaceProperties {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(ResultTableParameter.class);
+	static Logger logger = LoggerFactory.getLogger(ResultTableParameter.class);
 	Properties properties = null;
 	/** sheet名称 */
 	String title = null;

@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.dialog;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -22,7 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
  */
 public class InputValueDialog extends Dialog {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(InputValueDialog.class);
+	static Logger logger = LoggerFactory.getLogger(InputValueDialog.class);
 	protected Shell shell;
 	String result = null;
 	String oldValue = "";

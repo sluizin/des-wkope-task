@@ -2,7 +2,7 @@ package des.wangku.operate.standard.dialog;
 
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,7 +31,7 @@ import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 public class InputNewSheetDialog extends Dialog {
 
 	/** 日志 */
-	static Logger logger = Logger.getLogger(InputNewSheetDialog.class);
+	static Logger logger = LoggerFactory.getLogger(InputNewSheetDialog.class);
 	protected Shell shlsheet;
 	AbstractCTabFolder parentExcel;
 	NewSheetInfor result = new NewSheetInfor();

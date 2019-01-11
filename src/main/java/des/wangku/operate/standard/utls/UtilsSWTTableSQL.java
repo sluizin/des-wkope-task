@@ -1,7 +1,7 @@
 package des.wangku.operate.standard.utls;
 
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import des.wangku.operate.standard.swt.ResultTable;
@@ -14,7 +14,7 @@ import des.wangku.operate.standard.swt.ResultTable;
  */
 public final class UtilsSWTTableSQL {
 	/** 日志 */
-	static final Logger logger = Logger.getLogger(UtilsSWTTableSQL.class);
+	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTableSQL.class);
 
 	/**
 	 * 得到某行数组
@@ -103,6 +103,7 @@ public final class UtilsSWTTableSQL {
 		//e.getData().get(x)[y]=value;
 		//e.redrawTable();
 	}
+
 	/**
 	 * 更新
 	 * @param e TableItem
@@ -129,18 +130,19 @@ public final class UtilsSWTTableSQL {
 			add(table, arrs);
 			return;
 		}
-		String[] newArr=getFormatArray(table,arrs);
+		String[] newArr = getFormatArray(table, arrs);
 		//table.getData().add(point,newArr);
 		//table.redrawTable();
 		table.addTableItem(point, newArr);
 		/*
-		setText(item, arrs);*/
+		 * setText(item, arrs);
+		 */
 	}
 
 	/**
-	 * 添加list List &lt; String &gt; 
+	 * 添加list List &lt; String &gt;
 	 * @param table ResultTable
-	 * @param list List &lt; String &gt; 
+	 * @param list List &lt; String &gt;
 	 */
 	public static synchronized void add(ResultTable table, List<String> list) {
 		if (list.size() == 0) return;
@@ -155,10 +157,10 @@ public final class UtilsSWTTableSQL {
 	 */
 	public static synchronized void add(ResultTable table, String... arrs) {
 		if (arrs.length == 0) return;
-		String[] newArr=getFormatArray(table,arrs);
+		String[] newArr = getFormatArray(table, arrs);
 		//table.getData().add(newArr);
 		//table.redrawTable();
-		table.addTableItem(-1,newArr);
+		table.addTableItem(-1, newArr);
 		//setText(item, arrs);
 	}
 
@@ -176,6 +178,7 @@ public final class UtilsSWTTableSQL {
 		item.setText(arr);
 
 	}
+
 	/**
 	 * 得到扩展数组值，规则化
 	 * @param table ResultTable
@@ -207,5 +210,24 @@ public final class UtilsSWTTableSQL {
 			insert(table, point, arrLine);
 		}
 
+	}
+
+	/**
+	 * 汇总某列所有值的和
+	 * @param rt ResultTable
+	 * @param y int
+	 * @param filterLine int[]
+	 * @return long
+	 */
+	public static final synchronized long SortY(ResultTable rt, int y, int... filterLine) {
+		long sort = 0;
+		for (int i = 0, len = rt.getItemCount(); i < len; i++) {
+			if (UtilsString.isExist(i, filterLine)) continue;
+			String value = get(rt, i, y);
+			if (!UtilsString.isNumber(value)) continue;
+			int v = Integer.parseInt(value);
+			sort += v;
+		}
+		return sort;
 	}
 }

@@ -11,7 +11,8 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsProperties;
@@ -24,7 +25,7 @@ import des.wangku.operate.standard.utls.UtilsProperties;
  */
 public class MainSource {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(MainSource.class);
+	static Logger logger = LoggerFactory.getLogger(MainSource.class);
 	public static SqlSessionFactory sessionFactory;
 	static final boolean booleanLinkMysql = false;
 	static {

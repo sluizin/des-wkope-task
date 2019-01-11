@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.dialog;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -22,7 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 
 public class FilteringTimeDialog extends Dialog {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(FilteringTimeDialog.class);
+	static Logger logger = LoggerFactory.getLogger(FilteringTimeDialog.class);
 	Shell parent;
 	protected Shell shell = null;
 	ResultTable table = null;

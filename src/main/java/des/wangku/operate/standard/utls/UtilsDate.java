@@ -6,7 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 /**
  * 日期型工具
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public final class UtilsDate {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsDate.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsDate.class);
 	/** yyyyMMddHHmmss */
 	static final SimpleDateFormat ACC_DateFormatBase = new SimpleDateFormat("yyyyMMddHHmmss");
 	/** yyyy-MM-dd HH:mm:ss */
@@ -340,7 +340,14 @@ public final class UtilsDate {
 		String lastday = t.format(calendar.getTime());
 		return lastday;
 	}
-
+	/**
+	 * 判断字符串是否为日期格式
+	 * @param dateStr String
+	 * @return boolean
+	 */
+	public static final boolean isDateFormat(String dateStr) {
+		return getDateArray(dateStr)!=null;
+	}
 	/**
 	 * 把日期字符串转成区间<br>
 	 * <code>

@@ -3,7 +3,7 @@ package des.wangku.operate.standard.utls;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
@@ -21,7 +21,7 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAn
  */
 public final class UtilsSWTPOIChartPicture {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTPOIChartPicture.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTPOIChartPicture.class);
 
 	/**
 	 * 按名称找到图表

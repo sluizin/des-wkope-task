@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -28,7 +28,7 @@ import des.wangku.operate.standard.task.InterfaceCollect;
  */
 public final class UtilsSWTTable {
 	/** 日志 */
-	static final Logger logger = Logger.getLogger(UtilsSWTTable.class);
+	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTable.class);
 
 	/**
 	 * 得到Table中的选中行，先鼠标选中行，再加上checked选中行

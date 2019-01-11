@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -43,7 +43,7 @@ import des.wangku.operate.standard.utls.UtilsReadURL;
  */
 public final class NewsMapping {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(NewsMapping.class);
+	static Logger logger = LoggerFactory.getLogger(NewsMapping.class);
 	/** 是否需要html代码 */
 	public static boolean isNeedHtml = false;
 	public static boolean isNeedScript=false;

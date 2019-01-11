@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -14,7 +14,7 @@ import des.wangku.operate.standard.utls.UtilsConsts;
  */
 public class SearchKeySeodo {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(SearchKeySeodo.class);
+	static Logger logger = LoggerFactory.getLogger(SearchKeySeodo.class);
 
 	public static final int NoFindNull = -1;
 

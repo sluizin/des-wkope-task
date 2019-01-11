@@ -31,7 +31,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.Connection.Method;
@@ -55,7 +55,7 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
  * @since jdk1.8
  */
 public final class UtilsReadURL {
-	static Logger logger = Logger.getLogger(UtilsReadURL.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsReadURL.class);
 
 	/**
 	 * 只支持http与https协议
@@ -315,19 +315,18 @@ public final class UtilsReadURL {
 			 * 登陆成功后的cookie信息，可以保存到本地，以后登陆时，只需一次登陆即可
 			 */
 			//System.out.println(login.body());
-			
-			String content2=getUrlContent(new URL("https://fanyi.baidu.com/#en/zh/success"),"utf-8",20000);
-			
+
+			String content2 = getUrlContent(new URL("https://fanyi.baidu.com/#en/zh/success"), "utf-8", 20000);
+
 			System.out.println(content2);
-			
-			
-			String content=login.body();
+
+			String content = login.body();
 			//System.out.println(content);
-			String lstr="gtk = '";
-			int p=content.indexOf(lstr);
-			if(p>-1) {
-				int p2=content.indexOf("'", p+lstr.length());
-				String keyy=content.substring(p+lstr.length(),p2);
+			String lstr = "gtk = '";
+			int p = content.indexOf(lstr);
+			if (p > -1) {
+				int p2 = content.indexOf("'", p + lstr.length());
+				String keyy = content.substring(p + lstr.length(), p2);
 				System.out.println(keyy);
 			}
 			datas = login.cookies();
@@ -430,7 +429,7 @@ public final class UtilsReadURL {
 
 			con.headers(header_c);
 			Response login = con.ignoreContentType(true).followRedirects(true).data(datas2).method(Method.GET).execute();
-			System.out.println("login："+login.body());
+			System.out.println("login：" + login.body());
 			//Document login = con.ignoreContentType(true).followRedirects(true).data(datas2).post();
 			//System.out.println("login：" + login.body());
 		} catch (Exception e) {
@@ -455,7 +454,42 @@ public final class UtilsReadURL {
 		}
 		return "";
 	}
-
+	/**
+	 * 返回url的返回状态值
+	 * @param urlStr String
+	 * @param timeout int
+	 * @return int
+	 */
+	public static final int getUrlResponseCode(final String urlStr, int timeout) {
+		try {
+			URL url = new URL(urlStr);
+			HttpURLConnection urlcon = (HttpURLConnection) url.openConnection();
+			urlcon.setConnectTimeout(timeout);
+			urlcon.setReadTimeout(timeout);
+			urlcon.connect();
+			return urlcon.getResponseCode();
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+	/**
+	 * 返回url的返回ContentLength
+	 * @param urlStr String
+	 * @param timeout int
+	 * @return int
+	 */
+	public static final int getUrlResponseContentLength(final String urlStr, int timeout) {
+		try {
+			URL url = new URL(urlStr);
+			HttpURLConnection urlcon = (HttpURLConnection) url.openConnection();
+			urlcon.setConnectTimeout(timeout);
+			urlcon.setReadTimeout(timeout);
+			urlcon.connect();
+			return urlcon.getContentLength();
+		} catch (Exception e) {
+			return 0;
+		}
+	}
 	/**
 	 * 通过URL得到文件内容
 	 * @param url URL
@@ -685,10 +719,6 @@ public final class UtilsReadURL {
 		wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
 		wc.getOptions().setTimeout(timeout); //设置连接超时时间 ，这里是10S。如果为0，则无限期等待  
 		wc.waitForBackgroundJavaScript(jsTime);
-		//wc.getOptions().setAppletEnabled(true);
-		// wc.setAjaxController(nicelyAjax);
-		//wc.setCssErrorHandler(new SilentCssErrorHandler());
-		// wc.getOptions().setPopupBlockerEnabled(true);
 		wc.getOptions().setRedirectEnabled(true);
 		try {
 			HtmlPage page = wc.getPage(url);
@@ -701,7 +731,38 @@ public final class UtilsReadURL {
 		}
 		return "";
 	}
-
+	/**
+	 * 调用url，并不进行js运行，得到html
+	 * @param url String
+	 * @param jsEnable boolean
+	 * @param cssEnable boolean
+	 * @param timeout int
+	 * @param jsTime long
+	 * @return String
+	 */
+	public static  final String getReadUrlDisJs(String url) {
+		/** HtmlUnit请求web页面 */
+		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);
+		wc.getOptions().setJavaScriptEnabled(false); //启用JS解释器，默认为true  
+		wc.getOptions().setCssEnabled(false); //禁用css支持  
+		wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
+		wc.getOptions().setTimeout(10000); //设置连接超时时间 ，这里是10S。如果为0，则无限期等待  
+		wc.waitForBackgroundJavaScript(10000);
+		wc.getOptions().setRedirectEnabled(true);
+		try {
+			HtmlPage page = wc.getPage(url);
+			String pageXml = page.asXml(); //以xml的形式获取响应文本 
+			wc.close();
+			return pageXml;
+		} catch (Exception e) {
+			if (wc != null) {
+				wc.close();
+				wc=null;
+			}
+			e.printStackTrace();
+		}
+		return "";
+	}
 	/**
 	 * 调用url，并进行js运行，得到html
 	 * @param url String
@@ -723,6 +784,16 @@ public final class UtilsReadURL {
 	}
 
 	/**
+	 * 调用url，并不进行js运行，得到Document
+	 * @param url String
+	 * @return Document
+	 */
+	public static final Document getReadUrlDisJsDoc(String url) {
+		String pageXml2 = UtilsReadURL.getReadUrlDisJs(url);
+		String baseuri = UtilsString.getUrlDomain(url);
+		return Jsoup.parse(pageXml2, baseuri);
+	}
+	/**
 	 * 从网址中得到classname的text字符串 为null时返回""
 	 * @param url String
 	 * @param classname String
@@ -730,7 +801,7 @@ public final class UtilsReadURL {
 	 * @return String
 	 */
 	public static final String getReadUrlJsTextByClassname(String url, String classname, int index) {
-		logger.debug("url:" + url);
+		//logger.debug("url:" + url);
 		Document doc = getReadUrlJsDocument(url);
 		if (doc == null) return "";
 		//System.out.println("doc："+doc.html());
@@ -740,7 +811,24 @@ public final class UtilsReadURL {
 		if (e == null) return "";
 		return e.text();
 	}
-
+	/**
+	 * 从网址中得到classname的text字符串 为null时返回""
+	 * @param url String
+	 * @param classname String
+	 * @param index int
+	 * @return String
+	 */
+	public static final String getReadUrlDisJsTextByClass(String url, String classname, int index) {
+		//logger.debug("url:" + url);
+		Document doc = getReadUrlDisJsDoc(url);
+		if (doc == null) return "";
+		//System.out.println("doc："+doc.html());
+		Elements ess = doc.getElementsByClass(classname);
+		if (ess == null || index >= ess.size()) return "";
+		Element e = ess.get(index);
+		if (e == null) return "";
+		return e.text();
+	}
 	/**
 	 * 通过url得到classname的数组
 	 * @param url String

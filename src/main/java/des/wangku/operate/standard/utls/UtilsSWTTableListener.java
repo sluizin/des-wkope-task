@@ -4,7 +4,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -41,7 +41,7 @@ import des.wangku.operate.standard.task.InterfaceTablesDialog;
  */
 public final class UtilsSWTTableListener {
 	/** 日志 */
-	static final Logger logger = Logger.getLogger(UtilsSWTTableListener.class);
+	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTableListener.class);
 
 	/**
 	 * 添加一行信息

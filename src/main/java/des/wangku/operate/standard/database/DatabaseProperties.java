@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsJar;
 /**
@@ -17,7 +18,7 @@ import des.wangku.operate.standard.utls.UtilsJar;
  */
 public class DatabaseProperties {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(DatabaseProperties.class);
+	static Logger logger = LoggerFactory.getLogger(DatabaseProperties.class);
 	/**
 	 * 
 	 * @param filename String

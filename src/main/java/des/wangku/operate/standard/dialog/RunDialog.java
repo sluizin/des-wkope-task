@@ -5,7 +5,7 @@ import org.eclipse.swt.widgets.Canvas;
 // import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Listener;
  */
 public final class RunDialog extends Dialog {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(RunDialog.class);
+	static Logger logger = LoggerFactory.getLogger(RunDialog.class);
 
 	public static boolean VOICE_RUNDIALOG = false;
 
@@ -89,6 +89,12 @@ public final class RunDialog extends Dialog {
 		mclabel.setText(mc == null ? "" : mc);
 		mclabel.setToolTipText(mc == null ? "" : mc);
 		autoChange();
+		if (parentObj != null && parentObj.getSkipGC() > 0) {
+			if (num % parentObj.getSkipGC() == 0) {
+				System.gc();
+				logger.debug("GC:"+num);
+			}
+		}
 	}
 
 	/**

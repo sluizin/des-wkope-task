@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
@@ -18,7 +18,7 @@ import com.alibaba.fastjson.JSON;
  */
 public final class UtilsProperties {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsProperties.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsProperties.class);
 	/**
 	 * 从关键字中提取对象
 	 * @param properties Properties

@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.task;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -22,7 +22,7 @@ import des.wangku.operate.standard.utls.UtilsSWTPOI;
  */
 public interface InterfaceExcelChange {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(InterfaceExcelChange.class);
+	static Logger logger = LoggerFactory.getLogger(InterfaceExcelChange.class);
 
 	/**
 	 * 修改Cell内容状态 颜色，样式等内容

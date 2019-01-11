@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.PV;
 import des.wangku.operate.standard.PV.Env;
 
@@ -20,7 +20,7 @@ import des.wangku.operate.standard.PV.Env;
  * @since jdk1.8
  */
 public final class UtilsPathFile {
-	static Logger logger = Logger.getLogger(UtilsPathFile.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsPathFile.class);
 
 	/**
 	 * 得到jar文件所在目录<br>
@@ -85,26 +85,6 @@ public final class UtilsPathFile {
 	}
 
 	/**
-	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回null<br>
-	 * 按名称进行了排序
-	 * @param leftkeyword String
-	 * @param path String
-	 * @return String
-	 */
-	public static final String getFilesNameFirst(String leftkeyword, String path) {
-		List<String> fileslist = new ArrayList<>();
-		getFilesNameList(fileslist, leftkeyword, path);
-		if (fileslist.size() == 0) return null;
-		Collections.sort(fileslist, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o1.compareTo(o2);
-			}
-		});
-		return fileslist.get(0);
-	}
-
-	/**
 	 * 得到某个目录里所有的文件中的第N个 indexof()==0 如没找到，则返回null<br>
 	 * 按名称进行了排序
 	 * @param leftkeyword String
@@ -113,16 +93,42 @@ public final class UtilsPathFile {
 	 * @return String
 	 */
 	public static final String getFilesName(String leftkeyword, String path, int index) {
+		List<String> fileslist = getFileslistSort(leftkeyword, path);
+		if (fileslist.size() == 0 || index < 0 || index >= fileslist.size()) return null;
+		return fileslist.get(index);
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回null<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @return String
+	 */
+	public static final String getFilesNameFirst(String leftkeyword, String path) {
+		List<String> fileslist = getFileslistSort(leftkeyword, path);
+		if (fileslist.size() == 0) return null;
+		return fileslist.get(0);
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回空list<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getFileslistSort(String leftkeyword, String path) {
 		List<String> fileslist = new ArrayList<>();
 		getFilesNameList(fileslist, leftkeyword, path);
-		if (fileslist.size() == 0 || index < 0 || index >= fileslist.size()) return null;
+		if (fileslist.size() == 0) return fileslist;
 		Collections.sort(fileslist, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
 				return o1.compareTo(o2);
 			}
 		});
-		return fileslist.get(index);
+		return fileslist;
 	}
 
 	/**
@@ -131,15 +137,16 @@ public final class UtilsPathFile {
 	 * @param path String
 	 * @param fileExt String
 	 */
-	public static final void getFileList(List<String> jarList, String path,String fileExt) {
+	public static final void getFileList(List<String> jarList, String path, String fileExt) {
 		File or = new File(path);
 		File[] files = or.listFiles();
 		if (files == null) return;
 		for (File file : files) {
-			if (file.isFile() && file.getName().endsWith("."+fileExt)) jarList.add(file.getAbsolutePath());
-			if (file.isDirectory()) getFileList(jarList, file.getAbsolutePath(),fileExt);
+			if (file.isFile() && file.getName().endsWith("." + fileExt)) jarList.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFileList(jarList, file.getAbsolutePath(), fileExt);
 		}
 	}
+
 	/**
 	 * 得到某个目录里所有的jar文件
 	 * @param jarList List &lt; String &gt;

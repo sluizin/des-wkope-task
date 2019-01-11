@@ -3,7 +3,7 @@ package des.wangku.operate.standard.utls;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
@@ -23,7 +23,7 @@ import des.wangku.operate.standard.dialog.Version;
  */
 public final class UtilsSWTListener {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTListener.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTListener.class);
 
 	/**
 	 * 退出

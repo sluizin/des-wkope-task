@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.task.InterfaceThreadRunUnit;
@@ -17,7 +17,7 @@ import des.wangku.operate.standard.task.InterfaceThreadRunUnit;
  */
 public class WorkThreadRun implements Runnable, Callable<Boolean> {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(WorkThreadRun.class);
+	static Logger logger = LoggerFactory.getLogger(WorkThreadRun.class);
 	List<InterfaceThreadRunUnit> list = new ArrayList<>();
 	AbstractTask parent = null;
 

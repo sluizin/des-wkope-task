@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.task;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 public abstract class AbstractTablesEditDialog extends Dialog{
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AbstractTablesEditDialog.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractTablesEditDialog.class);
 	protected Shell parent;
 	protected Shell shell = null;
 	protected TableItem tableItem;

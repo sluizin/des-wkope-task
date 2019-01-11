@@ -2,7 +2,7 @@ package des.wangku.operate.standard.swt;
 
 import java.sql.Connection;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsDBSource;
@@ -18,7 +18,7 @@ import des.wangku.operate.standard.utls.UtilsSWTTools;
  */
 public class DBACCESSCTabFolder extends AbstractDBCTabFolder {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(DBACCESSCTabFolder.class);
+	static Logger logger = LoggerFactory.getLogger(DBACCESSCTabFolder.class);
 
 	public DBACCESSCTabFolder(Composite parent, int style, String title) {
 		super(parent, style | styleStandard, title);

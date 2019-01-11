@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
 
 import des.wangku.operate.standard.utls.UtilsProperties;
@@ -26,7 +26,7 @@ import des.wangku.operate.standard.utls.UtilsVerification;
  */
 public abstract class AbstractDBCTabFolder extends AbstractCTabFolder {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(AbstractDBCTabFolder.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractDBCTabFolder.class);
 	/** 数据库连接 */
 	Connection conn = null;
 	/** 最高等级sql语句 */

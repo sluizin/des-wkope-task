@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsRnd;
@@ -13,7 +13,7 @@ import des.wangku.operate.standard.utls.UtilsRnd;
  */
 public final class SearchKey313 {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(SearchKey313.class);
+	static Logger logger = LoggerFactory.getLogger(SearchKey313.class);
 	
 	public static final String NoFindNull = "无法预估";
 	

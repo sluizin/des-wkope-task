@@ -59,6 +59,7 @@ public final class UtilsString {
 	 * @return boolean
 	 */
 	public static final boolean isExist(int key, int... arrs) {
+		if (arrs == null) return false;
 		for (int i = 0; i < arrs.length; i++)
 			if (key == arrs[i]) return true;
 		return false;
@@ -204,6 +205,7 @@ public final class UtilsString {
 	 * @return boolean
 	 */
 	public static final boolean isNumber(String value) {
+		if (value == null || value.length() == 0) return false;
 		Matcher matcher = pattern.matcher(value);
 		return matcher.matches();
 	}

@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.TableItem;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -23,7 +23,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class BaiduKeySearchPosid {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(BaiduKeySearchPosid.class);
+	static Logger logger = LoggerFactory.getLogger(BaiduKeySearchPosid.class);
 
 	public static final String NoFindNull = "--";
 

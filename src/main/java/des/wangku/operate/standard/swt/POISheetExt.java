@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.swt;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -17,7 +17,7 @@ import des.wangku.operate.standard.utls.UtilsString;
  */
 public class POISheetExt {
 	/** 日志 */
-	private static Logger logger = Logger.getLogger(POISheetExt.class);
+	private static Logger logger = LoggerFactory.getLogger(POISheetExt.class);
 	Sheet sheet;
 
 	@SuppressWarnings("unused")

@@ -13,7 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
@@ -45,7 +45,7 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
  */
 public final class UtilsSWTPOI {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsSWTPOI.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsSWTPOI.class);
 
 	/**
 	 * 保存workbook到model目录里的随机数文件，是否关闭Workbook
@@ -70,7 +70,7 @@ public final class UtilsSWTPOI {
 		}
 		boolean t = UtilsSWTPOI.save(workbook, isClose, file);
 		if (t) {
-			String filename = UtilsFile.getFileName(file);
+			String filename = UtilsFileMethod.getFileName(file);
 			if (isAlert) {
 				logger.debug("文件生成成功");
 				UtilsSWTMessageBox.Alert(shell, filename + "生成成功");

@@ -1,6 +1,6 @@
 package des.wangku.operate.standard.utls;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 /**
  * Shift移位比较 int型
@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  */
 public final class UtilsShiftCompare {
 	/** 日志 */
-	static Logger logger = Logger.getLogger(UtilsShiftCompare.class);
+	static Logger logger = LoggerFactory.getLogger(UtilsShiftCompare.class);
 	/**
 	 * 比较两个int是否含有关系 位比较关系
 	 * @param value int

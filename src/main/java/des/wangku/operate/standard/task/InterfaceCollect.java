@@ -8,8 +8,8 @@ package des.wangku.operate.standard.task;
  */
 public interface InterfaceCollect {
 	/**
-	 * 汇总
-	 * 更新操作后进行局部或全部的更新，一般用于统计信息的更新
+	 * 汇总<br>
+	 * 更新操作后进行局部或全部的更新，一般用于统计信息的更新<br>
 	 */
 	public void collect();
 }
