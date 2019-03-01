@@ -31,7 +31,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.Connection.Method;
@@ -454,6 +455,7 @@ public final class UtilsReadURL {
 		}
 		return "";
 	}
+
 	/**
 	 * 返回url的返回状态值
 	 * @param urlStr String
@@ -472,6 +474,7 @@ public final class UtilsReadURL {
 			return 0;
 		}
 	}
+
 	/**
 	 * 返回url的返回ContentLength
 	 * @param urlStr String
@@ -490,6 +493,7 @@ public final class UtilsReadURL {
 			return 0;
 		}
 	}
+
 	/**
 	 * 通过URL得到文件内容
 	 * @param url URL
@@ -654,15 +658,15 @@ public final class UtilsReadURL {
 	 * @return String
 	 */
 	public static final String getRealMultiLocation(final String urlString, String key, String... filterArr) {
-		if (urlString.indexOf(key) > -1 && (!UtilsString.isfilterArr(urlString, filterArr))) return urlString;
+		if (urlString.indexOf(key) > -1 && (!UtilsArrays.isfilterArr(urlString, filterArr))) return urlString;
 		String baiduUlr = UtilsReadURL.getRealLocation(urlString);
-		if (baiduUlr != null && baiduUlr.indexOf(key) > -1 && (!UtilsString.isfilterArr(baiduUlr, filterArr))) return baiduUlr;
+		if (baiduUlr != null && baiduUlr.indexOf(key) > -1 && (!UtilsArrays.isfilterArr(baiduUlr, filterArr))) return baiduUlr;
 		try {
 			URL url = new URL(urlString);
 			URL newurl = UtilsReadURL.getReadURL(url);
 			if (newurl == null) return "";
 			String urlStr = newurl.toString();
-			if (urlStr.indexOf(key) > -1 && (!UtilsString.isfilterArr(urlStr, filterArr))) return urlStr;
+			if (urlStr.indexOf(key) > -1 && (!UtilsArrays.isfilterArr(urlStr, filterArr))) return urlStr;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -731,16 +735,13 @@ public final class UtilsReadURL {
 		}
 		return "";
 	}
+
 	/**
 	 * 调用url，并不进行js运行，得到html
 	 * @param url String
-	 * @param jsEnable boolean
-	 * @param cssEnable boolean
-	 * @param timeout int
-	 * @param jsTime long
 	 * @return String
 	 */
-	public static  final String getReadUrlDisJs(String url) {
+	public static final String getReadUrlDisJs(String url) {
 		/** HtmlUnit请求web页面 */
 		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);
 		wc.getOptions().setJavaScriptEnabled(false); //启用JS解释器，默认为true  
@@ -757,12 +758,13 @@ public final class UtilsReadURL {
 		} catch (Exception e) {
 			if (wc != null) {
 				wc.close();
-				wc=null;
+				wc = null;
 			}
 			e.printStackTrace();
 		}
 		return "";
 	}
+
 	/**
 	 * 调用url，并进行js运行，得到html
 	 * @param url String
@@ -793,6 +795,7 @@ public final class UtilsReadURL {
 		String baseuri = UtilsString.getUrlDomain(url);
 		return Jsoup.parse(pageXml2, baseuri);
 	}
+
 	/**
 	 * 从网址中得到classname的text字符串 为null时返回""
 	 * @param url String
@@ -811,6 +814,7 @@ public final class UtilsReadURL {
 		if (e == null) return "";
 		return e.text();
 	}
+
 	/**
 	 * 从网址中得到classname的text字符串 为null时返回""
 	 * @param url String
@@ -829,6 +833,7 @@ public final class UtilsReadURL {
 		if (e == null) return "";
 		return e.text();
 	}
+
 	/**
 	 * 通过url得到classname的数组
 	 * @param url String
@@ -1062,6 +1067,10 @@ public final class UtilsReadURL {
 		return uc;
 	}
 
+	/**
+	 * @param url String
+	 * @return Document
+	 */
 	public static Document manualRedirectHandler(String url) {
 		try {
 			Response response = Jsoup.connect(url).followRedirects(false).execute();

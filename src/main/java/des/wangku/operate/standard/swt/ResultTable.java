@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -35,7 +37,9 @@ import des.wangku.operate.standard.dialog.InputValueDialog;
 import des.wangku.operate.standard.dialog.SearchDialog;
 import des.wangku.operate.standard.task.InterfaceExcelChange;
 import des.wangku.operate.standard.task.InterfaceTablesDialog;
+import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsSQL;
+import des.wangku.operate.standard.utls.UtilsSWTPOI;
 import des.wangku.operate.standard.utls.UtilsSWTTable;
 import des.wangku.operate.standard.utls.UtilsSWTTableListener;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
@@ -70,6 +74,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	Menu menuResultTable = new Menu(this);
 	/** 选中的列编号 */
 	int selectColumn = -1;
+	/** 选中的行编号 */
+	int selectLine = -1;
 	/** 选择列的弹出组，有效与无效 */
 	MenuItem submenucolumn = null;
 	/** 自已对象 */
@@ -97,6 +103,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		this.parent = parent;
 		Init();
 	}
+
 	/**
 	 * 得到某行某列中的字符串
 	 * @param x int
@@ -104,20 +111,21 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @return String
 	 */
 	public String getString(int x, int y) {
-		TableItem  e=getItem(x);
-		if(e==null)return null;
+		TableItem e = getItem(x);
+		if (e == null) return null;
 		return e.getText(y);
 	}
+
 	/**
 	 * 设置某行某列中的字符串
 	 * @param x int
 	 * @param y int
 	 * @param value String
 	 */
-	public synchronized void setString(int x, int y,String value) {
-		TableItem  e=getItem(x);
-		if(e==null)return;
-		e.setText(y, value);		
+	public synchronized void setString(int x, int y, String value) {
+		TableItem e = getItem(x);
+		if (e == null) return;
+		e.setText(y, value);
 	}
 
 	/**
@@ -143,6 +151,43 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 插入数据<br>
+	 * 过滤行标
+	 * @param sheet Sheet
+	 * @param filterArr int[]
+	 */
+	public void addData(Sheet sheet, int... filterArr) {
+		if (sheet == null) return;
+		for (int i = 0, len = sheet.getLastRowNum(); i <= len; i++) {
+			Row row = sheet.getRow(i);
+			if (row == null) continue;
+			if (UtilsArrays.isfilterArr(i, filterArr)) continue;
+			int rows = row.getLastCellNum();
+			List<String> list = new ArrayList<>(rows);
+			for (int ii = 0; ii <= rows; ii++) {
+				Cell cell = row.getCell(ii);
+				if (cell == null) {
+					list.add("");
+					continue;
+				}
+				String value = UtilsSWTPOI.getCellValueByString(cell);
+				if (value == null) value = "";
+				list.add(value);
+			}
+			if (list.size() == 0) continue;
+			UtilsSWTTableSQL.add(this, list);
+		}
+	}
+
+	/**
+	 * 插入数据
+	 * @param arr String[]
+	 */
+	public void addData(String... arr) {
+		UtilsSWTTableSQL.add(this, arr);
 	}
 
 	/**
@@ -187,7 +232,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 					Collect_Item1.setText("Check选择项\t[" + base.getChecked() + "]");
 				}
 			}
-
 		});
 		this.addMouseMoveListener(getListenerMouseMove());
 		this.addListener(SWT.MouseDoubleClick, adddListenerEdit());
@@ -315,11 +359,19 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				Point p = new Point(e.x, e.y);
 				TableItem ee = base.getItem(p);
 				if (ee == null) {
+					selectLine = -1;
 					selectColumn = -1;
 					submenucolumn.setEnabled(false);
 					return;
 				}
+				selectLine = -1;
 				submenucolumn.setEnabled(true);
+				for (int i = 0; i < base.getItemCount(); i++) {
+					if (ee.equals(base.getItem(i))) {
+						selectLine = i;
+						break;
+					}
+				}
 				for (int i = 0; i < base.getColumnCount(); i++)
 					if (ee.getBounds(i).contains(p)) {
 						selectColumn = i;
@@ -343,19 +395,34 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	void InitializationMenuItem(Menu parent) {
 		MenuItem menuItemCheck = new MenuItem(parent, SWT.NONE);
 		menuItemCheck.setText("选择行-选中");
-		menuItemCheck.addListener(SWT.Selection, UtilsSWTTableListener.getListenerSelectedLine(getDisplay(), this));
+		menuItemCheck.addListener(SWT.Selection, UtilsSWTTableListener.getListenerSelectedLine(this));
 
 		MenuItem menuItemCheckAll = new MenuItem(parent, SWT.NONE);
 		menuItemCheckAll.setText("选择行-全选");
-		menuItemCheckAll.addSelectionListener(UtilsSWTTableListener.getListenerTableSelectAll(this));
+		menuItemCheckAll.addSelectionListener(UtilsSWTTableListener.getListenerTableSelectAll(this, true));
 
 		MenuItem menuItemUnCheckAll = new MenuItem(parent, SWT.NONE);
 		menuItemUnCheckAll.setText("选择行-反选");
 		menuItemUnCheckAll.addSelectionListener(UtilsSWTTableListener.getListenerTableRevSelectionAll(this));
 
+		MenuItem menuItemCheckSameValueAll = new MenuItem(parent, SWT.NONE);
+		menuItemCheckSameValueAll.setText("选择行-同值选");
+		menuItemCheckSameValueAll.addSelectionListener(UtilsSWTTableListener.getListenerTableSameValueSelectionAll(this));
+
+		MenuItem menuItemCheckLikeValueAll = new MenuItem(parent, SWT.NONE);
+		menuItemCheckLikeValueAll.setText("选择行-含值选");
+		menuItemCheckLikeValueAll.addSelectionListener(UtilsSWTTableListener.getListenerTableLikeValueSelectionAll(this));
+
+		new MenuItem(parent, SWT.SEPARATOR);
 		MenuItem menuItemRemove = new MenuItem(parent, SWT.NONE);
 		menuItemRemove.setText("选择行-删除");
-		menuItemRemove.addListener(SWT.Selection, UtilsSWTTableListener.getListenerRemoveSelectedLine(getDisplay(), this.getShell(), true, this));
+		menuItemRemove.addListener(SWT.Selection, UtilsSWTTableListener.getListenerRemoveSelectedLine(true, this));
+
+		new MenuItem(parent, SWT.SEPARATOR);
+
+		MenuItem menuItemRemoveCheckeAll = new MenuItem(parent, SWT.NONE);
+		menuItemRemoveCheckeAll.setText("选择-取消选择");
+		menuItemRemoveCheckeAll.addSelectionListener(UtilsSWTTableListener.getListenerTableSelectAll(this, false));
 
 		new MenuItem(parent, SWT.SEPARATOR);
 
@@ -390,7 +457,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		new MenuItem(parent, SWT.SEPARATOR);
 		MenuItem menuItemAdd = new MenuItem(parent, SWT.NONE);
 		menuItemAdd.setText("添加新空行");
-		menuItemAdd.addSelectionListener(UtilsSWTTableListener.getListenerAddLine(this.getShell(), base));
+		menuItemAdd.addSelectionListener(UtilsSWTTableListener.getListenerAddLine(base));
 
 		new MenuItem(parent, SWT.SEPARATOR);
 
@@ -417,15 +484,15 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	void setMenuItemCheckColumn(Menu parent) {
 		MenuItem menuColumnAdd = new MenuItem(parent, SWT.NONE);
 		menuColumnAdd.setText("添加");
-		menuColumnAdd.addSelectionListener(UtilsSWTTableListener.getListenerAddColumn(this.getShell(), base));
+		menuColumnAdd.addSelectionListener(UtilsSWTTableListener.getListenerAddColumn(base));
 
 		MenuItem menuColumnClean = new MenuItem(parent, SWT.NONE);
 		menuColumnClean.setText("清空");
-		menuColumnClean.addSelectionListener(UtilsSWTTableListener.getListenerCleanColumn(this.getShell(), base));
+		menuColumnClean.addSelectionListener(UtilsSWTTableListener.getListenerCleanColumn(base));
 
 		MenuItem menuColumnRemove = new MenuItem(parent, SWT.NONE);
 		menuColumnRemove.setText("移除");
-		menuColumnRemove.addSelectionListener(UtilsSWTTableListener.getListenerRemoveColumn(this.getShell(), base));
+		menuColumnRemove.addSelectionListener(UtilsSWTTableListener.getListenerRemoveColumn(base));
 
 	}
 
@@ -452,16 +519,17 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		menuItemCopyJson.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyJson(this));
 		MenuItem menuItemCopytoExcel = new MenuItem(parent, SWT.NONE);
 		menuItemCopytoExcel.setText("复制行-文件-Excel");
-		menuItemCopytoExcel.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyToExcel(parent.getShell(), this, true));
+		menuItemCopytoExcel.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyToExcel(this, true));
 	}
 
 	/**
 	 * 设置某一个单元格
+	 * @param align int
 	 * @param text String
 	 * @param len int
 	 */
-	public void setTableColumn(String text, int len) {
-		TableColumn e = getDefaultTableColumn(this, len, text);
+	public void setTableColumn(int align,String text, int len) {
+		TableColumn e = getDefaultTableColumn(this,align, len, text);
 		setDefaultTableColumnPos(this, e);
 	}
 
@@ -491,11 +559,11 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @param text String
 	 * @return TableColumn
 	 */
-	public static final TableColumn getDefaultTableColumn(ResultTable table, int len, String text) {
+	public final static TableColumn getDefaultTableColumn(ResultTable table,int align, int len, String text) {
 		TableColumn tColumn = new TableColumn(table, SWT.BORDER | SWT.NONE | SWT.FULL_SELECTION | SWT.MULTI);
 		tColumn.setWidth(len);
 		tColumn.setText(text);
-		tColumn.setAlignment(SWT.LEFT);
+		tColumn.setAlignment(align);
 		tColumn.setMoveable(true);/* 设置表头可移动，默认为false */
 		tColumn.setResizable(true);
 		return tColumn;
@@ -587,6 +655,10 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		return selectColumn;
 	}
 
+	public final int getSelectLine() {
+		return selectLine;
+	}
+
 	public final ExcelCTabFolder getParentExcelCTabFolder() {
 		return UtilsSWTTools.getParentObj(this, ExcelCTabFolder.class);
 	}
@@ -624,11 +696,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		if (point > -1 && point < getItemCount()) item = new TableItem(this, SWT.NONE, point);
 		else item = new TableItem(this, SWT.NONE);
 		item.setText(arrs);
-	}
-
-	public boolean getisViewHead() {
-
-		return true;
 	}
 
 	@Override
@@ -698,7 +765,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		for (int i = 0; i < arrs.length; i++) {
 			value = (arrs[i] == null) ? "" + i : arrs[i];
 			if (ectpara.attrSuffix) value = "[" + i + "]" + value;
-			setTableColumn(value, getColumnWidth(i));
+			int align=ectpara.getSWTAlign(i);
+			setTableColumn(align,value, getColumnWidth(i));
 		}
 	}
 
@@ -724,5 +792,4 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		}
 		UtilsSWTTableSQL.update(base, x, y, newValue);
 	}
-
 }

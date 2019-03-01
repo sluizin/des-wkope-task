@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -17,6 +18,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 import des.wangku.operate.standard.task.AbstractTask;
+import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPathFile;
 import des.wangku.operate.standard.utls.UtilsSWTPOI;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
@@ -44,6 +46,8 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	Workbook workbook = null;
 	/** 是否多选 */
 	boolean isRADIO = false;
+	/** 读取时是否过滤空行 */
+	boolean isFilterBlankLines = false;
 
 	/**
 	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"<br>
@@ -113,6 +117,10 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		logger.debug("提取excel文件:" + filename);
 		try {
 			File file = new File(filename);
+			if(!file.exists()) {
+				logger.debug("未发现excel文件:" + filename);
+				return;
+			}
 			workbook = new XSSFWorkbook(file);
 			int type = isRADIO ? ResultTable.ACC_ResultTableStateRadio : ResultTable.ACC_ResultTableState;
 			for (int sheetnum = 0; sheetnum < workbook.getNumberOfSheets(); sheetnum++) {
@@ -157,7 +165,9 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 				if (t.getEctpara().isTrim) value = value.trim();
 				list.add(value);
 			}
-			UtilsSWTTableSQL.add(t, list);
+			if (!(isFilterBlankLines && UtilsList.isBlankLines(list))) {
+				UtilsSWTTableSQL.add(t, list);
+			}
 		}
 	}
 
@@ -205,13 +215,25 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		this.isRADIO = isRADIO;
 	}
 
+	public final boolean isFilterBlankLines() {
+		return isFilterBlankLines;
+	}
+
+	/**
+	 * 是否过滤掉空行
+	 * @param isFilterBlankLines boolean
+	 */
+	public final void setFilterBlankLines(boolean isFilterBlankLines) {
+		this.isFilterBlankLines = isFilterBlankLines;
+	}
+
 	public final int getType() {
 		return type;
 	}
 
 	/**
 	 * 设置excel文件是否在model目录，还是绝对地址。默认为0:model目录
-	 * @param type
+	 * @param type int
 	 */
 	public final void setType(int type) {
 		this.type = type;

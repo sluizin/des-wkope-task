@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.swt;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -116,7 +117,6 @@ public class POISheetExt {
 
 	/**
 	 * 给sheet中null的cell填充value，是否填充所有[以整表为标准]<br>
-	 * @param sheet Sheet
 	 * @param value Object
 	 * @param isFill boolean
 	 */
@@ -167,7 +167,6 @@ public class POISheetExt {
 
 	/**
 	 * 把单元移到指定单元。如移动的单元为空，则不移动
-	 * @param sheet Sheet
 	 * @param ax int
 	 * @param ay int
 	 * @param bx int
@@ -251,7 +250,6 @@ public class POISheetExt {
 
 	/**
 	 * 移动区块 a,b两点为块的左上角与右下角，to为要移动的左上角
-	 * @param sheet Sheet
 	 * @param isNullOver boolean
 	 * @param ax int
 	 * @param ay int
@@ -300,7 +298,6 @@ public class POISheetExt {
 
 	/**
 	 * 得到表格某列深度 是否过滤空格
-	 * @param sheet Sheet
 	 * @param y int
 	 * @param isTrim boolean
 	 * @return int
@@ -320,7 +317,6 @@ public class POISheetExt {
 
 	/**
 	 * 得到表格某行宽度
-	 * @param sheet Sheet
 	 * @param x int
 	 * @return int
 	 */

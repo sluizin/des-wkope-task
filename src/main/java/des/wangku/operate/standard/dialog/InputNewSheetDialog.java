@@ -188,7 +188,7 @@ public class InputNewSheetDialog extends Dialog {
 			table.setLinesVisible(true);
 			tbtmExcel.setControl(table);
 			for (int i = 0; i < this.cols; i++)
-				table.setTableColumn(i + "", 180);
+				table.setTableColumn(SWT.LEFT,i + "", 180);
 			String[] arrs = new String[cols];
 			Arrays.fill(arrs, "");
 			for (int i = 0; i < this.rows; i++)

@@ -130,7 +130,7 @@ public final class UtilsSWTTable {
 	 * @return List&lt;List&lt;String&gt;&gt;
 	 */
 	public static final List<List<String>> getTableItemList(boolean isHead, ResultTable table, TableItem... itemArr) {
-		List<List<String>> list = new ArrayList<List<String>>();
+		List<List<String>> list = new ArrayList<>();
 		if (isHead) {
 			/*
 			 * List<String> ll = getTableHeadList(itemArr);
@@ -268,6 +268,21 @@ public final class UtilsSWTTable {
 		});
 	}
 
+	/**
+	 * 选中某行
+	 * @param table ResultTable
+	 */
+	public static final void setSelectedLine(ResultTable table) {
+		if (table == null || table.getItemCount() == 0) return;
+		TableItem[] items = table.getSelection();
+		table.getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				for (int i = 0; i < items.length; i++)
+					items[i].setChecked(true);
+			}
+		});
+	}
 	/**
 	 * 移除选中某行
 	 * @param display Display getDisplay()

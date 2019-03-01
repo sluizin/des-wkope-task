@@ -115,6 +115,21 @@ public final class UtilsRegular {
 		return count;
 	}
 
+	/**
+	 * 判断字符串中含有多个子串 支持正则
+	 * @param content String
+	 * @param keyword String
+	 * @return int
+	 */
+	public static final int getPatternNumDisCount(String content,String keyword) {
+		if (content == null || content.length() == 0) return 0;
+		Pattern r = Pattern.compile(keyword, Pattern.CASE_INSENSITIVE);
+		Matcher m = r.matcher(content);
+		int count = 0;
+		while (m.find())
+			count++;
+		return count;
+	}
 	/** 在样式中显示格式： [220] */
 	public static final String ACC_NumDisPattern = "\\[[0-9]+\\]";
 }

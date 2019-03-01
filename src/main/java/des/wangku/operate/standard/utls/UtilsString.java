@@ -185,17 +185,7 @@ public final class UtilsString {
 		return (page - 1) * 10 + p;
 	}
 
-	/**
-	 * 是否存在过滤字符串
-	 * @param key String
-	 * @param arr String[]
-	 * @return boolean
-	 */
-	public static final boolean isfilterArr(String key, String[] arr) {
-		for (int i = 0; i < arr.length; i++)
-			if (key.indexOf(arr[i]) > -1) return true;
-		return false;
-	}
+
 
 	static final Pattern pattern = Pattern.compile("^[0-9]*$");
 

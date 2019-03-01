@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
+import des.wangku.operate.standard.dialog.ImportExcelSheet;
+import des.wangku.operate.standard.dialog.ImportExcelSheet.ImportSheetInfor;
 import des.wangku.operate.standard.dialog.InputNewSheetDialog;
 import des.wangku.operate.standard.dialog.InputNewSheetDialog.NewSheetInfor;
 import des.wangku.operate.standard.utls.UtilsProperties;
@@ -216,6 +218,9 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	public void putPopMenu() {
 		Menu menuCTableFolder = new Menu(this);
 		setMenu(menuCTableFolder);
+		MenuItem menuItemInput = new MenuItem(menuCTableFolder, SWT.NONE);
+		menuItemInput.setText("导入Sheet");
+		menuItemInput.addListener(SWT.Selection, getListenerCTabFolderimportSheet());
 		MenuItem menuItemCheck = new MenuItem(menuCTableFolder, SWT.NONE);
 		menuItemCheck.setText("添加Sheet");
 		menuItemCheck.addListener(SWT.Selection, getListenerCTabFolderAddSheet());
@@ -247,14 +252,33 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	}
 
 	/**
+	 * 导入新的sheet
+	 * @return Listener
+	 */
+	private Listener getListenerCTabFolderimportSheet() {
+		Listener t = new Listener() {
+			public void handleEvent(Event e) {
+				ImportExcelSheet dialog = new ImportExcelSheet(shell, SWT.CENTER, base);
+				Object obj= dialog.open();
+				if(obj==null)return;
+				ImportSheetInfor isinfor=(ImportSheetInfor)obj;
+				//String sheetname = newSheetInfor.getSheetName();
+				logger.debug("sheetname:" + isinfor.toString());
+				isinfor.addSheet(base);
+				//newSheetInfor.addSheet(base);
+			}
+		};
+		return t;
+	}
+	/**
 	 * 添加新的sheet
 	 * @return Listener
 	 */
 	private Listener getListenerCTabFolderAddSheet() {
 		Listener t = new Listener() {
 			public void handleEvent(Event e) {
-				InputNewSheetDialog inputNameDialog = new InputNewSheetDialog(shell, SWT.CENTER, base);
-				NewSheetInfor newSheetInfor = (NewSheetInfor) inputNameDialog.open();
+				InputNewSheetDialog dialog = new InputNewSheetDialog(shell, SWT.CENTER, base);
+				NewSheetInfor newSheetInfor = (NewSheetInfor) dialog.open();
 				String sheetname = newSheetInfor.getSheetName();
 				logger.debug("sheetname:" + sheetname);
 				newSheetInfor.addSheet(base);

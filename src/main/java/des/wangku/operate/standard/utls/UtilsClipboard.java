@@ -19,7 +19,7 @@ public final class UtilsClipboard {
 	 */
 	public static final void copy(String content) {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		StringSelection contents = new StringSelection(content); //用拷贝文本框文本实例化StringSelection对象  
+		StringSelection contents = new StringSelection(content); /* 用拷贝文本框文本实例化StringSelection对象 */
 		clipboard.setContents(contents, null);
 	}
 
@@ -30,10 +30,9 @@ public final class UtilsClipboard {
 	public static final String getString() {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		if (!clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) return "";
-		// 如果剪贴板中包含stringFlavor内容
-		try {
-			// 取出剪贴板中stringFlavor内容
-			String content = (String) clipboard.getData(DataFlavor.stringFlavor);
+		/* 如果剪贴板中包含stringFlavor内容 */
+		try {			
+			String content = (String) clipboard.getData(DataFlavor.stringFlavor);/* 取出剪贴板中stringFlavor内容 */
 			return content;
 		} catch (Exception e) {
 			e.printStackTrace();

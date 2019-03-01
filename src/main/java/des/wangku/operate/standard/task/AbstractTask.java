@@ -104,7 +104,9 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	public abstract String getMenuName();
 
 	/**
-	 * 得到菜单名称前缀 如 输入:P02 则菜单为:[P02]XXXX
+	 * 得到菜单名称前缀 如 输入:P02 则菜单为:[P02]XXXX<br>
+	 * 如果在model中出现同名的前缀，则只保留其中一个。<br>
+	 * 即：项目前缀唯一
 	 * @return String
 	 */
 	public abstract String getMenuNameHead();

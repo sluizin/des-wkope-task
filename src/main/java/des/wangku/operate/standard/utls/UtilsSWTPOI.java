@@ -13,7 +13,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
@@ -43,6 +45,7 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
  * @version 1.0
  * @since jdk1.8
  */
+@SuppressWarnings("resource")
 public final class UtilsSWTPOI {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsSWTPOI.class);
@@ -170,9 +173,31 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			@SuppressWarnings({ "resource" })
 			Workbook workbook = new XSSFWorkbook(file);
 			return workbook.getSheet(sheetName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 通过文件名与sheetNum得到sheet
+	 * @param filename String
+	 * @return Sheet[]
+	 */
+	public static final Sheet[] getSheets(String filename) {
+		try {
+			File file = new File(filename);
+			if (file == null || !file.isFile()) return null;
+			Workbook workbook = new XSSFWorkbook(file);
+			List<Sheet> list = new ArrayList<>();
+			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = workbook.getSheetAt(i);
+				list.add(sheet);
+			}
+			Sheet[] arr = {};
+			return list.toArray(arr);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -189,13 +214,45 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			@SuppressWarnings({ "resource" })
 			Workbook workbook = new XSSFWorkbook(file);
 			return workbook.getSheetAt(sheetNum);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * 从某个目录中提取所有文件名头部为fileLeft的xls文件，并读出所有sheet名称中头部为sheetLeft的Sheet
+	 * @param filePath String
+	 * @param fileLeft String
+	 * @param sheetLeft String
+	 * @return List&lt;Sheet&gt;
+	 */
+	public static final List<Sheet> getSheetListLeftKey(String filePath, String fileLeft, String sheetLeft) {
+		List<Sheet> list = new ArrayList<>();
+		List<String> fileslist = UtilsPathFile.getFileslistSort(fileLeft, filePath);
+		if (fileslist.size() == 0) return list;
+		try {
+			for (String e : fileslist) {
+				System.out.println("e:" + e);
+				File file = new File(e);
+				if (file == null || !file.isFile()) continue;
+				Workbook workbook = new XSSFWorkbook(file);
+				for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
+					Sheet sheet = workbook.getSheetAt(i);
+					if (sheet.getSheetName().indexOf(sheetLeft) == 0) list.add(sheet);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public static final int getSheetIDLeftKey(String filePath, String fileLeft, String sheetLeft) {
+
+		return 0;
 	}
 
 	/**
@@ -208,7 +265,6 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			@SuppressWarnings("resource")
 			Workbook workbook = new XSSFWorkbook(file);
 			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
 				Sheet sheet = workbook.getSheetAt(i);
@@ -218,6 +274,34 @@ public final class UtilsSWTPOI {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	/**
+	 * 判断Excel文件中sheet的名字是否含有关键，如果不是含有状态，则判断index
+	 * @param filename String
+	 * @param keyword String
+	 * @param isContain boolean
+	 * @param index int
+	 * @return int
+	 */
+	public static final int getSheetID(String filename, String keyword, boolean isContain, int index) {
+		try {
+			File file = new File(filename);
+			if (file == null || !file.isFile()) return -1;
+			Workbook workbook = new XSSFWorkbook(file);
+			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = workbook.getSheetAt(i);
+				String sheetname = sheet.getSheetName();
+				if (isContain) {
+					if (sheetname.indexOf(keyword) > -1) return i;
+				} else {
+					if (sheetname.indexOf(keyword) == index) return i;
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	/**
@@ -247,11 +331,14 @@ public final class UtilsSWTPOI {
 				if (value.length() > 30000) value = value.substring(0, 30000);
 				Cell cell = row.createCell(ii);
 				cell.setCellValue(value);
+				if (epc != null) {
+					epc.makeStyle(cell);
+				}
 			}
 		}
 		if (change != null) change.afterWork(sheet);
-		if (epc != null && (epc.getLockRows() > 0 || epc.getLockCols() > 0)) {/* 锁定某行列 */
-			sheet.createFreezePane(epc.getLockCols(), epc.getLockRows());
+		if (epc != null) {
+			epc.makeStyle(sheet);
 		}
 		workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
 		return UtilsFile.writeWorkbookFile(filename, workbook);
@@ -335,6 +422,29 @@ public final class UtilsSWTPOI {
 		cellStyle.setAlignment(HorizontalAlignment.LEFT);
 		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		return cellStyle;
+	}
+
+	/**
+	 * 从sheet内容转成list格式
+	 * @param sheet Sheet
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public static final List<List<String>> getValuesList(Sheet sheet) {
+		List<List<String>> list = new ArrayList<>();
+		if (sheet == null) return list;
+		for (int i = 0, len = sheet.getLastRowNum(); i <= len; i++) {
+			Row row = sheet.getRow(i);
+			if (row == null) continue;
+			List<String> newlist = new ArrayList<>();
+			for (int ii = 0, len2 = row.getLastCellNum(); ii <= len2; ii++) {
+				Cell cell = row.getCell(ii);
+				if (cell == null) continue;
+				String value = getCellValueByString(cell);
+				newlist.add(value);
+			}
+			list.add(newlist);
+		}
+		return list;
 	}
 
 	/**
@@ -716,10 +826,12 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
-	 * 得到表格的最大宽度
+	 * 得到表格的最大宽度(列数)<br>
+	 * 与getMaxWidth区别 此方法以getFirstRowNum 开始
 	 * @param sheet Sheet
 	 * @return int
 	 */
+	@Deprecated
 	public static final int getMaxCellNum(Sheet sheet) {
 		if (sheet == null) return -1;
 		int max = -1;
@@ -945,7 +1057,8 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
-	 * 得到表格中各行中最大宽度
+	 * 得到表格中各行中最大宽度(列数)<br>
+	 * 与getMaxCellNum区别 此方法以 0 开始
 	 * @param sheet Sheet
 	 * @return int
 	 */

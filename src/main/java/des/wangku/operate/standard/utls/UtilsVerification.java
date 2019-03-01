@@ -44,17 +44,29 @@ public final class UtilsVerification {
 
 	/**
 	 * 判断字符串是否整型
-	 * @param string String
+	 * @param str String
 	 * @return boolean
 	 */
-	public static boolean isDigital(String string) {
-		if (string == null || string.length() == 0) return false;
-		String regEx1 = "\\d+";
-		Pattern p = Pattern.compile(regEx1);
-		Matcher m = p.matcher(string);
-		if (m==null) return false;
+	public static boolean isDigital(String str) {
+		if (str == null || str.length() == 0) return false;
+		Pattern p = Pattern.compile("\\d+");
+		Matcher m = p.matcher(str);
+		if (m == null) return false;
 		return m.matches();
 	}
+	/**
+     * 利用正则表达式判断字符串是否是整数型数字
+     * @param str String
+     * @return boolean
+     */
+    public boolean isNumeric(String str){
+           Pattern pattern = Pattern.compile("[0-9]*");
+           Matcher isNum = pattern.matcher(str);
+           if( !isNum.matches() ){
+               return false;
+           }
+           return true;
+    }
 
 	/**
 	 * 判断文件是否为csv文件，主要是判断扩展名
@@ -64,4 +76,60 @@ public final class UtilsVerification {
 	public static boolean isCsvFile(String fileName) {
 		return fileName.matches("^.+\\.(?i)(csv)$");
 	}
+
+	/**
+	 * 判断字符串是否为QQ
+	 * @param qq String
+	 * @return boolean
+	 */
+	public final static boolean isQQ(final String qq) {
+		return Pattern.matches("^\\d{5,10}$", qq);
+	}
+
+	/**
+	 * 判断字符串是否是IP
+	 * @param ip String
+	 * @return boolean
+	 */
+	public final static boolean isIp(final String ip) {// 判断是否是一个IP
+		if (ip == null || !ip.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) return false;
+		final String s[] = ip.split("\\.");
+		return (Integer.parseInt(s[0]) < 255 && Integer.parseInt(s[1]) < 255 && Integer.parseInt(s[2]) < 255 && Integer.parseInt(s[3]) < 255) ? true : false;
+	}
+
+	/**
+	 * 判断是否为浮点数，包括double和float
+	 * @param doubleStr String
+	 * @return boolean
+	 */
+	public final static boolean isDouble(final String doubleStr) {
+		return Pattern.compile("^[-\\+]?[.\\d]*$").matcher(doubleStr).matches();
+	}
+
+	/**
+	 * 判断是否是6位的颜色值
+	 * @param color String
+	 * @return boolean
+	 */
+	public final static boolean isColor(String color) {
+		if (color == null) return false;
+		color = color.trim();
+		if (color.length() != 6 && color.length() != 7) return false;
+		if (color.length() == 7) {
+			if (color.charAt(0) != '#') return false;
+			color = color.substring(1);
+		}
+		final char[] IsColorChar = color.toCharArray();
+		for (int i = 0; i < 6; i++) {
+			int v = (int) IsColorChar[i];
+			/* 0-9 a-f A-F */
+			if ((v >= 48 && v <= 57) || (v >= 97 && v <= 102) || (v >= 65 && v <= 70)) {
+				continue;
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

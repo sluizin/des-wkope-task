@@ -87,9 +87,13 @@ public final class UtilsList {
 	 * @param <T>
 	 */
 	private static final class SortByLengthComparator<T> implements Comparator<T> {
-
 		@Override
 		public int compare(T var1, T var2) {
+			if (var1 == null) {
+				if (var2 == null) return 0;
+				return -1;
+			}
+			if (var2 == null) return 1;
 			if (var1.toString().length() > var2.toString().length()) {
 				return 1;
 			} else if (var1.toString().length() == var2.toString().length()) {
@@ -100,4 +104,17 @@ public final class UtilsList {
 			}
 		}
 	}
+
+	/**
+	 * 判断数组是否含有值，如为null或为空，则返回true
+	 * @param list List&lt;String&gt;
+	 * @return boolean
+	 */
+	public static final boolean isBlankLines(List<String> list) {
+		for (String e : list) {
+			if (e != null && e.length() > 0) return false;
+		}
+		return true;
+	}
+
 }

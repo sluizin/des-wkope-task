@@ -3,7 +3,9 @@ package des.wangku.operate.standard.swt;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.eclipse.swt.SWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
@@ -31,6 +33,8 @@ public class ResultTableParameter implements InterfaceProperties {
 	int defTCWidth = 150;
 	/** 是否自适应变宽度 */
 	boolean isAutoWidth = false;
+	/** 对齐方式 默认为-1即左对齐，0为居中，+1为右对齐 */
+	int[] alignArray = {};
 	/** 是否自动删除多余行 上方 */
 	boolean isAutoremoveUpNullRows = false;
 	/** 是否自动删除多余行 下方 */
@@ -104,6 +108,14 @@ public class ResultTableParameter implements InterfaceProperties {
 		this.isAutoWidth = isAutoWidth;
 	}
 
+	public final int[] getAlignArray() {
+		return alignArray;
+	}
+
+	public final void setAlignArray(int[] alignArray) {
+		this.alignArray = alignArray;
+	}
+
 	public final boolean isAutoremoveUpNullRows() {
 		return isAutoremoveUpNullRows;
 	}
@@ -160,6 +172,33 @@ public class ResultTableParameter implements InterfaceProperties {
 		return false;
 	}
 
+	public static final int DefaultAlign = -1;
+
+	/**
+	 * 判断列下标对齐方式，-1，左对齐，0，居中对齐，1,右侧对齐
+	 * @param index int
+	 * @return int
+	 */
+	public final int getAlign(int index) {
+		if (index < 0 || index >= alignArray.length) return DefaultAlign;
+		int v = alignArray[index];
+		if (v > 0) return 1;
+		else if (v == 0) return 0;
+		return DefaultAlign;
+	}
+
+	/**
+	 * 判断列下标对齐方式，SWT.LEFT，SWT.CENTER，SWT.RIGHT
+	 * @param index int
+	 * @return int
+	 */
+	public final int getSWTAlign(int index) {
+		int v = getAlign(index);
+		if (v == 0) return SWT.CENTER;
+		if (v > 0) return SWT.RIGHT;
+		return SWT.LEFT;
+	}
+
 	/**
 	 * 获取ECT_Para_0参数
 	 * @param properties Properties
@@ -182,13 +221,14 @@ public class ResultTableParameter implements InterfaceProperties {
 	 * @param title String
 	 * @return ResultTableParameter
 	 */
-	public static final ResultTableParameter getRTP(String jsonStr,String title) {
+	public static final ResultTableParameter getRTP(String jsonStr, String title) {
 		if (jsonStr == null || jsonStr.length() == 0) return new ResultTableParameter(null, title);
-		logger.debug("=="+jsonStr);
+		logger.debug("==" + jsonStr);
 		ResultTableParameter f = JSON.parseObject(jsonStr, ResultTableParameter.class);
 		if (f != null) return f;
 		return new ResultTableParameter(null, title);
 	}
+
 	/**
 	 * 从json串中获取参数
 	 * @param jsonStr String
@@ -197,4 +237,5 @@ public class ResultTableParameter implements InterfaceProperties {
 	public static final ResultTableParameter getRTP(String jsonStr) {
 		return getRTP(jsonStr, null);
 	}
+
 }
