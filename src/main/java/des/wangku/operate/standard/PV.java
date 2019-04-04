@@ -4,8 +4,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
@@ -120,4 +120,15 @@ public final class PV {
 
 	/** 文件输出目录名 */
 	public static final String ACC_OutputCatalog = "output";
+	/**
+	 * 文件输出目录的详细地址<br>
+	 * c:/XXX/XXXX/output
+	 * @return String
+	 */
+	public static final String getOutpoutCatalog() {
+		String path=PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog;
+		File file = new File(path);
+		if (!file.exists()) file.mkdirs();
+		return path;		
+	}
 }

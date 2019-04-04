@@ -20,7 +20,7 @@ import des.wangku.operate.standard.swt.SourceTree;
  * @version 1.0
  * @since jdk1.8
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes"})
 public final class UtilsSWTTree {
 	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTree.class);
 	/** tree显示名称时多项信息的分隔符 */

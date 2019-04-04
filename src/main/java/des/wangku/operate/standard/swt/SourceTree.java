@@ -4,10 +4,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
 /**
- * 重构Tree  UI组件
+ * 重构Tree UI组件
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
+ * //@Deprecated
  */
 public class SourceTree extends Tree {
 	/** 深度 以0为开始级 */
@@ -18,7 +19,13 @@ public class SourceTree extends Tree {
 	protected void checkSubclass() {
 
 	}
-
+	/**
+	 * 构造函数
+	 * @param parent Composite
+	 * @param style int
+	 * @param deep int
+	 * @param valueIndex int
+	 */
 	public SourceTree(Composite parent, int style, int deep, int valueIndex) {
 		super(parent, style);
 		checkSubclass();

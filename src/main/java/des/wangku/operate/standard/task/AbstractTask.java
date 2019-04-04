@@ -34,6 +34,7 @@ import des.wangku.operate.standard.dialog.RunDialog;
 import des.wangku.operate.standard.dialog.SearchDialog;
 import des.wangku.operate.standard.dialog.ThreadRun;
 import des.wangku.operate.standard.swt.AbstractCTabFolder.ParaClass;
+import des.wangku.operate.standard.swt.InterfaceMultiSave;
 import des.wangku.operate.standard.utls.UtilsShiftCompare;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJar;
@@ -50,10 +51,10 @@ import des.wangku.operate.standard.utls.UtilsSWTMenu;
  * @version 1.0
  * @since jdk1.8
  */
-public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile {
+public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile, InterfaceMultiSave {
 	/** 日志 */
 	//static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
-	 static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
 	/**
 	 * 项目文件头部如：<br>
 	 * {des-wkope-task-}XXXX.accdb<br>
@@ -139,7 +140,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 */
 	public String getOutputPath() {
 		String proFolder = getMenuNameHead();
-		return PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
+		return PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 	}
 
 	/**
@@ -157,11 +158,44 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 构造函数
 	 * @param parent 父容器
 	 * @param style 状态
+	 */
+	public AbstractTask(Composite parent, int style) {
+		super(parent, style);
+		Class<? extends AbstractTask> basicClass = this.getClass();
+		init(parent, style, basicClass, MVver | MVmodQuit | MVsysQuit);
+	}
+
+	/**
+	 * 构造函数
+	 * @param parent 父容器
+	 * @param style 状态
+	 * @param basicClass 子类
+	 */
+	public AbstractTask(Composite parent, int style, Class<? extends AbstractTask> basicClass) {
+		super(parent, style);
+		init(parent, style, basicClass, MVver | MVmodQuit | MVsysQuit);
+	}
+
+	/**
+	 * 构造函数
+	 * @param parent 父容器
+	 * @param style 状态
 	 * @param basicClass 子类
 	 * @param abstractMenuValue 显示鼠标右键的功能
 	 */
 	public AbstractTask(Composite parent, int style, Class<? extends AbstractTask> basicClass, int abstractMenuValue) {
 		super(parent, style);
+		init(parent, style, basicClass, abstractMenuValue);
+	}
+
+	/**
+	 * 初始化
+	 * @param parent 父容器
+	 * @param style 状态
+	 * @param basicClass 子类
+	 * @param abstractMenuValue int 显示鼠标右键的功能
+	 */
+	private final void init(Composite parent, int style, Class<? extends AbstractTask> basicClass, int abstractMenuValue) {
 		pc.setSaveFolder(this.getMenuNameHead()).init(this.getProProperties());
 		this.basicClass = basicClass;
 		this.abstractMenuValue = abstractMenuValue;
@@ -423,24 +457,53 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 			parentControlThreadClose[i].setEnabled(enabled);
 	}
 
+	/**
+	 * 得到d:/XXX/XXX/model/des-wkope-task-P101<br>
+	 * 后面加上扩展名
+	 * @return String
+	 */
+	private String getModelProjectFileLeft() {
+		return UtilsPathFile.getModelJarBasicPath() + "/des-wkope-task-" + getMenuNameHeadLowerCase();
+	}
+
+	/**
+	 * 从包外读取项目json文件
+	 * 默认为mode/des-wkope-task-p0X.json
+	 * 支持中文
+	 * @return String
+	 */
+	public String getProJson() {
+		String json = "";
+		String filename = getModelProjectFileLeft() + ".json";
+		File file = new File(filename);
+		if (!file.exists()) {
+			logger.debug("未发现项目Json文件:" + filename);
+			return json;
+		}
+		if (!file.isFile()) return json;
+		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2);) {
+			json = UtilsFile.readFile(in).toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return json;
+	}
+
 	@Override
 	public Properties getProProperties() {
 		Properties properties = new Properties();
-		try {
-			String filename = UtilsPathFile.getModelJarBasicPath() + "/des-wkope-task-" + getMenuNameHeadLowerCase() + ".properties";
-			File file = new File(filename);
-			if (!file.exists()) {
-				logger.debug("未发现配置文件:" + filename);
-				return properties;
-			}
-			if (!file.isFile()) return properties;
-			InputStream is2 = new FileInputStream(file);
-			InputStream in = new BufferedInputStream(is2);
-			InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+		String filename = getModelProjectFileLeft() + ".properties";
+		File file = new File(filename);
+		if (!file.exists()) {
+			logger.debug("未发现配置文件:" + filename);
+			return properties;
+		}
+		if (!file.isFile()) return properties;
+		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2); InputStreamReader isr = new InputStreamReader(in, "UTF-8");) {
 			properties.load(isr);
-			isr.close();
-			is2.close();
 			/*
+			 * isr.close();
+			 * is2.close();
 			 * for (String key : properties.stringPropertyNames()) {
 			 * logger.debug(key + ":::::" + properties.getProperty(key));
 			 * logger.debug( "::::"+key+":");
@@ -516,8 +579,10 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		filename = UtilsPathFile.getModelJarBasicPath() + "/" + getMenuNameHead() + "/" + filename;
 		return filename;
 	}
+
 	/** 设置线程运算量进行回叫 */
-	protected int skipGC=0;
+	protected int skipGC = 0;
+
 	public int getSkipGC() {
 		return skipGC;
 	}

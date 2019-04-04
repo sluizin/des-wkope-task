@@ -64,21 +64,6 @@ public final class UtilsList {
 		return list;
 	}
 
-	public static void main(String[] args) {
-		List<String> list = new ArrayList<>();
-		list.add("abc");
-		list.add("1");
-		list.add("deff");
-		list.add("中国人民");
-		list.add("a2");
-		list.add("");
-		list.add("aHHHHHbc");
-		List<String> list2 = getOrderListByLenDESC(list);
-		for (String t : list2) {
-			System.out.println("t:" + t.toString());
-		}
-	}
-
 	/**
 	 * 按长度排序对象
 	 * @author Sunjian
@@ -114,6 +99,167 @@ public final class UtilsList {
 		for (String e : list) {
 			if (e != null && e.length() > 0) return false;
 		}
+		return true;
+	}
+
+	/**
+	 * 沉淀二维list中的指定区域
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param x0 int
+	 * @param y0 int
+	 * @param x1 int
+	 * @param y1 int
+	 */
+	public static final void setPrecipitateList(List<List<String>> list, int x0, int y0, int x1, int y1) {
+		for (int y = y0; y <= y1; y++) {
+			loop1: for (int x = x1; x >= x0; x--) {
+				String e = listArrayGet(list, x, y);//list.get(x).get(y);
+				if (e != null && e.length() > 0) continue;
+				/* 发现空值，同列顶部沉淀 */
+				for (int i = x - 1; i >= x0; i--) {
+					String f = listArrayGet(list, i, y);//list.get(i).get(y);
+					if (f != null && f.length() > 0) {
+						listArrayExchange(list, x, y, i, y);
+						continue loop1;
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * 上浮二维list中的指定区域
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param x0 int
+	 * @param y0 int
+	 * @param x1 int
+	 * @param y1 int
+	 */
+	public static final void setGoUPList(List<List<String>> list, int x0, int y0, int x1, int y1) {
+		for (int y = y0; y <= y1; y++) {
+			loop1: for (int x = x0; x <= x1; x++) {
+				String e = listArrayGet(list, x, y);//list.get(x).get(y);
+				if (e != null && e.length() > 0) continue;
+				/* 发现空值，同列底部向上浮 */
+				for (int i = x + 1; i <= x1; i++) {
+					String f = listArrayGet(list, i, y);//list.get(i).get(y);
+					if (f != null && f.length() > 0) {
+						listArrayExchange(list, x, y, i, y);
+						continue loop1;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param x1 int
+	 * @param y1 int
+	 * @param x2 int
+	 * @param y2 int
+	 */
+	public static final void listArrayExchange(List<List<String>> list, int x1, int y1, int x2, int y2) {
+		String f = listArrayGet(list, x1, y1);
+		String g = listArrayGet(list, x2, y2);
+		listArraySet(list, x1, y1, g);
+		listArraySet(list, x2, y2, f);
+	}
+
+	/**
+	 * 设置二维list中某个位置的值
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param x int
+	 * @param y int
+	 * @param e String
+	 */
+	public static final void listArraySet(List<List<String>> list, int x, int y, String e) {
+		if (list == null) return;
+		List<String> l = list.get(x);
+		if (l == null) return;
+		l.set(y, e);
+	}
+
+	/**
+	 * 得到二维list中某个位置的值
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param x int
+	 * @param y int
+	 * @return String
+	 */
+	public static final String listArrayGet(List<List<String>> list, int x, int y) {
+		if (list == null) return null;
+		if (list.size() == 0) return null;
+		List<String> l = list.get(x);
+		if (l == null) return null;
+		return l.get(y);
+
+	}
+
+	public static void main(String[] args) {
+		List<List<String>> list = new ArrayList<>();
+		{
+			List<String> l = new ArrayList<>();
+			String[] arr = { "a", "b", "c", "d", "e", "f" };
+			Collections.addAll(l, arr);
+			list.add(l);
+		}
+		{
+			List<String> l = new ArrayList<>();
+			String[] arr = { "a1", "b1", "", "d1", "", "f1" };
+			Collections.addAll(l, arr);
+			list.add(l);
+		}
+		{
+			List<String> l = new ArrayList<>();
+			String[] arr = { "a2", "", "", "", "e2", "" };
+			Collections.addAll(l, arr);
+			list.add(l);
+		}
+		{
+			List<String> l = new ArrayList<>();
+			String[] arr = { "", "b3", "c3", "d3", "", "f3" };
+			Collections.addAll(l, arr);
+			list.add(l);
+		}
+		{
+			List<String> l = new ArrayList<>();
+			String[] arr = { "a4", "b4", "", "d4", "", "f4" };
+			Collections.addAll(l, arr);
+			list.add(l);
+		}
+		show(list);
+		setGoUPList(list, 1, 1, 4, 4);
+		show(list);
+		setPrecipitateList(list, 1, 1, 4, 4);
+		show(list);
+
+	}
+
+	static final void show(List<List<String>> list) {
+		for (List<String> li : list) {
+			for (String e : li) {
+				System.out.print(e + "\t");
+			}
+			System.out.println();
+		}
+		System.out.println("==================================================");
+	}
+	/**
+	 * 对二维list进行判断，是否出现不行列的行,如果所有行同样数量的列，则返回True
+	 * @param list  List&lt;List&lt;String&gt;&gt;
+	 * @return boolean
+	 */
+	public static final boolean testing(List<List<String>> list) {
+		int len = -1;
+		for (List<String> e : list) {
+			if (len == -1) len = e.size();
+			if (e.size() != len) return false;
+		}
+		if (len == -1) return false;
 		return true;
 	}
 

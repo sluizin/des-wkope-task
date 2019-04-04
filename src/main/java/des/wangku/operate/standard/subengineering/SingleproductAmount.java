@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsString;
@@ -15,6 +16,39 @@ public class SingleproductAmount {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(SingleproductAmount.class);
 
+	/**
+	 * 得到数量 source[1688,wk,hc360]<br>
+	 * dtype[0:企业,1:供应信息]<br>
+	 * biztype[1:经销批发,生产加工,]
+	 * @param keyword String
+	 * @param source String
+	 * @param dtype int
+	 * @param biztype int
+	 * @return String
+	 */
+	public static final String getAmount(String keyword, String source, int dtype,int biztype) {
+		String value = null;
+		try {
+			if ("1688".equals(source)) {
+				String newKeyword = java.net.URLEncoder.encode(keyword, "GBK");
+				if (dtype == 0) {
+					String urlString = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&biztype="+biztype;
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "sm-navigatebar-count", 0);					
+				}else {
+					String urlString = "https://s.1688.com/selloffer/offer_search.htm?keywords=" + newKeyword + "&biztype="+biztype;
+					value = UtilsReadURL.getReadUrlDisJsTextByClass(urlString, "sm-widget-offer", 0);
+					value = UtilsString.getNumbers(value, "共 \\d+ 件");
+					
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+
+		if (value == null || value.length() == 0) return "0";
+		return value;
+	}
 	/**
 	 * 得到数量 source[1688,wk,hc360]<br>
 	 * dtype[0:企业,1:供应信息]

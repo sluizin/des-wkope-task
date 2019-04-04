@@ -1,6 +1,5 @@
 package des.wangku.operate.standard.utls;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
@@ -27,6 +26,7 @@ import des.wangku.operate.standard.dialog.SearchDialog;
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog;
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaClass;
 import des.wangku.operate.standard.swt.ExcelCTabFolder;
+import des.wangku.operate.standard.swt.InterfaceMultiSave;
 import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.task.AbstractTablesEditDialog;
 import des.wangku.operate.standard.task.AbstractTask;
@@ -65,7 +65,6 @@ public final class UtilsSWTTableListener {
 			}
 		};
 		return t;
-
 	}
 
 	/**
@@ -104,7 +103,7 @@ public final class UtilsSWTTableListener {
 				table.getShell().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						TableColumn e = ResultTable.getDefaultTableColumn(table,SWT.LEFT, 150, newValue);
+						TableColumn e = ResultTable.getDefaultTableColumn(table, SWT.LEFT, 150, newValue);
 						ResultTable.setDefaultTableColumnPos(table, e);
 					}
 				});
@@ -253,6 +252,8 @@ public final class UtilsSWTTableListener {
 				logger.debug("copyMultiline!!!");
 				if (!UtilsSWTTableUtils.copyMultiLineToClipboard(table)) return;
 				UtilsSWTMessageBox.Alert(table.getShell(), "导入多行格式到粘贴板完成");
+				InterfaceMultiSave multisaveas = UtilsSWTTools.getParentInterfaceObj(table, InterfaceMultiSave.class);
+				if (multisaveas != null) multisaveas.multiSaveClipboard(table);
 			}
 		};
 		return t;
@@ -269,10 +270,12 @@ public final class UtilsSWTTableListener {
 				logger.debug("copyJson!!!");
 				TableItem[] arr = UtilsSWTTable.getSelectCheckTableItemAllArray(table);
 				if (arr.length == 0) return;
-				List<List<String>> list = UtilsSWTTable.getTableItemList(false, table, arr);
+				List<List<String>> list = UtilsSWTTable.getTableItemList(false,table, arr);
 				String itemString = JSON.toJSONString(list);
 				UtilsClipboard.copy(itemString);
 				UtilsSWTMessageBox.Alert(table.getShell(), "导入Json格式到粘贴板完成");
+				InterfaceMultiSave multisaveas = UtilsSWTTools.getParentInterfaceObj(table, InterfaceMultiSave.class);
+				if (multisaveas != null) multisaveas.multiSaveJson(table, list);
 			}
 		};
 		return t;
@@ -370,16 +373,16 @@ public final class UtilsSWTTableListener {
 					isHead = epc.isHead();
 				}
 				List<List<String>> list = UtilsSWTTable.getTableItemList(isHead, table, arr);
-				String path = PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog;
+				String path = PV.getOutpoutCatalog();
 				String filename = UtilsRnd.getNewFilenameNow(4, 1) + ".xlsx";
-				File file = new File(path);
-				if (!file.exists()) file.mkdirs();
 				String excelFilename = path + "/" + filename;
 				InterfaceExcelChange change = UtilsSWTTools.getParentInterfaceObj(table, InterfaceExcelChange.class);
 				String sheetName = ExcelCTabFolder.getSheetName(table, "信息");
 				boolean t = UtilsSWTPOI.makeExcel(excelFilename, sheetName, list, change, epc);
 				logger.debug("copyToexcel:" + excelFilename);
 				if (t) UtilsSWTMessageBox.Alert(table.getShell(), filename + "生成成功");
+				InterfaceMultiSave multisaveas = UtilsSWTTools.getParentInterfaceObj(table, InterfaceMultiSave.class);
+				if (multisaveas != null) multisaveas.multiSaveExcel(table, epc, list);
 			}
 		};
 		return t;

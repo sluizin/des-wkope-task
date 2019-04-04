@@ -9,7 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.PV;
 import des.wangku.operate.standard.PV.Env;
 
@@ -160,6 +161,45 @@ public final class UtilsPathFile {
 			if (file.isFile() && file.getName().endsWith(".jar")) jarList.add(file.getAbsolutePath());
 			if (file.isDirectory()) getJarList(jarList, file.getAbsolutePath());
 		}
+	}
+
+	/**
+	 * 从指定目录中查找出目录名左侧关键字的File 只返回一个File
+	 * @param path String
+	 * @param leftKey String
+	 * @param isDeep boolean
+	 * @return File
+	 */
+	public static final File getCatalogNameLeftFile(String path, String leftKey, boolean isDeep) {
+		if (leftKey == null) return null;
+		File or = new File(path);
+		File[] files = or.listFiles();
+		if (files == null || files.length == 0) return null;
+		for (File file : files) {
+			if (!file.isDirectory()) continue;
+			if (file.getName().indexOf(leftKey) == 0) return file;
+		}
+		/* 如果同级没有发现，可以考虑深层查找 */
+		if (!isDeep) return null;
+		for (File file : files) {
+			if (!file.isDirectory()) continue;
+			File t = getCatalogNameLeftFile(file.getAbsolutePath(), leftKey, isDeep);
+			if (t != null) return t;
+		}
+		return null;
+	}
+
+	/**
+	 * 从指定目录中查找出目录名左侧关键字的目录名 返回null，则没有找到
+	 * @param path String
+	 * @param leftKey String
+	 * @param isDeep boolean
+	 * @return String
+	 */
+	public static final String getCatalogNameLeftFilename(String path, String leftKey, boolean isDeep) {
+		File file=getCatalogNameLeftFile(path,leftKey,isDeep);
+		if(file==null)return null;
+		return file.getName();
 	}
 
 	/**

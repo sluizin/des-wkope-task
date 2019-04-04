@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,7 +50,54 @@ public final class UtilsJsoup {
 		if (elements.size() == 0) return "";
 		String value = elements.get(0).attr("content");
 		return value == null ? "" : value;
+	}
 
+	/**
+	 * 页面含有js数量
+	 * @param doc Document
+	 * @return int
+	 */
+	public static final int getJsCount(Document doc) {
+		return doc.getElementsByTag("script").size();
+	}
+
+	/**
+	 * 页面含有css数量
+	 * @param doc Document
+	 * @return int
+	 */
+	public static final int getCssCount(Document doc) {
+		return getTagList(doc, "link", "type", "text/css").size();
+	}
+
+	/**
+	 * 页面含有img标签中含有alt值的数量
+	 * @param doc Document
+	 * @return int
+	 */
+	public static final int getImgAltCount(Document doc) {
+		return getTagList(doc, "img", "alt", "*").size();
+	}
+
+	/**
+	 * 得到所有某个标签的属性值。允许使用"*"代表所有数值
+	 * @param doc Document
+	 * @param tag String
+	 * @param alt String
+	 * @param value String
+	 * @return List&lt;element&gt;
+	 */
+	public static final List<Element> getTagList(Document doc, String tag, String alt, String value) {
+		List<Element> list = new ArrayList<>();
+		if (tag == null || tag.length() == 0) return list;
+		if (alt == null || alt.length() == 0) return list;
+		Elements arr = doc.getElementsByTag(tag);
+		for (Element e : arr) {
+			String v = e.attr(alt);
+			if (v == null) continue;
+			if ("*".equals(value) || v.equals(value)) list.add(e);
+		}
+		return list;
 	}
 
 	/**
@@ -141,6 +189,21 @@ public final class UtilsJsoup {
 	}
 
 	/**
+	 * 得到所有某个标签中含有的地址的绝对地址，如a-href img-src等
+	 * @param body Element
+	 * @param tag String
+	 * @param url String
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getTagUrlList(Element body, String tag, String url) {
+		List<String> list = new ArrayList<String>();
+		Elements as = body.select(tag + "[" + url + "]");
+		for (Element t1 : as)
+			list.add(t1.attr("abs:" + url));
+		return list;
+	}
+
+	/**
 	 * 从数组中提取第一个text()值，如为空,则返回空串
 	 * @param es Elements
 	 * @return String
@@ -182,6 +245,7 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getElementsClassFirst(Element doc, String classname) {
+		if (doc == null || classname == null) return "";
 		Elements es = doc.getElementsByClass(classname);
 		if (es == null || es.size() == 0) return "";
 		Element e = es.first();
@@ -200,9 +264,8 @@ public final class UtilsJsoup {
 		for (int i = 0; i < es.size(); i++) {
 			Element e = es.get(i);
 			Elements ces = e.getElementsByClass(keyClassName);
-			for (Element ee : ces) {
+			for (Element ee : ces)
 				if (ee.html().indexOf(keyword) > -1) return e;
-			}
 		}
 		return null;
 	}
@@ -222,7 +285,6 @@ public final class UtilsJsoup {
 			for (String name : arr) {
 				name = name.trim();
 				if (name.indexOf(keyword) > -1) {
-					//System.out.println("name:" + name);
 					list.add(e);
 					continue loop;
 				}
@@ -241,7 +303,6 @@ public final class UtilsJsoup {
 		List<RegularElement> list = new ArrayList<>();
 		if (doc == null) return list;
 		Elements all = doc.getAllElements();
-
 		Pattern p = Pattern.compile(keyword);
 		loop: for (Element e : all) {
 			String classname = e.attr("class");

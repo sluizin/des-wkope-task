@@ -1,5 +1,7 @@
 package des.wangku.operate.standard.utls;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,7 +60,7 @@ public final class UtilsRegular {
 		 * System.out.println("-----------------------------------------------");
 		 * }
 		 */
-		String content = "[1]sadsaasfdweqew[100]effewasdf[022]asdfas[a]fa[d00]sdf[5]asf[580]";
+		String content = "[1]sadsaasfdweqew[100]effewasdf[022]asdfas[a]fa[d00]sdf[5]asf[580]rr[005]";
 		String pattern = "\\[[0-9]+\\]";
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(content);
@@ -73,7 +75,69 @@ public final class UtilsRegular {
 		System.out.println("" + getPatternReplaceNumDis(content, 3, "(abc)"));
 		System.out.println("" + getPatternReplaceNumDis(content, 4, "(abc)"));
 		System.out.println("" + getPatternReplaceNumDis(content, 5, "(abc)"));
+		int[] arr=getArrayNum(content);
+		for(int a:arr) {
+			System.out.println("a:"+a);
+		}
 
+	}
+	private static final String pattern = "\\[[0-9]+\\]";
+	/**
+	 * 得到字符串提取的[102]此类的子串，得到指定下标
+	 * @param content String
+	 * @param index int
+	 * @return int
+	 */
+	public static final int getArrayNumNo(String content,int index) {
+		int [] arr=getArrayNum(content);
+		if(index<0 ||index>=arr.length)return -1;
+		return arr[index];
+	}
+	
+	/**
+	 * 从字符串中提取所有[102]此类的子串，并得到数值数组
+	 * @param content String
+	 * @return int[]
+	 */
+	public static final int[] getArrayNum(String content) {
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(content);
+		List<Integer> list=new ArrayList<>();
+		while (m.find()) {
+			String str=m.group(0);
+			list.add(Integer.parseInt(str.substring(1,str.length()-1)));
+		}
+		int[] arr=new int[list.size()];
+		for(int i=0;i<list.size();i++) {
+			arr[i]=list.get(i);
+		}
+		return arr;
+	}
+	/**
+	 * 从字符串中提取所有[102],[a102]此类的子串，并得到字符串
+	 * @param content String
+	 * @return String
+	 */
+	public static final String getArrayIDFirst(String content) {
+		String[] arr=getArrayID(content);
+		if(arr==null || arr.length==0)return null;
+		return arr[0];
+	}
+	/**
+	 * 从字符串中提取所有[102],[a102]此类的子串，并得到字符串数组
+	 * @param content String
+	 * @return String[]
+	 */
+	public static final String[] getArrayID(String content) {
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(content);
+		List<String> list=new ArrayList<>();
+		while (m.find()) {
+			String str=m.group(0);
+			list.add(str.substring(1,str.length()-1));
+		}
+		String[] arr= {};
+		return list.toArray(arr);
 	}
 
 	/**

@@ -2,7 +2,8 @@ package des.wangku.operate.standard.utls;
 
 import java.awt.Toolkit;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 

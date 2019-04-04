@@ -144,7 +144,8 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	}
 
 	/**
-	 * 得到指定位的 ResultTable
+	 * 得到指定位的 ResultTable<br>
+	 * 如果为null，则没有找到
 	 * @param index int
 	 * @return ResultTable
 	 */
@@ -249,6 +250,10 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 		MenuItem menuItemCopytoExcels = new MenuItem(parent, SWT.NONE);
 		menuItemCopytoExcels.setText("Excel-所有页");
 		menuItemCopytoExcels.addListener(SWT.Selection, getListenerCTabFolderToExcel());
+		
+		MenuItem menuItemCopytoExcelsSummary = new MenuItem(parent, SWT.NONE);
+		menuItemCopytoExcelsSummary.setText("Excel-所有页-累积");
+		menuItemCopytoExcelsSummary.addListener(SWT.Selection, getListenerCTabFolderToExcelAccumulate());
 	}
 
 	/**
@@ -286,7 +291,25 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 		};
 		return t;
 	}
+	/**
+	 * 把多个table记录保存到excel中
+	 * @return Listener
+	 */
+	private Listener getListenerCTabFolderToExcelAccumulate() {
+		Listener t = new Listener() {
+			public void handleEvent(Event e) {
+				ResultTable[] tables = getResultTables();
+				if (tables.length == 0) return;
+				Workbook workbook = new XSSFWorkbook();
+				UtilsSWTPOI.addWorkbookSheet(workbook, "累积", tables);
 
+				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook,true, true);
+				if (file == null) return;
+				logger.debug("copyCTabFolderToexcelAccumulate:" + file.getAbsolutePath());
+			}
+		};
+		return t;
+	}
 	/**
 	 * 把多个table记录保存到excel中
 	 * @return Listener

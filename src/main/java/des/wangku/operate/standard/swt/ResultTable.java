@@ -124,7 +124,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 */
 	public synchronized void setString(int x, int y, String value) {
 		TableItem e = getItem(x);
-		if (e == null) return;
+		if (e == null|| value==null) return;
 		e.setText(y, value);
 	}
 
@@ -205,6 +205,34 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	public void addData(ResultSet rs) {
 		List<String> list = UtilsSQL.resultSetToList(rs);
 		addData(list);
+	}
+
+	/**
+	 * 添加新列，是否允许重复 是否同步
+	 * @param isasync boolean
+	 * @param columnName String
+	 * @param repeat boolean
+	 */
+	public void addColumn(boolean isasync,String columnName, boolean repeat) {
+		if (!repeat) {
+			TableColumn[] arr = this.getColumns();
+			for (TableColumn e : arr) {
+				if (e.getText().equals(columnName)) { return; }
+			}
+		}
+		if(isasync)
+		{
+			getShell().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, 150, columnName);
+					ResultTable.setDefaultTableColumnPos(base, e);
+				}
+			});
+		}else {
+			TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, 150, columnName);
+			ResultTable.setDefaultTableColumnPos(base, e);
+		}
 	}
 
 	/**
@@ -507,8 +535,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 
 	/**
 	 * 设置弹出菜单 - 导出
-	 * @param name
-	 * @param index
+	 * @param parent Menu
 	 */
 	void setMenuItemCheckExport(Menu parent) {
 		MenuItem menuItemCopyline = new MenuItem(parent, SWT.NONE);
@@ -528,8 +555,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @param text String
 	 * @param len int
 	 */
-	public void setTableColumn(int align,String text, int len) {
-		TableColumn e = getDefaultTableColumn(this,align, len, text);
+	public void setTableColumn(int align, String text, int len) {
+		TableColumn e = getDefaultTableColumn(this, align, len, text);
 		setDefaultTableColumnPos(this, e);
 	}
 
@@ -555,18 +582,19 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	/**
 	 * 设置默认列
 	 * @param table ResultTable
+	 * @param align int
 	 * @param len int
 	 * @param text String
 	 * @return TableColumn
 	 */
-	public final static TableColumn getDefaultTableColumn(ResultTable table,int align, int len, String text) {
-		TableColumn tColumn = new TableColumn(table, SWT.BORDER | SWT.NONE | SWT.FULL_SELECTION | SWT.MULTI);
-		tColumn.setWidth(len);
-		tColumn.setText(text);
-		tColumn.setAlignment(align);
-		tColumn.setMoveable(true);/* 设置表头可移动，默认为false */
-		tColumn.setResizable(true);
-		return tColumn;
+	public final static TableColumn getDefaultTableColumn(ResultTable table, int align, int len, String text) {
+		TableColumn tc = new TableColumn(table, SWT.BORDER | SWT.NONE | SWT.FULL_SELECTION | SWT.MULTI);
+		tc.setWidth(len);
+		tc.setText(text);
+		tc.setAlignment(align);
+		tc.setMoveable(true);/* 设置表头可移动，默认为false */
+		tc.setResizable(true);
+		return tc;
 	}
 
 	/**
@@ -583,9 +611,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				index = i;
 				break;
 			}
-		if (index != -1) {
-			e.addListener(SWT.Selection, UtilsSWTTableListener.getListenerColumnDoubleClick(table, index));
-		}
+		if (index == -1) return;
+		e.addListener(SWT.Selection, UtilsSWTTableListener.getListenerColumnDoubleClick(table, index));
 	}
 
 	/**
@@ -765,8 +792,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		for (int i = 0; i < arrs.length; i++) {
 			value = (arrs[i] == null) ? "" + i : arrs[i];
 			if (ectpara.attrSuffix) value = "[" + i + "]" + value;
-			int align=ectpara.getSWTAlign(i);
-			setTableColumn(align,value, getColumnWidth(i));
+			int align = ectpara.getSWTAlign(i);
+			setTableColumn(align, value, getColumnWidth(i));
 		}
 	}
 

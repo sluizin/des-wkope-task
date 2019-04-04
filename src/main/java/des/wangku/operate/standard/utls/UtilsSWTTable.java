@@ -6,7 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -130,6 +131,18 @@ public final class UtilsSWTTable {
 	 * @return List&lt;List&lt;String&gt;&gt;
 	 */
 	public static final List<List<String>> getTableItemList(boolean isHead, ResultTable table, TableItem... itemArr) {
+		return getTableItemList(isHead, null, table, itemArr);
+	}
+
+	/**
+	 * 把表格换成list数组 是否需要头部信息
+	 * @param isHead boolean
+	 * @param sheetName String
+	 * @param table ResultTable
+	 * @param itemArr TableItem[]
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public static final List<List<String>> getTableItemList(boolean isHead, String sheetName, ResultTable table, TableItem... itemArr) {
 		List<List<String>> list = new ArrayList<>();
 		if (isHead) {
 			/*
@@ -137,6 +150,11 @@ public final class UtilsSWTTable {
 			 * if (ll != null) list.add(ll);
 			 */
 			list.add(UtilsSWTTable.getTableColumnList(table));
+		}
+		if (sheetName != null) {
+			List<String> ll = new ArrayList<>();
+			ll.add(sheetName);
+			list.add(ll);
 		}
 		if (itemArr == null || itemArr.length == 0) return list;
 		int i, ii, len;
@@ -283,6 +301,7 @@ public final class UtilsSWTTable {
 			}
 		});
 	}
+
 	/**
 	 * 移除选中某行
 	 * @param display Display getDisplay()
@@ -551,6 +570,7 @@ public final class UtilsSWTTable {
 		}
 		return table.getItemCount() - 1;
 	}
+
 	/**
 	 * 得到表格最大/最小层数
 	 * @param table Table
@@ -566,7 +586,7 @@ public final class UtilsSWTTable {
 			if (isMax) {/* 最大深度 */
 				if (deep > extremum) extremum = deep;
 			} else {/* 最小深度 */
-				if (extremum==0 || deep < extremum) extremum = deep;
+				if (extremum == 0 || deep < extremum) extremum = deep;
 			}
 		}
 		return extremum;

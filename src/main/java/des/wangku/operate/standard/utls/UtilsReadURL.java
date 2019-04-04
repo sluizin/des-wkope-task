@@ -408,6 +408,8 @@ public final class UtilsReadURL {
 		datas2.put("token", "4edbf8229215f26c6b401aaf693466a3");
 	}
 
+	
+	
 	public static void getJString(String keyword) {
 		try {
 			String href = "https://fanyi.baidu.com/v2transapi";
@@ -587,7 +589,11 @@ public final class UtilsReadURL {
 			return url;
 		}
 	}
-
+	/**
+	 * 
+	 * @param url URL
+	 * @return InputStream
+	 */
 	public static InputStream returnBitMap(URL url) {
 		InputStream is = null;
 		try {
@@ -595,7 +601,6 @@ public final class UtilsReadURL {
 			conn.setDoInput(true);
 			conn.connect();
 			is = conn.getInputStream(); //得到网络返回的输入流  
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -716,8 +721,7 @@ public final class UtilsReadURL {
 	 * @return String
 	 */
 	public static final String getReadUrlJs(String url, boolean jsEnable, boolean cssEnable, int timeout, long jsTime) {
-		/** HtmlUnit请求web页面 */
-		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);
+		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);/* HtmlUnit请求web页面 */
 		wc.getOptions().setJavaScriptEnabled(jsEnable); //启用JS解释器，默认为true  
 		wc.getOptions().setCssEnabled(cssEnable); //禁用css支持  
 		wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
@@ -956,7 +960,17 @@ public final class UtilsReadURL {
 		String username = "";
 		String inputNamePassword = "";
 		String password = "";
-
+		/**
+		 * 
+		 * @param isUser boolean
+		 * @param logUrl String
+		 * @param logcheckUrl String
+		 * @param formID String
+		 * @param inputNameUsername String
+		 * @param username String
+		 * @param inputNamePassword String
+		 * @param password String
+		 */
 		public LoginParameter(boolean isUser, String logUrl, String logcheckUrl, String formID, String inputNameUsername, String username, String inputNamePassword, String password) {
 			this.isUser = isUser;
 			this.logUrl = logUrl;
@@ -1014,12 +1028,17 @@ public final class UtilsReadURL {
 		return "";
 	}
 
-	public static String readUrl(String urlString, String encoding) throws IOException {
-		URL url = new URL(urlString);
+	/**
+	 * 读取url，并进行解码
+	 * @param urlString String
+	 * @param encoding String
+	 * @return String
+	 */
+	public static String readUrl(String urlString, String encoding) {
 		InputStream is = null;
 		ByteArrayOutputStream os = null;
 		try {
-			//            is = url.openStream();
+			URL url = new URL(urlString);
 			HttpURLConnection uc = (HttpURLConnection) url.openConnection();
 			uc.setConnectTimeout(30000);
 			uc.setReadTimeout(30000);
@@ -1032,34 +1051,42 @@ public final class UtilsReadURL {
 			while ((len = is.read(bytes)) != -1) {
 				os.write(bytes, 0, len);
 			}
-			if (encoding.equals("auto")) {
-				Document document = Jsoup.parseBodyFragment(os.toString());//Jsoup.parse(url, 1000 * 60 * 30);
-				Elements elements = document.select("meta");
-				Iterator<Element> i = elements.iterator();
-				while (i.hasNext()) {
-					Element element = i.next();
-					if (element.attr("http-equiv").equals("Content-Type")) {
-						String content = element.attr("content").trim();
-						int index = content.indexOf("=");
-						encoding = content.substring(index + 1);
-						break;
-					}
+			if (!encoding.equals("auto")) return new String(os.toByteArray(), encoding);
+			Document document = Jsoup.parseBodyFragment(os.toString());//Jsoup.parse(url, 1000 * 60 * 30);
+			Elements elements = document.select("meta");
+			Iterator<Element> i = elements.iterator();
+			while (i.hasNext()) {
+				Element element = i.next();
+				if (element.attr("http-equiv").equals("Content-Type")) {
+					String content = element.attr("content").trim();
+					int index = content.indexOf("=");
+					encoding = content.substring(index + 1);
+					break;
 				}
-				if (encoding.equals("auto")) {
-					encoding = "gb2312";
-				}
-				return new String(os.toByteArray(), encoding);
-			} else {
-				return new String(os.toByteArray(), encoding);
 			}
+			if (encoding.equals("auto")) encoding = "gb2312";
+			return new String(os.toByteArray(), encoding);
 		} catch (Exception e) {
 			return "";
 		} finally {
-			if (os != null) os.close();
-			if (is != null) is.close();
+			if (os != null) try {
+				os.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (is != null) try {
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
+	/**
+	 * @param uc URLConnection
+	 * @return URLConnection
+	 * @throws Exception
+	 */
 	private static URLConnection reload(URLConnection uc) throws Exception {
 		HttpURLConnection huc = (HttpURLConnection) uc;
 		if (huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP || huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM)// 302, 301
@@ -1085,6 +1112,26 @@ public final class UtilsReadURL {
 		} catch (Exception e) {
 			System.out.println("Redirect to Exception:" + e.toString());
 			return null;
+		}
+	}
+
+	/**
+	 * 判断链接是否是死链
+	 * @param urlString String
+	 * @return boolean
+	 */
+	public static boolean isConnection(String urlString) {
+		try {
+			if (urlString.indexOf("http://") != 0 && urlString.indexOf("https://") != 0) return false;
+			URL url = new URL(urlString);
+			HttpURLConnection http = (HttpURLConnection) url.openConnection();
+			http.setConnectTimeout(10000);
+			http.setReadTimeout(10000);
+			int result = http.getResponseCode();
+			return result >= 200 && result < 300;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 }

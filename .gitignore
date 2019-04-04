@@ -2,5 +2,6 @@
 /.gradle/
 /bin/
 /build/
-src/main/resources/database/
+/src/main/resources/database/
 /.gitignore
+/src/main/resources/database

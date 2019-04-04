@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaClass;
+import des.wangku.operate.standard.swt.AbstractCTabFolder;
 import des.wangku.operate.standard.swt.ExcelCTabFolder;
 import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.task.InterfaceExcelChange;
@@ -119,13 +120,21 @@ public final class UtilsSWTPOI {
 	 * 把table放入 Workbook 中
 	 * @param workbook Workbook
 	 * @param sheetName String
-	 * @param table ResultTable
+	 * @param arrs ResultTable[]
 	 */
-	public static final void addWorkbookSheet(Workbook workbook, String sheetName, ResultTable table) {
-		InterfaceExcelChange change = UtilsSWTTools.getParentInterfaceObj(table, InterfaceExcelChange.class);
-		TableItem[] arr = table.getItems();
-		boolean isHead = table.getHeaderVisible();
-		List<List<String>> list = UtilsSWTTable.getTableItemList(isHead, table, arr);
+	public static final void addWorkbookSheet(Workbook workbook, String sheetName, ResultTable... arrs) {
+		if(arrs.length==0)return;
+		ResultTable first=arrs[0];
+		InterfaceExcelChange change = UtilsSWTTools.getParentInterfaceObj(first, InterfaceExcelChange.class);
+		boolean isHead = first.getHeaderVisible();
+		List<List<String>> list=new ArrayList<>();
+		for(int i=0;i<arrs.length;i++) {
+			ResultTable table=arrs[i];
+			String sheetName2 = AbstractCTabFolder.getSheetName(table, "信息" + i);
+			TableItem[] arr = table.getItems();
+			List<List<String>> list1 = UtilsSWTTable.getTableItemList(i==0?isHead:false,arrs.length>1?sheetName2:null, table, arr);
+			list.addAll(list1);
+		}
 		UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, list, change);
 	}
 
@@ -530,7 +539,16 @@ public final class UtilsSWTPOI {
 			return null;
 		}
 	}
-
+	/**
+	 * 
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @return String
+	 */
+	public static String getCellValueByString(Sheet sheet, int x, int y) {
+		return getCellValueByString(sheet,x,y,false,"");
+	}
 	/**
 	 * 获取单元格各类型值，返回字符串类型<br>
 	 * 如果没有单元格，则返回null<br>

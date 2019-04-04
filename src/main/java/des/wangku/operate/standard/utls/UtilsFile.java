@@ -159,7 +159,7 @@ public final class UtilsFile {
 	 * @return File
 	 */
 	public static File mkModelRNDFile(String proFolder, String fileExt) {
-		String filename = UtilsRnd.getNewFilenameNow(4, 1) + "." + fileExt;
+		String filename = UtilsRnd.getNewFilenameNow(4, 1);
 		return mkModelFile(proFolder, filename, fileExt);
 	}
 
@@ -171,7 +171,7 @@ public final class UtilsFile {
 	 * @return File
 	 */
 	public static File mkModelFile(String proFolder, String filename, String fileExt) {
-		String path = PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
+		String path = PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 		File filefolder = new File(path);
 		if (!filefolder.exists()) filefolder.mkdirs();
 		if (filename == null) filename = UtilsRnd.getNewFilenameNow(4, 1);

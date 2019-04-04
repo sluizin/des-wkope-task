@@ -54,19 +54,39 @@ public final class UtilsVerification {
 		if (m == null) return false;
 		return m.matches();
 	}
+
 	/**
-     * 利用正则表达式判断字符串是否是整数型数字
-     * @param str String
-     * @return boolean
-     */
-    public boolean isNumeric(String str){
-           Pattern pattern = Pattern.compile("[0-9]*");
-           Matcher isNum = pattern.matcher(str);
-           if( !isNum.matches() ){
-               return false;
-           }
-           return true;
-    }
+	 * 利用正则表达式判断字符串是否是整数型数字
+	 * @param str String
+	 * @return boolean
+	 */
+	public boolean isNumeric(String str) {
+		Pattern pattern = Pattern.compile("[0-9]*");
+		Matcher isNum = pattern.matcher(str);
+		if (!isNum.matches()) { return false; }
+		return true;
+	}
+
+	/**
+	 * 从字符串提取出第一个"[****]"中括号中的字符串<br>
+	 * 如果没有查到，则返回null
+	 * @param content String
+	 * @return String
+	 */
+	public static final String getStringID(String content) {
+		Pattern pattern = Pattern.compile("\\[[\\s\\S]+\\]");
+		Matcher isNum = pattern.matcher(content);
+		if (isNum.find()) {
+			String str = isNum.group(0);
+			return str.substring(1, str.length() - 1);
+		}
+		return null;
+	}
+
+	public static void main(String[] args) {
+		String content = "abc[p10中a]";
+		System.out.println("Hello World!:" + getStringID(content));
+	}
 
 	/**
 	 * 判断文件是否为csv文件，主要是判断扩展名
