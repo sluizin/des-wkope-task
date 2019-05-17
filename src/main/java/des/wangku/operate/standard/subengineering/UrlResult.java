@@ -82,7 +82,7 @@ public class UrlResult {
 	}
 	public int getKeyCount(String key) {
 		if(key==null || key.length()==0)return 0;
-		return UtilsRegular.getPatternNumDisCount(content, key);
+		return UtilsRegular.getPatternCount(content, key);
 	}
 	public int getTagCountOR(String tag, TagAttr... arrs) {
 		return getTagCountOR(doc, tag, arrs);

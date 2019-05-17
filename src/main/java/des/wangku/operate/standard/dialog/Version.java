@@ -12,6 +12,8 @@ import des.wangku.operate.standard.utls.UtilsFile;
 
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 
 /**
  * 显示版本信息包括新版本更新内容
@@ -58,6 +60,22 @@ public class Version extends Dialog {
 		shell.setSize(442, 266);
 		text = new Text(shell, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text.setBounds(10, 10, 424, 219);
+		shell.addDisposeListener(new DisposeListener() {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				logger.warn("缷载弹出窗口");
+			}
+			
+		});
+/*
+		shell.addListener(SWT.FocusOut, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				logger.warn("移除弹出窗口");
+				shell.dispose();				
+			}
+			
+		});*/
 	}
 	
 	public void setTextContent(String filename) {

@@ -69,7 +69,7 @@ public class TableOutputExcelParaDialog extends Dialog {
 		button_ishead = new Button(shell, SWT.CHECK);
 		button_ishead.setBounds(10, 10, 69, 16);
 		button_ishead.setText("导入头部");
-
+		button_ishead.setSelection(true);
 		Button button_submit = new Button(shell, SWT.NONE);
 		button_submit.addSelectionListener(new SelectionAdapter() {
 			@Override

@@ -60,13 +60,24 @@ public final class UtilsVerification {
 	 * @param str String
 	 * @return boolean
 	 */
-	public boolean isNumeric(String str) {
+	public static final boolean isNumeric(String str) {
 		Pattern pattern = Pattern.compile("[0-9]*");
 		Matcher isNum = pattern.matcher(str);
 		if (!isNum.matches()) { return false; }
 		return true;
 	}
-
+	/**
+	 * 利用正则表达式判断字符串是否是整数型数字或字母
+	 * @param str String
+	 * @return boolean
+	 */
+	public static final boolean isNumericChar(String str) {
+		Pattern pattern = Pattern.compile("[0-9a-zA-Z]*");
+		Matcher isNum = pattern.matcher(str);
+		if (!isNum.matches()) { return false; }
+		return true;
+	}
+	
 	/**
 	 * 从字符串提取出第一个"[****]"中括号中的字符串<br>
 	 * 如果没有查到，则返回null
@@ -82,10 +93,21 @@ public final class UtilsVerification {
 		}
 		return null;
 	}
-
+	/**
+	 * 过滤掉[****]得到剩余字符串<br>
+	 * 如果没有ID，则返回null
+	 * @param content String
+	 * @return String
+	 */
+	public static final String getStringName(String content) {
+		String id=getStringID(content);
+		if(id==null)return null;
+		return content.replace("["+id+"]", "");
+	}
 	public static void main(String[] args) {
-		String content = "abc[p10中a]";
+		String content = "abc[p10中a]ef";
 		System.out.println("Hello World!:" + getStringID(content));
+		System.out.println("Hello World!:" + getStringName(content));
 	}
 
 	/**

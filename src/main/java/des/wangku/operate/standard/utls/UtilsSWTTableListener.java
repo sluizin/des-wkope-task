@@ -22,7 +22,7 @@ import com.alibaba.fastjson.JSON;
 
 import des.wangku.operate.standard.PV;
 import des.wangku.operate.standard.dialog.InputValueDialog;
-import des.wangku.operate.standard.dialog.SearchDialog;
+import des.wangku.operate.standard.dialog.SearchResultTable;
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog;
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaClass;
 import des.wangku.operate.standard.swt.ExcelCTabFolder;
@@ -472,7 +472,8 @@ public final class UtilsSWTTableListener {
 				 */
 				if (e.stateMask == SWT.CTRL && (e.keyCode == 'f')) {
 					InterfaceTablesDialog parent = UtilsSWTTools.getParentInterfaceObj(table, InterfaceTablesDialog.class);
-					parent.setSearchDialog(new SearchDialog(table.getShell(), 0, table));
+					//parent.setSearchDialog(new SearchDialog(table.getShell(), 0, table));
+					parent.setSearchDialog((new SearchResultTable(table.getShell(),0)).putCombo(table));
 					parent.getSearchDialog().open();
 				} /*
 					 * if (e.keyCode == SWT.DEL) {

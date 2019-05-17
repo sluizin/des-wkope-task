@@ -49,21 +49,29 @@ public final class UtilsSWTListener {
 		Listener t = new Listener() {
 			public void handleEvent(Event e) {
 				if (clazz == null) return;
-				Display display = Display.getDefault();
-				Shell shell = new Shell(display, SWT.CLOSE | SWT.MIN | SWT.DIALOG_TRIM);
-				/* String path = basicClass.getProtectionDomain().getCodeSource().getLocation().getPath(); */
-				try {
-					URL url = UtilsJar.getJarSourceURL(clazz, filename);/* "/update.info" */
-					if (url == null) return;
-					InputStream is = url.openStream();
-					Version ver = new Version(shell, 0, is);
-					ver.open();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+				showVersion(clazz,filename);
 			}
 		};
 		return t;
+	}
+	/**
+	 * 查看版本信息
+	 * @param clazz Class&lt;?&gt;
+	 * @param filename String
+	 */
+	public static final void showVersion(Class<?> clazz, String filename) {
+		Display display = Display.getDefault();
+		Shell shell = new Shell(display, SWT.CLOSE | SWT.MIN | SWT.DIALOG_TRIM);
+		/* String path = basicClass.getProtectionDomain().getCodeSource().getLocation().getPath(); */
+		try {
+			URL url = UtilsJar.getJarSourceURL(clazz, filename);/* "/update.info" */
+			if (url == null) return;
+			InputStream is = url.openStream();
+			Version ver = new Version(shell, 0, is);
+			ver.open();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	/**

@@ -5,7 +5,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -20,8 +21,8 @@ import des.wangku.operate.standard.swt.SourceTree;
  * @version 1.0
  * @since jdk1.8
  */
-@SuppressWarnings({"rawtypes"})
 public final class UtilsSWTTree {
+	/** 日志 */
 	static final Logger logger = LoggerFactory.getLogger(UtilsSWTTree.class);
 	/** tree显示名称时多项信息的分隔符 */
 	public static final String ACC_IntervalCharacter = "|";
@@ -55,11 +56,11 @@ public final class UtilsSWTTree {
 
 	/**
 	 * 更改父项的状态
-	 * @param f TreeItem
+	 * @param e TreeItem
 	 */
-	public static final void changeSelectTreeCheckParent(TreeItem f) {
-		if (f == null) return;
-		TreeItem parent = f.getParentItem();
+	public static final void changeSelectTreeCheckParent(TreeItem e) {
+		if (e == null) return;
+		TreeItem parent = e.getParentItem();
 		if (parent == null) return;
 		parent.setChecked(getTreeItemNextisCheckAll(parent));
 		changeSelectTreeCheckParent(parent);
@@ -94,7 +95,7 @@ public final class UtilsSWTTree {
 	/**
 	 * 得到tree里所有的选中项
 	 * @param treearrs Tree[]
-	 * @return Set &lt; TreeItem &gt; 
+	 * @return Set &lt; TreeItem &gt;
 	 */
 	public static final Set<TreeItem> getTreeItemCheckAll(Tree... treearrs) {
 		Set<TreeItem> set = new HashSet<TreeItem>();
@@ -108,7 +109,7 @@ public final class UtilsSWTTree {
 	/**
 	 * 得到tree里所有的选中项
 	 * @param treearrs Tree[]
-	 * @return List &lt; TreeItem &gt; 
+	 * @return List &lt; TreeItem &gt;
 	 */
 	public static final List<TreeItem> getTreeItemCheckAllList(Tree... treearrs) {
 		List<TreeItem> list = new ArrayList<TreeItem>();
@@ -134,7 +135,7 @@ public final class UtilsSWTTree {
 
 	/**
 	 * 把TreeItem提到list中，判断是否选中，或未选，或忽略，后期再处理
-	 * @param list List &lt; TreeItem &gt; 
+	 * @param list List &lt; TreeItem &gt;
 	 * @param isCheck Boolean
 	 * @param f TreeItem
 	 */
@@ -167,15 +168,10 @@ public final class UtilsSWTTree {
 	 */
 	public static final Set<TreeItem> getSourceTreeItem(SourceTree tree, boolean isUltimate) {
 		Set<TreeItem> set = UtilsSWTTree.getTreeItemCheckAll(tree);
-		if (isUltimate) {
-			for (Iterator it = set.iterator(); it.hasNext();) {
-				TreeItem e = (TreeItem) it.next();
-				//int deep=getTreeItemDeep(e);
-				//logger.debug(e.getText()+"\tdeep:"+deep);
-				if (getTreeItemDeep(e) != tree.getDeep()) {
-					it.remove();//试图删除迭代出来的元素
-				}
-			}
+		if (!isUltimate) return set;
+		for (Iterator<TreeItem> it = set.iterator(); it.hasNext();) {
+			TreeItem e = (TreeItem) it.next();
+			if (getTreeItemDeep(e) != tree.getDeep()) it.remove();/* 试图删除迭代出来的元素 */
 		}
 		return set;
 	}
@@ -184,17 +180,14 @@ public final class UtilsSWTTree {
 	 * 得到tree中选中的项目，是否是终极项集合，依据SourceTree中的深度
 	 * @param tree SourceTree
 	 * @param isUltimate boolean
-	 * @return List  &lt;  TreeItem  &gt; 
+	 * @return List &lt; TreeItem &gt;
 	 */
 	public static final List<TreeItem> getSourceTreeItemList(SourceTree tree, boolean isUltimate) {
 		List<TreeItem> list = UtilsSWTTree.getTreeItemCheckAllList(tree);
-		if (isUltimate) {
-			for (Iterator it = list.iterator(); it.hasNext();) {
-				TreeItem e = (TreeItem) it.next();
-				if (getTreeItemDeep(e) != tree.getDeep()) {
-					it.remove();
-				}
-			}
+		if (!isUltimate) return list;
+		for (Iterator<TreeItem> it = list.iterator(); it.hasNext();) {
+			TreeItem e = (TreeItem) it.next();
+			if (getTreeItemDeep(e) != tree.getDeep()) it.remove();
 		}
 		return list;
 	}
@@ -210,28 +203,27 @@ public final class UtilsSWTTree {
 		text_key.setText("");
 		for (SourceTree tree : treearrs) {
 			Set<TreeItem> set = UtilsSWTTree.getTreeItemCheckAll(tree);
-			for (TreeItem e : set) {
+			for (TreeItem e : set)
 				addTextValue(e, text_key, tree.getDeep(), tree.getValueIndex(), textChar);
-			}
 		}
 	}
 
 	/**
 	 * 添加一条信息
-	 * @param item TreeItem
+	 * @param e TreeItem
 	 * @param text_key Text
-	 * @param valueDeep int
-	 * @param valueIndex int
+	 * @param deep int
+	 * @param index int
 	 * @param textChar String
 	 */
-	public static final void addTextValue(TreeItem item, Text text_key, int valueDeep, int valueIndex, String textChar) {
-		if (item == null || text_key == null || getTreeItemDeep(item) != valueDeep) return;
-		String itemText = item.getText().trim();
+	public static final void addTextValue(TreeItem e, Text text_key, int deep, int index, String textChar) {
+		if (e == null || text_key == null || getTreeItemDeep(e) != deep) return;
+		String itemText = e.getText().trim();
 		String textvalue = text_key.getText();
 		if (textvalue.length() > 0) textvalue += (textChar == null ? ACC_TextChar : textChar);
 		String[] arrs = itemText.split(ACC_IntervalSplitCharacter);
-		if (arrs.length <= valueIndex) return;
-		textvalue += arrs[valueIndex];
+		if (arrs.length <= index) return;
+		textvalue += arrs[index];
 		text_key.setText(textvalue);
 	}
 
@@ -282,6 +274,11 @@ public final class UtilsSWTTree {
 		}
 	}
 
+	/**
+	 * 得到子控件 Tree
+	 * @param composite Composite
+	 * @return Tree
+	 */
 	public static Tree getChildTree(Composite composite) {
 		if (composite == null) return null;
 		if (composite instanceof Tree) return (Tree) composite;

@@ -11,5 +11,7 @@ public interface InterfaceChanged {
 	 * 操作弹出框或其它操作完成后，需要更新的信息
 	 * @param obj Object
 	 */
-	public void changeAfter(Object obj);
+	public default void changeAfter(Object obj) {
+		
+	};
 }

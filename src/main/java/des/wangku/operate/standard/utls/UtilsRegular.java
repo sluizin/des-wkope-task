@@ -185,7 +185,7 @@ public final class UtilsRegular {
 	 * @param keyword String
 	 * @return int
 	 */
-	public static final int getPatternNumDisCount(String content,String keyword) {
+	public static final int getPatternCount(String content,String keyword) {
 		if (content == null || content.length() == 0) return 0;
 		Pattern r = Pattern.compile(keyword, Pattern.CASE_INSENSITIVE);
 		Matcher m = r.matcher(content);
@@ -193,6 +193,15 @@ public final class UtilsRegular {
 		while (m.find())
 			count++;
 		return count;
+	}
+	/**
+	 * 判断字符串中含有多个子串 多个子串使用|进行间隔
+	 * @param content String
+	 * @param keyword String
+	 * @return int
+	 */
+	public static final int getPatternMultiKeyCount(String content,String keyword) {
+		return getPatternCount(content, "(?:"+keyword+")");
 	}
 	/** 在样式中显示格式： [220] */
 	public static final String ACC_NumDisPattern = "\\[[0-9]+\\]";

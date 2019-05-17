@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.task;
 
-import des.wangku.operate.standard.dialog.SearchDialog;
+import des.wangku.operate.standard.dialog.AbstractSearch;
+//import des.wangku.operate.standard.dialog.SearchDialog;
 
 /**
  * 表格排序
@@ -12,14 +13,14 @@ import des.wangku.operate.standard.dialog.SearchDialog;
 public interface InterfaceTablesDialog {
 	/**
 	 * 设置弹出查找框
-	 * @param e SearchDialog
+	 * @param e AbstractSearch
 	 */
-	public void setSearchDialog(SearchDialog e);
+	public void setSearchDialog(AbstractSearch e);
 	/**
 	 * 返回table里的面的table查找框
-	 * @return SearchDialog
+	 * @return AbstractSearch
 	 */
-	public SearchDialog getSearchDialog();
+	public AbstractSearch getSearchDialog();
 	/**
 	 * 设置弹出修改框
 	 * @param e AbstractTablesEditDialog

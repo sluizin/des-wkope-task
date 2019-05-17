@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import des.wangku.operate.standard.dialog.InputValueDialog;
-import des.wangku.operate.standard.dialog.SearchDialog;
+import des.wangku.operate.standard.dialog.SearchResultTable;
 import des.wangku.operate.standard.task.InterfaceExcelChange;
 import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
@@ -124,7 +124,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 */
 	public synchronized void setString(int x, int y, String value) {
 		TableItem e = getItem(x);
-		if (e == null|| value==null) return;
+		if (e == null || value == null) return;
 		e.setText(y, value);
 	}
 
@@ -213,15 +213,14 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @param columnName String
 	 * @param repeat boolean
 	 */
-	public void addColumn(boolean isasync,String columnName, boolean repeat) {
+	public void addColumn(boolean isasync, String columnName, boolean repeat) {
 		if (!repeat) {
 			TableColumn[] arr = this.getColumns();
 			for (TableColumn e : arr) {
 				if (e.getText().equals(columnName)) { return; }
 			}
 		}
-		if(isasync)
-		{
+		if (isasync) {
 			getShell().getDisplay().asyncExec(new Runnable() {
 				@Override
 				public void run() {
@@ -229,7 +228,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 					ResultTable.setDefaultTableColumnPos(base, e);
 				}
 			});
-		}else {
+		} else {
 			TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, 150, columnName);
 			ResultTable.setDefaultTableColumnPos(base, e);
 		}
@@ -245,7 +244,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		menuResultTable.addMenuListener(new MenuListener() {
 			@Override
 			public void menuHidden(MenuEvent e) {
-
 			}
 
 			@Override
@@ -320,7 +318,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				}
 				if (e.stateMask == SWT.CTRL && (e.keyCode == 'f')) {
 					InterfaceTablesDialog parent = UtilsSWTTools.getParentInterfaceObj(base, InterfaceTablesDialog.class);
-					parent.setSearchDialog(new SearchDialog(shell, 0, base));
+					parent.setSearchDialog((new SearchResultTable(shell,0)).putCombo(base));
+					//parent.setSearchDialog(new SearchDialog(shell, 0, base));
 					parent.getSearchDialog().open();
 				}
 				if (e.stateMask == SWT.CTRL && (e.keyCode == 'a' || e.keyCode == 'A')) {

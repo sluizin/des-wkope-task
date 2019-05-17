@@ -1,9 +1,13 @@
 package des.wangku.operate.standard.utls;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -14,7 +18,8 @@ import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import des.wangku.operate.standard.PV;
@@ -170,7 +175,7 @@ public final class UtilsFile {
 	 * @param fileExt String
 	 * @return File
 	 */
-	public static File mkModelFile(String proFolder, String filename, String fileExt) {
+	public static final File mkModelFile(String proFolder, String filename, String fileExt) {
 		String path = PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 		File filefolder = new File(path);
 		if (!filefolder.exists()) filefolder.mkdirs();
@@ -179,8 +184,6 @@ public final class UtilsFile {
 		String filenameAll = path + "/" + filename;
 		return new File(filenameAll);
 	}
-
-
 
 	/**
 	 * 把网上图片保存到地址 文件名不变
@@ -207,12 +210,45 @@ public final class UtilsFile {
 	}
 
 	/**
+	 * 更换字符串，并保存文件 支持多个关键字 以|间隔
+	 * @param fileName String
+	 * @param oldstr String
+	 * @param newStr String
+	 * @return int 更改数量
+	 */
+	public static final int fileModify(String fileName, String oldstr, String newStr) {
+		int hits = 0;
+		File file = new File(fileName);
+		try (FileReader in = new FileReader(file); BufferedReader br = new BufferedReader(in); CharArrayWriter caw = new CharArrayWriter();) {
+			String line = null;
+			final String findStr = "(?:" + oldstr + ")";/* 支持多个关键字 以|间隔 */
+			while ((line = br.readLine()) != null) {
+				int count = UtilsRegular.getPatternMultiKeyCount(line, findStr);
+				if (count > 0) {
+					line = line.replaceAll(findStr, newStr);
+					hits += count;
+				}
+				caw.write(line);
+				caw.append(System.getProperty("line.separator"));
+			}
+			br.close();
+			if (hits == 0) return 0;
+			FileWriter out = new FileWriter(file);
+			caw.writeTo(out);
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return hits;
+	}
+
+	/**
 	 * 把网上图片保存到地址 文件名不变 ，如果多个网址，则使用|进行间隔
 	 * @param picurl String
 	 * @param path String
 	 * @return String
 	 */
-	public static final String downloadPicture(String picurl, String path) {
+	public static final String downloadPicture(String picurl, final String path) {
 		String[] arr = picurl.split("\\|");
 		StringBuilder sb = new StringBuilder();
 		for (String picurl2 : arr) {

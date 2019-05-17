@@ -1,8 +1,5 @@
 package des.wangku.operate.standard.task;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.HelpEvent;
+import org.eclipse.swt.events.HelpListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -30,8 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.PV;
 import des.wangku.operate.standard.database.DatabaseProperties;
+import des.wangku.operate.standard.dialog.AbstractSearch;
 import des.wangku.operate.standard.dialog.RunDialog;
-import des.wangku.operate.standard.dialog.SearchDialog;
 import des.wangku.operate.standard.dialog.ThreadRun;
 import des.wangku.operate.standard.swt.AbstractCTabFolder.ParaClass;
 import des.wangku.operate.standard.swt.InterfaceMultiSave;
@@ -51,9 +50,12 @@ import des.wangku.operate.standard.utls.UtilsSWTMenu;
  * @version 1.0
  * @since jdk1.8
  */
-public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile, InterfaceMultiSave {
+public abstract class AbstractTask extends Composite
+		implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, 
+		InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, 
+		InterfaceVersionFile, InterfaceMultiSave, InterfaceJson, 
+		InterfaceMultiThreadOnRun,InterfaceCompositeMenu {
 	/** 日志 */
-	//static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
 	static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
 	/**
 	 * 项目文件头部如：<br>
@@ -70,19 +72,19 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	public Composite parentComposite;
 	/** 父视图 */
 	public Display parentDisplay = null;
-
+	/** 本父类对象 */
+	protected AbstractTask abstractTask = this;
 	/** 搜索时弹出的窗口 */
-	SearchDialog searchDialog = null;
+	AbstractSearch searchDialog = null;
 
 	@Override
-	public void setSearchDialog(SearchDialog e) {
+	public void setSearchDialog(AbstractSearch e) {
 		searchDialog = e;
 	}
 
 	@Override
-	public SearchDialog getSearchDialog() {
+	public AbstractSearch getSearchDialog() {
 		return searchDialog;
-
 	}
 
 	/** 双击某行，进行二次修改弹出的窗口 */
@@ -208,16 +210,9 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		this.setToolTipText(getMenuName());
 		if (parent != null) {
 			Composite p = parent.getParent();
-			if (p != null) {
-				p.getShell().setText(getMenuText());
-			}
+			if (p != null) p.getShell().setText(getMenuText());
 		}
-		addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				logger.debug("DisposeListener 被调用 任务完成，进行回收资源！");
-				disposeResources();
-			}
-		});
+		initListener();
 	}
 
 	public final ParaClass getPc() {
@@ -253,12 +248,6 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 *         public abstract String getVersionFileJarFullPath();
 	 */
 
-	/**
-	 * 针对子窗口进行设置右键菜单<br>
-	 * 父菜单为 abstractMenu<br>
-	 * 这是菜单自定义前面菜单项，后面设置抽象类的定义的通用功能菜单
-	 */
-	public abstract void initCompositeMenu();
 
 	/**
 	 * 初始化
@@ -280,6 +269,25 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		}
 	}
 
+	/**
+	 * 初始化<br>
+	 * 添加监听器
+	 */
+	protected void initListener() {
+		addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				logger.debug("DisposeListener 被调用 任务完成，进行回收资源！");
+				disposeResources();
+			}
+		});
+		addHelpListener(new HelpListener() {
+			@Override
+			public void helpRequested(HelpEvent e) {
+				UtilsSWTListener.showVersion(basicClass, getVersionFileJarFullPath());
+			}
+		});
+	}
+
 	/** 显示版本 右键菜单 */
 	public static final int MVver = 1;
 	/** 显示模块退出 右键菜单 */
@@ -295,10 +303,10 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	protected Control[] parentControlThreadClose = {};
 
 	/** 运行时暂时关闭，除关闭已经打开的单元外，可以额外控制(可以打开已经关闭的单元)，运行此方法前所有对象已关闭，可以额外打开 */
-	public abstract void multiThreadOnRun();
+	//public abstract void multiThreadOnRun();
 
 	/** 运行完成后打开有效性,除打开已经关闭的单元外。可以额外控制 */
-	public abstract void multiThreadOnRunEnd();
+	//public abstract void multiThreadOnRunEnd();
 
 	/** 线程池 */
 	//protected ThreadPoolExecutor ThreadPool =Executors.newFixedThreadPool(5);// Executors.newFixedThreadPool(10);
@@ -361,6 +369,20 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 
 	/**
 	 * 弹出运行线程窗口
+	 * @param max int
+	 */
+	protected void ThreadStart(int max) {
+		parentDisplay.asyncExec(new Runnable() {
+			public void run() {
+				ThreadRunDialog = new RunDialog(parentComposite.getShell(), 0, abstractTask, max);
+				ThreadRunDialog.setThreadPool(ThreadPool);
+				ThreadRunDialog.open();
+			}
+		});
+	}
+
+	/**
+	 * 弹出运行线程窗口
 	 * @param obj InterfaceRunDialog
 	 * @param max int
 	 */
@@ -375,55 +397,76 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	}
 
 	/**
+	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 自定义线程数<br>
+	 * 调取接口函数getECTFThreadRunUnitList
+	 * @param spinner_maxthread Spinner
+	 */
+	protected void startECTFRunThread(Spinner spinner_maxthread) {
+		List<InterfaceThreadRunUnit> workList = getECTFThreadRunUnitList();
+		startECTFRunThread(spinner_maxthread, workList);
+	}
+
+	/**
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 自定义线程数
-	 * @param base AbstractTask
 	 * @param spinner_maxthread Spinner
 	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(AbstractTask base, Spinner spinner_maxthread, List<InterfaceThreadRunUnit> workList) {
+	protected void startECTFRunThread(Spinner spinner_maxthread, List<InterfaceThreadRunUnit> workList) {
 		if (workList == null || workList.size() == 0) return;
 		int selectNum = 1;
 		if (spinner_maxthread != null) {
 			selectNum = spinner_maxthread.getSelection();
 			if (selectNum <= 0) selectNum = 2;
 		}
-		startECTFRunThread(base, selectNum, workList);
+		startECTFRunThread(selectNum, workList);
+	}
+
+	/**
+	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 list总数为线程数<br>
+	 * 调取接口函数getECTFThreadRunUnitList
+	 * @param base AbstractTask
+	 */
+	protected void startECTFRunThread() {
+		List<InterfaceThreadRunUnit> workList = getECTFThreadRunUnitList();
+		startECTFRunThread(workList);
 	}
 
 	/**
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 list总数为线程数
-	 * @param base AbstractTask
 	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(AbstractTask base, List<InterfaceThreadRunUnit> workList) {
+	protected void startECTFRunThread(List<InterfaceThreadRunUnit> workList) {
 		if (workList == null || workList.size() == 0) return;
 		int selectNum = workList.size();
-		startECTFRunThread(base, selectNum, workList);
+		startECTFRunThread(selectNum, workList);
 	}
 
 	/**
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表
-	 * @param base AbstractTask
 	 * @param selectNum int
 	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(AbstractTask base, int selectNum, List<InterfaceThreadRunUnit> workList) {
-		if (workList == null || workList.size() == 0) return;
+	protected void startECTFRunThread(int selectNum, List<InterfaceThreadRunUnit> workList) {
+		if (workList == null) return;
+		int size = workList.size();
+		if (size == 0) return;
 		if (selectNum <= 0) selectNum = 2;
-		int threadNum = UtilsList.getMaxThreadPoolCount(workList.size(), selectNum);
-		List<InterfaceThreadRunUnit> newList = new ArrayList<>(workList.size());
+		int threadNum = UtilsList.getMaxThreadPoolCount(size, selectNum);
+		if (threadNum > InterfaceMultiThreadOnRun.ACC_MAXThreadCount) threadNum = InterfaceMultiThreadOnRun.ACC_MAXThreadCount;
+		List<InterfaceThreadRunUnit> newList = new ArrayList<>(size);
 		for (InterfaceThreadRunUnit e : workList)
 			newList.add(e);
-		startECTFRunThreadWork(base, newList, threadNum);
+		startECTFRunThreadWork(newList, threadNum);
 	}
 
 	/**
+	 * -
 	 * 以线程池的形式运行工作 ExcelCTabFolder组件组件内部的信息列表
-	 * @param base AbstractTask
 	 * @param workList List<InterfaceThreadRunUnit>
 	 * @param maxThreadNum int
 	 */
-	private void startECTFRunThreadWork(AbstractTask base, List<InterfaceThreadRunUnit> workList, int maxThreadNum) {
+	private void startECTFRunThreadWork(List<InterfaceThreadRunUnit> workList, int maxThreadNum) {
+		if (maxThreadNum <= 0) return;
 		setIsBreakChange(false);
 		allControlEnabledChange(false);
 		/*
@@ -432,14 +475,14 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		 * parentControlThreadClose[i].setEnabled(false);
 		 */
 		multiThreadOnRun();
-		ThreadStart(base, workList.size());
+		ThreadStart(workList.size());
 		//ThreadPool = Executors.newFixedThreadPool(maxThreadNum);
 		ThreadPool = new ThreadPoolExecutor(maxThreadNum, maxThreadNum, 1000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(5), new ThreadPoolExecutor.CallerRunsPolicy());
 		ThreadPool.allowCoreThreadTimeOut(true);
 
 		List<List<InterfaceThreadRunUnit>> list2 = UtilsList.averageAssign(workList, maxThreadNum);
 		for (int i = 0; i < maxThreadNum; i++) {
-			Runnable task = new ThreadRun(base, list2.get(i));
+			Runnable task = new ThreadRun(abstractTask, list2.get(i));
 			ThreadPool.submit(task);
 		}
 		ThreadPool.shutdown();
@@ -462,57 +505,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 后面加上扩展名
 	 * @return String
 	 */
-	private String getModelProjectFileLeft() {
-		return UtilsPathFile.getModelJarBasicPath() + "/des-wkope-task-" + getMenuNameHeadLowerCase();
-	}
-
-	/**
-	 * 从包外读取项目json文件
-	 * 默认为mode/des-wkope-task-p0X.json
-	 * 支持中文
-	 * @return String
-	 */
-	public String getProJson() {
-		String json = "";
-		String filename = getModelProjectFileLeft() + ".json";
-		File file = new File(filename);
-		if (!file.exists()) {
-			logger.debug("未发现项目Json文件:" + filename);
-			return json;
-		}
-		if (!file.isFile()) return json;
-		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2);) {
-			json = UtilsFile.readFile(in).toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return json;
-	}
-
-	@Override
-	public Properties getProProperties() {
-		Properties properties = new Properties();
-		String filename = getModelProjectFileLeft() + ".properties";
-		File file = new File(filename);
-		if (!file.exists()) {
-			logger.debug("未发现配置文件:" + filename);
-			return properties;
-		}
-		if (!file.isFile()) return properties;
-		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2); InputStreamReader isr = new InputStreamReader(in, "UTF-8");) {
-			properties.load(isr);
-			/*
-			 * isr.close();
-			 * is2.close();
-			 * for (String key : properties.stringPropertyNames()) {
-			 * logger.debug(key + ":::::" + properties.getProperty(key));
-			 * logger.debug( "::::"+key+":");
-			 * }
-			 */
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return properties;
+	String getModelProjectFileLeft() {
+		return UtilsPathFile.getModelJarBasicPath() + "/" + AbstractTask.ACC_PROHead + getMenuNameHeadLowerCase();
 	}
 
 	/**
@@ -576,11 +570,10 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	public final String getSubSourceFile(String filename) {
-		filename = UtilsPathFile.getModelJarBasicPath() + "/" + getMenuNameHead() + "/" + filename;
-		return filename;
+		return UtilsPathFile.getModelJarBasicPath() + "/" + getMenuNameHead() + "/" + filename;
 	}
 
-	/** 设置线程运算量进行回叫 */
+	/** 设置线程运算量进行回收 */
 	protected int skipGC = 0;
 
 	public int getSkipGC() {

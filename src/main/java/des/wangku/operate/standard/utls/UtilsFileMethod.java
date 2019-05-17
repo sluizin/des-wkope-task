@@ -1,8 +1,11 @@
 package des.wangku.operate.standard.utls;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 文件的一些方法
@@ -49,5 +52,24 @@ public class UtilsFileMethod {
 		if (index == -1) return null;
 		return file.substring(index + 1);
 	}
-
+	/**
+	 * 查看文件的扩展名是否含有以"|"为间隔的关键字
+	 * @param list List&lt;String&gt;
+	 * @param multiKey String 以"|"为间隔
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getFilesExtensionName(List<String> list,String multiKey){
+		List<String> result=new ArrayList<>(list.size());
+		if(multiKey==null)return result;
+		String[] arr=multiKey.split("\\|");
+		for(String e:list) {
+			for(String key:arr) {
+				if(e.endsWith("."+key.trim())) {
+					result.add(e);
+					break;
+				}
+			}			
+		}		
+		return result;
+	}
 }

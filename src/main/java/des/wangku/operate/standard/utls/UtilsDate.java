@@ -6,7 +6,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 日期型工具
@@ -18,13 +22,15 @@ public final class UtilsDate {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsDate.class);
 	/** yyyyMMddHHmmss */
-	static final SimpleDateFormat ACC_DateFormatBase = new SimpleDateFormat("yyyyMMddHHmmss");
+	public static final SimpleDateFormat ACC_DateFormatBase = new SimpleDateFormat("yyyyMMddHHmmss");
 	/** yyyy-MM-dd HH:mm:ss */
-	static final SimpleDateFormat ACC_DateFormatStandard = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public static final SimpleDateFormat ACC_DateFormatStandard = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	/** yyyy-MM-dd */
-	static final SimpleDateFormat ACC_DateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static final SimpleDateFormat ACC_DateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	/** yyyy-MM */
-	static final SimpleDateFormat ACC_DateFormatMonth = new SimpleDateFormat("yyyy-MM");
+	public static final SimpleDateFormat ACC_DateFormatMonth = new SimpleDateFormat("yyyy-MM");
+	/** HH:mm:ss */
+	public static final SimpleDateFormat ACC_DateFormatTime = new SimpleDateFormat("HH:mm:ss");
 	static {
 		ACC_DateFormatBase.setLenient(false);
 		ACC_DateFormatStandard.setLenient(false);
@@ -340,14 +346,16 @@ public final class UtilsDate {
 		String lastday = t.format(calendar.getTime());
 		return lastday;
 	}
+
 	/**
 	 * 判断字符串是否为日期格式
 	 * @param dateStr String
 	 * @return boolean
 	 */
 	public static final boolean isDateFormat(String dateStr) {
-		return getDateArray(dateStr)!=null;
+		return getDateArray(dateStr) != null;
 	}
+
 	/**
 	 * 把日期字符串转成区间<br>
 	 * <code>
@@ -426,6 +434,37 @@ public final class UtilsDate {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return 0;
+		}
+	}
+
+	/**
+	 * SWT中DateTime控件，得到Date日期型数据
+	 * @param dt DateTime
+	 * @return Date
+	 */
+	public static final Date getDate(DateTime dt) {
+		if (dt == null) return null;
+		try {
+			int style = dt.getStyle();
+			if (UtilsShiftCompare.isCompare(style, SWT.CALENDAR)) {
+				String strDate = dt.getYear() + "-" + dt.getMonth() + "-" + dt.getDay() + " " + dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
+				Date date = ACC_DateFormatStandard.parse(strDate);
+				return date;
+			}
+			if (UtilsShiftCompare.isCompare(style, SWT.DATE)) {
+				String strDate = dt.getYear() + "-" + dt.getMonth() + "-" + dt.getDay();
+				Date date = ACC_DateFormat.parse(strDate);
+				return date;
+			}
+			if (UtilsShiftCompare.isCompare(style, SWT.TIME)) {
+				String strDate = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
+				Date date = ACC_DateFormatTime.parse(strDate);
+				return date;
+			}
+			return null;
+		} catch (ParseException px) {
+			px.printStackTrace();
+			return null;
 		}
 	}
 

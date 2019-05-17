@@ -13,7 +13,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -107,6 +106,30 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
+	 * 添加数组为一行
+	 * @param sheet Sheet
+	 * @param list List&lt;String&gt;
+	 */
+	public static final void addSheetRow(Sheet sheet, List<String> list) {
+		String[] arr= {};
+		addSheetRow(sheet,list.toArray(arr));
+	}
+	/**
+	 * 添加数组为一行
+	 * @param sheet Sheet
+	 * @param arrs String[]
+	 */
+	public static final void addSheetRow(Sheet sheet, String... arrs) {
+		int rows = sheet.getPhysicalNumberOfRows();
+		Row row = sheet.createRow(rows);
+		for (int i = 0; i < arrs.length; i++) {
+			String value = arrs[i];
+			Cell cell = row.createCell(i);
+			cell.setCellValue(value);
+		}
+	}
+
+	/**
 	 * 把table放入 Workbook 中 默认名称 "信息"
 	 * @param workbook Workbook
 	 * @param table ResultTable
@@ -123,16 +146,16 @@ public final class UtilsSWTPOI {
 	 * @param arrs ResultTable[]
 	 */
 	public static final void addWorkbookSheet(Workbook workbook, String sheetName, ResultTable... arrs) {
-		if(arrs.length==0)return;
-		ResultTable first=arrs[0];
+		if (arrs.length == 0) return;
+		ResultTable first = arrs[0];
 		InterfaceExcelChange change = UtilsSWTTools.getParentInterfaceObj(first, InterfaceExcelChange.class);
 		boolean isHead = first.getHeaderVisible();
-		List<List<String>> list=new ArrayList<>();
-		for(int i=0;i<arrs.length;i++) {
-			ResultTable table=arrs[i];
+		List<List<String>> list = new ArrayList<>();
+		for (int i = 0; i < arrs.length; i++) {
+			ResultTable table = arrs[i];
 			String sheetName2 = AbstractCTabFolder.getSheetName(table, "信息" + i);
 			TableItem[] arr = table.getItems();
-			List<List<String>> list1 = UtilsSWTTable.getTableItemList(i==0?isHead:false,arrs.length>1?sheetName2:null, table, arr);
+			List<List<String>> list1 = UtilsSWTTable.getTableItemList(i == 0 ? isHead : false, arrs.length > 1 ? sheetName2 : null, table, arr);
 			list.addAll(list1);
 		}
 		UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, list, change);
@@ -284,6 +307,7 @@ public final class UtilsSWTPOI {
 		}
 		return null;
 	}
+
 	/**
 	 * 判断Excel文件中sheet的名字是否含有关键，如果不是含有状态，则判断index
 	 * @param filename String
@@ -314,6 +338,7 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
+	 * 生成excel文件
 	 * @param filename String
 	 * @param list List&lt;List&lt;String&gt;&gt;
 	 * @param sheetName String
@@ -323,8 +348,20 @@ public final class UtilsSWTPOI {
 	 */
 	public static final boolean makeExcel(String filename, String sheetName, List<List<String>> list, InterfaceExcelChange change, ExcelParaClass epc) {
 		Workbook workbook = new XSSFWorkbook();
-		Sheet sheet = workbook.createSheet("0");
-		CellStyle cellStyle = getCellStyleBase(workbook);
+		Sheet sheet = workbook.createSheet(sheetName == null ? "信息" : sheetName);
+		makeExcel(sheet,list,change,epc);
+		return UtilsFile.writeWorkbookFile(filename, workbook);
+	}
+	/**
+	 * 生成excel文件
+	 * @param sheet Sheet
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param change InterfaceExcelChange
+	 * @param epc ExcelParaClass
+	 */
+	public static final void makeExcel(Sheet sheet, List<List<String>> list, InterfaceExcelChange change, ExcelParaClass epc) {
+		if (sheet == null) return;
+		CellStyle cellStyle = UtilsSWTPOI.getCellStyleBase(sheet.getWorkbook());
 		int maxCols = 0;
 		for (int i = 0, len = list.size(); i < len; i++) {
 			List<String> li = list.get(i);
@@ -340,17 +377,11 @@ public final class UtilsSWTPOI {
 				if (value.length() > 30000) value = value.substring(0, 30000);
 				Cell cell = row.createCell(ii);
 				cell.setCellValue(value);
-				if (epc != null) {
-					epc.makeStyle(cell);
-				}
+				if (epc != null) epc.makeStyle(cell);
 			}
 		}
 		if (change != null) change.afterWork(sheet);
-		if (epc != null) {
-			epc.makeStyle(sheet);
-		}
-		workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
-		return UtilsFile.writeWorkbookFile(filename, workbook);
+		if (epc != null) epc.makeStyle(sheet);
 	}
 
 	/**
@@ -539,16 +570,17 @@ public final class UtilsSWTPOI {
 			return null;
 		}
 	}
+
 	/**
-	 * 
 	 * @param sheet Sheet
 	 * @param x int
 	 * @param y int
 	 * @return String
 	 */
 	public static String getCellValueByString(Sheet sheet, int x, int y) {
-		return getCellValueByString(sheet,x,y,false,"");
+		return getCellValueByString(sheet, x, y, false, "");
 	}
+
 	/**
 	 * 获取单元格各类型值，返回字符串类型<br>
 	 * 如果没有单元格，则返回null<br>
