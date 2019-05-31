@@ -1,11 +1,19 @@
 package des.wangku.operate.standard.swt;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -13,6 +21,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
@@ -21,6 +31,7 @@ import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 import des.wangku.operate.standard.utls.UtilsSWTTree;
+import des.wangku.operate.standard.utls.UtilsString;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
@@ -31,6 +42,8 @@ import des.wangku.operate.standard.utls.UtilsVerification;
  */
 public class MultiTree extends Tree {
 	private static int ACC_style = SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.MULTI;
+	/** 日志 */
+	static Logger logger = LoggerFactory.getLogger(MultiTree.class);
 	/** 父窗口 */
 	Composite parent;
 	/** 子容器 */
@@ -38,8 +51,10 @@ public class MultiTree extends Tree {
 	Display display = null;
 	/** 本对象 */
 	MultiTree base = this;
-	private boolean isShowID = false;
-	private boolean isShowIDLeft = false;
+
+	boolean isFormatID = true;
+
+	int maxIDLen = 0;
 
 	protected void checkSubclass() {
 
@@ -70,6 +85,23 @@ public class MultiTree extends Tree {
 				}
 			}
 		});
+		this.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TreeItem f = (TreeItem) e.item;
+				InterfaceMultiTreeExtend after = UtilsSWTTools.getParentInterfaceObj(base, InterfaceMultiTreeExtend.class);
+				if (f != null && after != null) {
+					after.multiTreeSelectedAfter(f);
+					logger.info("MultiTree SelectionListener working:" + toStringTreeItem(f));
+					//logger.info("MultiTree SelectionListener working:" + isafter);
+				}
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
 		this.addKeyListener(addKeyListener());
 		this.addListener(SWT.FocusIn, new Listener() {
 			@Override
@@ -78,12 +110,39 @@ public class MultiTree extends Tree {
 				if (item == null) return;
 			}
 		});
+		this.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				Point point = new Point(e.x, e.y);
+				TreeItem item = base.getItem(point);
+				if (item == null) return;
+				InterfaceMultiTreeExtend after = UtilsSWTTools.getParentInterfaceObj(base, InterfaceMultiTreeExtend.class);
+				if (item != null && after != null) {
+					after.multiTreeMouseDoubleClick(item);
+					logger.info("MultiTree MouseDoubleClickListener working:" + toStringTreeItem(item));
+					//logger.info("MultiTree SelectionListener working:" + isafter);
+				}
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+
+			}
+
+		});
 	}
+
 	/**
 	 * 添加监听器 针对键盘
 	 * @return KeyListener
 	 */
-	final KeyListener addKeyListener() {
+	private final KeyListener addKeyListener() {
 		KeyListener t = new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -184,11 +243,88 @@ public class MultiTree extends Tree {
 	 * @param list List&lt;UnitClass&gt;
 	 */
 	public final void putUnitClass(List<UnitClass> list) {
+		if (isFormatID) maxIDLen = maxIDLen(list, 0);
 		for (UnitClass e : list) {
-			TreeItem t1 = mkItem(this, e.getNameAll(this), e.isCheck);
+			TreeItem t1 = e.toTreeItem(base, this);//mkItem(this, e.getNameAll(),e.value, e.isCheck);
 			if (t1 == null) continue;
 			for (UnitClass f : e.list) {
 				putUnitClass(f, t1);
+			}
+		}
+	}
+
+	static final int maxIDLen(List<UnitClass> list, int max) {
+		for (UnitClass e : list) {
+			int sort = e.id.length();
+			if (sort > max) max = sort;
+			int sort2 = maxIDLen(e.list, max);
+			if (sort2 > max) max = sort2;
+		}
+		return max;
+	}
+
+	/**
+	 * 导入数据，未重组数据
+	 * @param list List&lt;UnitClass&gt;
+	 */
+	public final void put(List<UnitClass> list) {
+		UnitClass result = new UnitClass();
+		recombination(list, result);
+		putUnitClass(result.list);
+	}
+
+	/**
+	 * 导入数据
+	 * @param rs ResultSet
+	 */
+	public final void put(ResultSet rs) {
+		if (rs == null) return;
+		List<UnitClass> list = resultSetChange(rs);
+		/*
+		 * for (UnitClass e : list) {
+		 * System.out.println("e:" + e.toString());
+		 * }
+		 */
+		put(list);
+	}
+
+	/**
+	 * 把ResultSet转成List&lt;UnitClass&gt;<br>
+	 * ResultSet : id,name,value,[targetid]
+	 * @param rs ResultSet
+	 * @return List&lt;UnitClass&gt;
+	 */
+	static final List<UnitClass> resultSetChange(ResultSet rs) {
+		List<UnitClass> list = new ArrayList<>();
+		try {
+			int len = rs.getMetaData().getColumnCount();
+			if (len < 4) return list;
+			while (rs.next()) {
+				UnitClass f = new UnitClass(rs.getObject(1), rs.getObject(2), rs.getObject(3), rs.getObject(4));
+				list.add(f);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	/**
+	 * 重组对象组
+	 * @param list List&lt;UnitClass&gt;
+	 * @param result UnitClass
+	 */
+	static final void recombination(List<UnitClass> list, UnitClass result) {
+		String targetid = result.id;
+		for (int i = list.size(); i >= 0; i--) {
+			if (list.size() <= i) continue;
+			UnitClass e = list.get(i);
+			String target = e.targetid;
+			if ((targetid == target) || (targetid != null && targetid.equals(target))) {
+				list.remove(i);
+				result.list.add(e);
+				Collections.sort(result.list);
+				recombination(list, e);
 			}
 		}
 	}
@@ -232,7 +368,22 @@ public class MultiTree extends Tree {
 		privateMKItem(t1, title);
 		t1.setChecked(isCheck);
 		return t1;
+	}
 
+	/**
+	 * 建立item
+	 * @param parent Tree
+	 * @param title String
+	 * @param value String
+	 * @param isCheck boolean
+	 * @return TreeItem
+	 */
+	public final TreeItem mkItem(Tree parent, String title, String value, boolean isCheck) {
+		if (isExist(title)) return null;
+		TreeItem t1 = new TreeItem(parent, SWT.NONE);
+		privateMKItem(t1, title, value);
+		t1.setChecked(isCheck);
+		return t1;
 	}
 
 	/**
@@ -251,35 +402,75 @@ public class MultiTree extends Tree {
 	 * @param title title
 	 */
 	private final void privateMKItem(TreeItem t1, String title) {
-
 		String id = getID(title);
 		String name = title.replaceAll("\\[" + id + "\\]", "");
 		String text = getTagTitle(id, name);
-		privateMKItem(t1, id, text);
+		privateMKItem(t1, text, id);
 	}
 
 	/**
-	 * 得到标签名称，是否含有id号，或在左，或在右
+	 * 得到标签名称
 	 * @param id String
 	 * @param name String
 	 * @return String
 	 */
-	final String getTagTitle(String id, String name) {
-		if (!isShowID) return name;
-		if (isShowIDLeft) return "[" + id + "]" + name;
-		return name + "[" + id + "]";
+	static final String getTagTitle(String id, String name) {
+		if (id == null) return name;
+		return "[" + id + "]" + name;
+	}
 
+	/**
+	 * 得到标签名称
+	 * @param id String
+	 * @param name String
+	 * @return String
+	 */
+	static final String getTagTitle(int maxlen, String id, String name) {
+		if (id == null) return name;
+		String newid = format(id, maxlen);//String.format("%1$4s", id);
+		return "[" + newid + "]" + name;
+	}
+
+	/**
+	 * 格式化字符串，先判断是否为数字。如果为数字，则前面补0，如果为字符串，则左对齐
+	 * @param id String
+	 * @param maxlen int
+	 * @return String
+	 */
+	static final String format(String id, int maxlen) {
+		if (UtilsString.isNumber(id)) return String.format("%0" + maxlen + "d", Integer.parseInt(id));
+		return String.format("%1$-" + maxlen + "s", id);
 	}
 
 	/**
 	 * 添加TreeItem的内容
 	 * @param t1 TreeItem
-	 * @param value Object
-	 * @param title title
+	 * @param ff UnitClass
 	 */
-	private static final void privateMKItem(TreeItem t1, Object value, String title) {
-		t1.setText(title);
+	static final void privateMKItem(TreeItem t1, UnitClass ff) {
+		privateMKItem(t1, ff.name, ff.value);
+	}
+
+	/**
+	 * 添加TreeItem的内容
+	 * @param t1 TreeItem
+	 * @param title title
+	 * @param value Object
+	 */
+	private static final void privateMKItem(TreeItem t1, String title, Object value) {
+		if (title != null) t1.setText(title);
 		if (value != null) t1.setData(value);
+		t1.addListener(SWT.MouseDoubleClick, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				if (event.button == 1) { //按键不是左键跳出. 1左键,2中键,3右键
+					System.out.println("t1:" + t1.getText());
+					return;
+
+				}
+			}
+
+		});
 	}
 
 	/**
@@ -314,6 +505,15 @@ public class MultiTree extends Tree {
 
 	/**
 	 * 通过内容得到id
+	 * @param e TreeItem
+	 * @return String
+	 */
+	static final String getID(TreeItem e) {
+		return getID(e.getText());
+	}
+
+	/**
+	 * 通过内容得到id
 	 * @param title String
 	 * @return String
 	 */
@@ -328,7 +528,7 @@ public class MultiTree extends Tree {
 	 */
 	public final void putUnitClass(UnitClass e, TreeItem t) {
 		if (e == null || t == null) return;
-		TreeItem t1 = mkItem(t, e.getNameAll(this), e.isCheck);
+		TreeItem t1 = e.toTreeItem(this, t);//mkItem(t, e.getNameAll(), e.isCheck);
 		if (t1 == null) return;
 		for (UnitClass f : e.list) {
 			putUnitClass(f, t1);
@@ -684,13 +884,17 @@ public class MultiTree extends Tree {
 	 * @version 1.0
 	 * @since jdk1.8
 	 */
-	public static class UnitClass {
+	public static final class UnitClass implements Comparable<UnitClass> {
 		/** 是否选中 */
 		boolean isCheck = false;
 		/** 编号 唯一 */
 		String id = null;
 		/** 名称 */
 		String name = null;
+		/** 内容值 */
+		String value = null;
+		/** 关联字段 */
+		String targetid = null;
 		/** 下级子列 */
 		List<UnitClass> list = new ArrayList<>();
 
@@ -698,10 +902,37 @@ public class MultiTree extends Tree {
 
 		}
 
+		public UnitClass(Object... arrs) {
+			if (arrs.length < 4) return;
+			if (arrs[0] != null) id = arrs[0].toString();
+			if (arrs[1] != null) name = arrs[1].toString();
+			if (arrs[2] != null) value = arrs[2].toString();
+			if (arrs[3] != null) targetid = arrs[3].toString();
+		}
+
+		public UnitClass(String id, String name, String value, String targetid) {
+			this.id = id;
+			this.name = name;
+			this.value = value;
+			this.targetid = targetid;
+		}
+
+		public UnitClass(String id, String name, String value, String targetid, boolean isCheck) {
+			this.id = id;
+			this.name = name;
+			this.value = value;
+			this.targetid = targetid;
+			this.isCheck = isCheck;
+		}
+
 		public UnitClass(String name) {
 			this.name = name;
 		}
 
+		/**
+		 * 把TreeItem转成UnitClass
+		 * @param e TreeItem
+		 */
 		public UnitClass(TreeItem e) {
 			if (e == null) return;
 			String content = e.getText();
@@ -749,36 +980,77 @@ public class MultiTree extends Tree {
 
 		@Override
 		public String toString() {
-			return "UnitClass [isCheck=" + isCheck + ", " + (id != null ? "id=" + id + ", " : "") + (name != null ? "name=" + name + ", " : "") + (list != null ? "list=" + list : "") + "]";
+			return "UnitClass [isCheck=" + isCheck + ", id=" + id + ", name=" + name + ", value=" + value + ", targetid=" + targetid + ", list=" + list + "]";
 		}
 
 		/**
 		 * 返回含有id号的字符串名称
-		 * @param mt MultiTree
 		 * @return String
 		 */
-		public final String getNameAll(MultiTree mt) {
-			if (mt == null || name == null) return null;
+		public final String getNameAll() {
+			if (name == null) return null;
 			if (id == null || id.length() == 0) return name;
-			return mt.getTagTitle(id, name);
+			return getTagTitle(id, name);
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public String getTargetid() {
+			return targetid;
+		}
+
+		public void setTargetid(String targetid) {
+			this.targetid = targetid;
+		}
+
+		@Override
+		public int compareTo(UnitClass arg0) {
+			return this.id.compareTo(arg0.id);
+		}
+
+		public TreeItem toTreeItem(MultiTree base, Tree parent) {
+			TreeItem t = new TreeItem(parent, SWT.NONE);
+			return toTreeItemPrivate(base, t);
+		}
+
+		public TreeItem toTreeItem(MultiTree base, TreeItem parent) {
+			TreeItem t = new TreeItem(parent, SWT.NONE);
+			return toTreeItemPrivate(base, t);
+		}
+		/**
+		 * 拼接TreeItem
+		 * @param base MultiTree
+		 * @param t TreeItem
+		 * @return TreeItem
+		 */
+		private TreeItem toTreeItemPrivate(MultiTree base, TreeItem t) {
+			String newname = getIDNameText(base);
+			if (newname != null) t.setText(newname);
+			t.setData(value != null ? value : id);
+			t.setChecked(isCheck);
+			return t;
+		}
+		/**
+		 * 通过id,name得到具体显示内容
+		 * @param base MultiTree
+		 * @return String
+		 */
+		private String getIDNameText(MultiTree base) {
+			if (name == null) return null;
+			if (id == null || id.length() == 0) return name;
+			if (base.isFormatID) return getTagTitle(base.maxIDLen, id, name);
+			return getTagTitle(id, name);
 		}
 	}
 
-	public final boolean isShowID() {
-		return isShowID;
+	static final String toStringTreeItem(TreeItem f) {
+		if (f == null) return "null";
+		return f.getText() + "[" + f.getData() + "]";
 	}
-
-	public final MultiTree setShowID(boolean isShowID) {
-		this.isShowID = isShowID;
-		return this;
-	}
-
-	public final boolean isShowIDLeft() {
-		return isShowIDLeft;
-	}
-
-	public final void setShowIDLeft(boolean isShowIDLeft) {
-		this.isShowIDLeft = isShowIDLeft;
-	}
-
 }

@@ -34,7 +34,7 @@ public class CustomExcel {
 
 	public CustomExcel(AbstractTask parent, boolean isSubSource, String filename, int sheetnum) {
 		this.shell = parent.getShell();
-		saveFolder = parent.getMenuNameHead();
+		saveFolder = parent.getIdentifierAll();
 		String exectfilename = "";
 		if (isSubSource) {/* 子资源 */
 			exectfilename = parent.getSubSourceFile(filename);

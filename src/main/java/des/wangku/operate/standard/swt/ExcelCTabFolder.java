@@ -80,7 +80,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		if (t == null) return;
 		this.properties = t.getProProperties();
 		this.pc = t.getPc();
-		if (filename == null) filename = AbstractTask.ACC_PROHead + t.getMenuNameHead().toLowerCase() + ".xlsx";
+		if (filename == null && t.getIdentifierAll()!=null) filename = AbstractTask.ACC_PROHead + t.getIdentifierAll().toLowerCase() + ".xlsx";
 		init();
 	}
 

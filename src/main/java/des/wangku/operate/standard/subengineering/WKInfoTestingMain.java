@@ -34,7 +34,7 @@ public class WKInfoTestingMain {
 				try (Statement statement = conn.createStatement(); ResultSet rs = statement.executeQuery(sql);) {
 					while (rs.next()) {
 						String content=rs.getString(1);
-						int ci=UtilsRegular.getPatternNumDisCount(content,"猕猴桃");
+						int ci=UtilsRegular.getPatternCount(content,"猕猴桃");
 						if(ci>=i)sort++;
 						//return rs.getInt(1);
 					}

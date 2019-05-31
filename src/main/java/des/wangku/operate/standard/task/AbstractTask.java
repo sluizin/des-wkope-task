@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
-// import java.util.concurrent.ExecutorService;
-// import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +21,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import des.wangku.operate.standard.dialog.RunDialog;
 import des.wangku.operate.standard.dialog.ThreadRun;
 import des.wangku.operate.standard.swt.AbstractCTabFolder.ParaClass;
 import des.wangku.operate.standard.swt.InterfaceMultiSave;
+import des.wangku.operate.standard.swt.InterfaceMultiTreeExtend;
 import des.wangku.operate.standard.utls.UtilsShiftCompare;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJar;
@@ -50,11 +50,8 @@ import des.wangku.operate.standard.utls.UtilsSWTMenu;
  * @version 1.0
  * @since jdk1.8
  */
-public abstract class AbstractTask extends Composite
-		implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, 
-		InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, 
-		InterfaceVersionFile, InterfaceMultiSave, InterfaceJson, 
-		InterfaceMultiThreadOnRun,InterfaceCompositeMenu {
+public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile, InterfaceMultiSave, InterfaceJson,
+		InterfaceMultiThreadOnRun, InterfaceCompositeMenu, InterfaceAnnoProjectTaskAnalysis, InterfaceMultiTreeExtend, InterfaceSubject {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
 	/**
@@ -68,6 +65,8 @@ public abstract class AbstractTask extends Composite
 	public static final int ACC_CpsWidth = 900;
 	/** 容器高度 */
 	public static final int ACC_CpsHeight = 600;
+	/** 父Shell */
+	public Shell parentShell = null;
 	/** 父容器 */
 	public Composite parentComposite;
 	/** 父视图 */
@@ -101,26 +100,54 @@ public abstract class AbstractTask extends Composite
 	}
 
 	/**
-	 * 得到菜单名称
+	 * 得到项目名称<br>
+	 * 可以使用@AnnoProjectTask注解中的 name 进行设置
 	 * @return String
 	 */
-	public abstract String getMenuName();
+	public abstract String getProjectName();
 
 	/**
-	 * 得到菜单名称前缀 如 输入:P02 则菜单为:[P02]XXXX<br>
-	 * 如果在model中出现同名的前缀，则只保留其中一个。<br>
-	 * 即：项目前缀唯一
+	 * 得到项目名称，通过方法与注解
 	 * @return String
 	 */
-	public abstract String getMenuNameHead();
+	public String getProjectNameAll() {
+		String projectName = getProjectName();
+		if (projectName != null) return projectName;
+		projectName = this.getAnnoName();
+		if (projectName == null) return null;
+		return projectName.trim();
+	}
+
+	/**
+	 * 得到项目编号 如 输入:P02 则菜单为:[P02]XXXX<br>
+	 * 如果在model中出现同名的前缀，则只保留其中一个。<br>
+	 * 即：项目前缀唯一<br>
+	 * 不区别大小写<br>
+	 * 可以使用@AnnoProjectTask注解中的 identifier 进行设置
+	 * @return String
+	 */
+	public abstract String getIdentifier();
+
+	/**
+	 * 通过方法还是注解得到PXX
+	 * @return String
+	 */
+	public String getIdentifierAll() {
+		String identifier = getIdentifier();
+		if (identifier != null && identifier.trim().length() > 0) return getIdentifier().trim();
+		identifier = getAnnoIdentifier();
+		if (identifier == null) return null;
+		return identifier.trim();
+	}
 
 	/**
 	 * 得到pX，把前缀最小写
 	 * @return String
 	 */
-	public String getMenuNameHeadLowerCase() {
-		if (getMenuNameHead() == null) return "";
-		return getMenuNameHead().toLowerCase();
+	public String getIdentifierLowerCase() {
+		String identifier = getIdentifierAll();
+		if (identifier == null) return "";
+		return identifier.toLowerCase();
 	}
 
 	/**
@@ -129,10 +156,37 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	public String getMenuText() {
-		String menuName = getMenuName();
-		String menuNameHead = getMenuNameHead();
-		if (menuNameHead != null && menuNameHead.length() > 0) menuName = "[" + menuNameHead + "]" + menuName;
-		return menuName;
+		String name = getProjectNameAll();
+		String identifier = getIdentifierAll();
+		if (identifier != null && identifier.length() > 0) name = "[" + identifier + "]" + name;
+		return name;
+	}
+
+	/**
+	 * 通过注解得到是否过期
+	 * @return boolean
+	 */
+	public boolean getExpireAll() {
+		boolean expire = this.getAnnoExpire();
+		return expire;
+	}
+	/**
+	 * 通过注解得到是否在有效期之内
+	 * @return boolean
+	 */
+	public boolean getEffective() {
+		boolean effective=this.isEffective();
+		return effective;
+	}
+
+	/**
+	 * 通过注解得到组名<br>
+	 * 默认为空
+	 * @return String
+	 */
+	public String getGroupAll() {
+		String group = this.getAnnoGroup();
+		return group == null ? "" : group;
 	}
 
 	/**
@@ -141,7 +195,7 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	public String getOutputPath() {
-		String proFolder = getMenuNameHead();
+		String proFolder = getIdentifierAll();
 		return PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 	}
 
@@ -198,19 +252,20 @@ public abstract class AbstractTask extends Composite
 	 * @param abstractMenuValue int 显示鼠标右键的功能
 	 */
 	private final void init(Composite parent, int style, Class<? extends AbstractTask> basicClass, int abstractMenuValue) {
-		pc.setSaveFolder(this.getMenuNameHead()).init(this.getProProperties());
+		pc.setSaveFolder(this.getIdentifierAll()).init(this.getProProperties());
 		this.basicClass = basicClass;
 		this.abstractMenuValue = abstractMenuValue;
 		parent.setSize(ACC_CpsWidth, ACC_CpsHeight);
 		parentComposite = parent;
 		parentDisplay = parent.getDisplay();
+		parentShell = parent.getShell();
 		setMenu(abstractMenu);
 		initCompositeMenu();
 		initMenu();
-		this.setToolTipText(getMenuName());
+		if (getProjectNameAll() != null) this.setToolTipText(getProjectNameAll());
 		if (parent != null) {
 			Composite p = parent.getParent();
-			if (p != null) p.getShell().setText(getMenuText());
+			if (p != null && getMenuText() != null) p.getShell().setText(getMenuText());
 		}
 		initListener();
 	}
@@ -219,35 +274,12 @@ public abstract class AbstractTask extends Composite
 		return pc;
 	}
 
-	/**
-	 * 任务关闭时，关闭相应的资源信息
-	 * public abstract void disposeResources();
-	 */
-	/**
-	 * 启动条件 为null时加载模块<br>
-	 * 一些资源的加载状态与安全判断等。如结果为null，则允许平台加载model<br>
-	 * 如果前置的判断出现错误，则返回错误信息以供提示
-	 * @return String 提示内容
-	 *         public abstract String precondition();
-	 */
-	/**
-	 * model加载后直接运行的前置程序
-	 * public abstract void startup();
-	 */
-
 	/** 主框架中的鼠标右键是否显示相关操作值 */
 	protected int abstractMenuValue = 0;
 	/** 主框架中的鼠标右键 */
 	protected Menu abstractMenu = new Menu(this);
 	/** 具体的模块的类 */
-	Class<? extends AbstractTask> basicClass = null;
-
-	/**
-	 * 得到版本文件在jar包的位置 如:"/update.info"
-	 * @return String
-	 *         public abstract String getVersionFileJarFullPath();
-	 */
-
+	protected Class<? extends AbstractTask> basicClass = null;
 
 	/**
 	 * 初始化
@@ -506,7 +538,7 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	String getModelProjectFileLeft() {
-		return UtilsPathFile.getModelJarBasicPath() + "/" + AbstractTask.ACC_PROHead + getMenuNameHeadLowerCase();
+		return UtilsPathFile.getModelJarBasicPath() + "/" + AbstractTask.ACC_PROHead + getIdentifierLowerCase();
 	}
 
 	/**
@@ -531,7 +563,7 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	public final String getNewModelFile(String fileExt) {
-		return AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "." + fileExt;
+		return AbstractTask.ACC_PROHead + getIdentifierAll().toLowerCase() + "." + fileExt;
 	}
 
 	/**
@@ -559,7 +591,7 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	public final String getBaseSourceFile(String fileExt) {
-		String filename = AbstractTask.ACC_PROHead + getMenuNameHead().toLowerCase() + "." + fileExt;
+		String filename = AbstractTask.ACC_PROHead + getIdentifierAll().toLowerCase() + "." + fileExt;
 		filename = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
 		return filename;
 	}
@@ -570,7 +602,7 @@ public abstract class AbstractTask extends Composite
 	 * @return String
 	 */
 	public final String getSubSourceFile(String filename) {
-		return UtilsPathFile.getModelJarBasicPath() + "/" + getMenuNameHead() + "/" + filename;
+		return UtilsPathFile.getModelJarBasicPath() + "/" + getIdentifierAll() + "/" + filename;
 	}
 
 	/** 设置线程运算量进行回收 */
@@ -579,4 +611,5 @@ public abstract class AbstractTask extends Composite
 	public int getSkipGC() {
 		return skipGC;
 	}
+
 }

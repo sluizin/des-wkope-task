@@ -18,13 +18,36 @@ import java.lang.annotation.Target;
 @Target({TYPE})
 public @interface AnnoProjectTask {
 	/**
-	 * 得到菜单名称
+	 * 项目所在的组
 	 * @return String
 	 */
-	public String MenuName() default "";
+	public String group() default "";
 	/**
-	 * 得到菜单名称前缀 如 输入:P02 则菜单为:[P02]XXXX
+	 * 得到项目名称
 	 * @return String
 	 */
-	public String MenuNameHead() default "";
+	public String name() default "";
+	/**
+	 * 得到项目编号 如 输入:P02 则菜单为:[P02]XXXX
+	 * @return String
+	 */
+	public String identifier() default "";
+	/**
+	 * 是否过期
+	 * @return boolean
+	 */
+	public boolean expire() default false;
+	
+	
+	/**
+	 * 开始日期 格式:"2019-08-12 00:00:00"
+	 * @return String
+	 */
+	public String dateStart() default "";
+	
+	/**
+	 * 结束日期 格式:"2019-08-12 00:00:00"
+	 * @return String
+	 */
+	public String dateEnd() default "";
 }

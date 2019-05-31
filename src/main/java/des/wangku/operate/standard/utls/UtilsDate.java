@@ -144,6 +144,71 @@ public final class UtilsDate {
 	/**
 	 * 判断当前时间是否在[startTime, endTime]区间，注意时间格式要一致<br>
 	 * 忽略开始与结束时间的位置
+	 * @param time1 String
+	 * @param time2 String
+	 * @return boolean
+	 */
+	public static boolean isEffectiveStandard(String time1, String time2) {
+		Date d=new Date();
+		return isEffective(ACC_DateFormatStandard,ACC_DateFormatStandard.format(d),time1,time2);
+	}
+	/**
+	 * 判断当前时间是否在[startTime, endTime]区间，注意时间格式要一致<br>
+	 * 忽略开始与结束时间的位置
+	 * @param sdf SimpleDateFormat
+	 * @param nowTime String
+	 * @param time1 String
+	 * @param time2 String
+	 * @return boolean
+	 */
+	public static boolean isEffective(SimpleDateFormat sdf, String nowTime, String time1, String time2) {
+		if (sdf == null) return false;
+		Date date0 = null;
+		Date date1 = null;
+		Date date2 = null;
+		try {
+			date0 = (Date) sdf.parse(nowTime);
+		} catch (ParseException e) {
+		}
+		try {
+			date1 = (Date) sdf.parse(time1);
+		} catch (ParseException e) {
+		}
+		try {
+			date2 = (Date) sdf.parse(time2);
+		} catch (ParseException e) {
+		}
+		return isEffective(date0, date1, date2);
+	}
+
+	/**
+	 * 判断当前时间是否在[startTime, endTime]区间，注意时间格式要一致<br>
+	 * 忽略开始与结束时间的位置
+	 * @param nowTime Date 当前时间
+	 * @param time1 Date 时间端
+	 * @param time2 Date 时间端
+	 * @return boolean
+	 */
+	public static boolean isEffective(Date nowTime, Date time1, Date time2) {
+		if (time1 == null && time2 == null) return true;
+		if (nowTime == null) return false;
+		long t = nowTime.getTime();
+		long t1 = (time1 == null ? 0 : time1.getTime());
+		long t2 = (time2 == null ? 0 : time2.getTime());
+		long min = t1, max = t2;
+		if (t1 > t2) {
+			min = t2;
+			max = t1;
+		}
+		if (min == 0 && max > 0) return t <= max;
+		if (min > 0 && max == 0) return t >= min;
+		if (min > 0 && max > 0) return t >= min && t <= max;
+		return false;
+	}
+
+	/**
+	 * 判断当前时间是否在[startTime, endTime]区间，注意时间格式要一致<br>
+	 * 忽略开始与结束时间的位置
 	 * @param nowTime Date 当前时间
 	 * @param time1 Date 时间端
 	 * @param time2 Date 时间端
