@@ -1,5 +1,11 @@
 package des.wangku.operate.standard.utls;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -172,6 +178,7 @@ public final class UtilsProperties {
 		if (properties == null || key == null) return def;
 		String value = getProPropValue(properties, key);
 		if (value == null) return def;
+		System.out.println("value:"+value);
 		try {
 			return Boolean.parseBoolean(value);
 		} catch (Exception e) {
@@ -304,7 +311,9 @@ public final class UtilsProperties {
 	 */
 	public static final String getProPropValue(Properties properties, String key) {
 		if (properties == null || key == null) return null;
-		return properties.getProperty(key);
+		String value=properties.getProperty(key);
+		if(value == null) return null;
+		return value.trim();
 	}
 
 	/**
@@ -322,5 +331,27 @@ public final class UtilsProperties {
 				if (value.indexOf(keywords[i]) > -1) return true;
 		}
 		return false;
+	}
+	/**
+	 * 从filename中提取Properties，如果失败，则返回false
+	 * @param properties Properties
+	 * @param filename String
+	 * @return boolean
+	 */
+	public static final boolean loadProperties(Properties properties,String filename) {
+		File file = new File(filename);
+		if (!file.exists()) {
+			logger.debug("未发现配置文件:" + filename);
+			return false;
+		}
+		if (!file.isFile()) return false;
+		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2); InputStreamReader isr = new InputStreamReader(in, "UTF-8");) {
+			properties.load(isr);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
 	}
 }

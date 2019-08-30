@@ -1,13 +1,6 @@
 package des.wangku.operate.standard.task;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +16,7 @@ public interface InterfaceProperties {
 	static Logger logger = LoggerFactory.getLogger(InterfaceProperties.class);
 
 	/**
+	 * 默认接口<br>
 	 * 从包外读取配置文件<br>
 	 * 默认为mode/des-wkope-task-p0X.properties<br>
 	 * 支持中文
@@ -31,27 +25,12 @@ public interface InterfaceProperties {
 	public default Properties getProProperties() {
 		Properties properties = new Properties();
 		Object obj = this;
-		AbstractTask t = (AbstractTask) obj;
-		String filename = t.getModelProjectFileLeft() + ".properties";
-		File file = new File(filename);
-		if (!file.exists()) {
-			logger.debug("未发现配置文件:" + filename);
+		if(!(obj instanceof AbstractTask)) {
 			return properties;
 		}
-		if (!file.isFile()) return properties;
-		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2); InputStreamReader isr = new InputStreamReader(in, "UTF-8");) {
-			properties.load(isr);
-			/*
-			 * isr.close();
-			 * is2.close();
-			 * for (String key : properties.stringPropertyNames()) {
-			 * logger.debug(key + ":::::" + properties.getProperty(key));
-			 * logger.debug( "::::"+key+":");
-			 * }
-			 */
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		AbstractTask t = (AbstractTask) obj;
+		String filename = t.getModelProjectFileLeft() + ".properties";
+		UtilsProperties.loadProperties(properties, filename);
 		return properties;
 	}
 

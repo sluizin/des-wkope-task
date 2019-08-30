@@ -11,14 +11,24 @@ import java.util.List;
  * @version 1.0
  * @since jdk1.8
  */
+@SuppressWarnings("unchecked")
 public class UtilsArrays {
+	/**
+	 * 把list转成数组
+	 * @param type Class&lt;T&gt;泛型类型
+	 * @param list List&lt;T&gt;
+	 * @return T[]
+	 */
+	public static final <T> T[] toArray(Class<T> type,List<T> list) {
+		T[] arr =  (T[]) Array.newInstance(type, 0);      
+		return list.toArray(arr);
+	}
 	/**
 	 * 把对象转成具体的数组
 	 * @param obj Object
 	 * @param <T> T
 	 * @return T[]
 	 */
-	@SuppressWarnings("unchecked")
 	public static final <T> T[] getArray(Object obj) {
 		T[] arrs = null;
 		if (obj == null) return arrs;

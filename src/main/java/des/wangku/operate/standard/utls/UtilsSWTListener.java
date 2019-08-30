@@ -3,7 +3,8 @@ package des.wangku.operate.standard.utls;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
@@ -13,6 +14,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.dialog.Version;
 
 /**
@@ -32,7 +34,7 @@ public final class UtilsSWTListener {
 	public static final Listener getListenerExist() {
 		Listener t = new Listener() {
 			public void handleEvent(Event e) {
-				logger.debug("Exit!!!");
+				DesktopUtils.existProject();
 				System.exit(0);
 			}
 		};
@@ -49,11 +51,12 @@ public final class UtilsSWTListener {
 		Listener t = new Listener() {
 			public void handleEvent(Event e) {
 				if (clazz == null) return;
-				showVersion(clazz,filename);
+				showVersion(clazz, filename);
 			}
 		};
 		return t;
 	}
+
 	/**
 	 * 查看版本信息
 	 * @param clazz Class&lt;?&gt;

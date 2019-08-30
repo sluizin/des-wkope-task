@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -26,14 +27,17 @@ import org.eclipse.swt.widgets.Spinner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import des.wangku.operate.standard.PV;
+import des.wangku.operate.standard.Pv;
 import des.wangku.operate.standard.database.DatabaseProperties;
+import des.wangku.operate.standard.desktop.DesktopUtils;
+import des.wangku.operate.standard.desktop.TaskObjectClass;
 import des.wangku.operate.standard.dialog.AbstractSearch;
 import des.wangku.operate.standard.dialog.RunDialog;
 import des.wangku.operate.standard.dialog.ThreadRun;
 import des.wangku.operate.standard.swt.AbstractCTabFolder.ParaClass;
 import des.wangku.operate.standard.swt.InterfaceMultiSave;
 import des.wangku.operate.standard.swt.InterfaceMultiTreeExtend;
+import des.wangku.operate.standard.swtComposite.SWTSearch;
 import des.wangku.operate.standard.utls.UtilsShiftCompare;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJar;
@@ -101,7 +105,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 
 	/**
 	 * 得到项目名称<br>
-	 * 可以使用@AnnoProjectTask注解中的 name 进行设置
+	 * 可以使用@AnnoProjectTask注解中的 name 进行设置<br>
+	 * 未来将作废
 	 * @return String
 	 */
 	public abstract String getProjectName();
@@ -123,7 +128,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 如果在model中出现同名的前缀，则只保留其中一个。<br>
 	 * 即：项目前缀唯一<br>
 	 * 不区别大小写<br>
-	 * 可以使用@AnnoProjectTask注解中的 identifier 进行设置
+	 * 可以使用@AnnoProjectTask注解中的 identifier 进行设置<br>
+	 * 未来将作废
 	 * @return String
 	 */
 	public abstract String getIdentifier();
@@ -163,6 +169,13 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	}
 
 	/**
+	 * 通过注解得到是否自动装载
+	 * @return boolean
+	 */
+	public boolean getAutoLoad() {
+		return this.getAnnoAutoLoad();
+	}
+	/**
 	 * 通过注解得到是否过期
 	 * @return boolean
 	 */
@@ -196,15 +209,17 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 */
 	public String getOutputPath() {
 		String proFolder = getIdentifierAll();
-		return PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
+		return Pv.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 	}
 
 	/**
-	 * 空的构造函数。如果调用此构造函数，则不初始化内部方法，只生成本Bean
+	 * 空的构造函数。如果调用此构造函数，则不初始化内部方法，只生成本Bean<br>
+	 * 用于抽出项目class中的信息。无其它功能<br>
+	 * 含 Composite 一个参数的构造函数必须存在，平台检索时需要此函数<br>
 	 * @param parent Composite
 	 */
 	public AbstractTask(Composite parent) {
-		super(parent, 0);
+		super(parent, SWT.NONE);
 	}
 
 	/** ExcelCTabFolder参数 */
@@ -308,8 +323,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	protected void initListener() {
 		addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
-				logger.debug("DisposeListener 被调用 任务完成，进行回收资源！");
-				disposeResources();
+				logger.debug("DisposeListener 被调用 任务完成，进行回收资源信息与项目信息！");
+				disposeAll();
 			}
 		});
 		addHelpListener(new HelpListener() {
@@ -318,6 +333,13 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 				UtilsSWTListener.showVersion(basicClass, getVersionFileJarFullPath());
 			}
 		});
+	}
+	/**
+	 * 回收资源信息与项目信息
+	 */
+	public void disposeAll() {
+		disposeResources();
+		disposeProject();		
 	}
 
 	/** 显示版本 右键菜单 */
@@ -332,7 +354,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	/**
 	 * 主窗体中的已经打开的单元，用于运行时暂时关闭单元，运行完成后，自动打开，已关闭的单元不在此列
 	 */
-	protected Control[] parentControlThreadClose = {};
+	protected Control[] childrenControlThreadClose = {};
 
 	/** 运行时暂时关闭，除关闭已经打开的单元外，可以额外控制(可以打开已经关闭的单元)，运行此方法前所有对象已关闭，可以额外打开 */
 	//public abstract void multiThreadOnRun();
@@ -353,8 +375,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 			public void run() {
 				ThreadRunDialog.closeThread();
 				ThreadRunDialog.getShell().dispose();
-				for (int i = 0; i < parentControlThreadClose.length; i++)
-					parentControlThreadClose[i].setEnabled(true);
+				for (int i = 0; i < childrenControlThreadClose.length; i++)
+					childrenControlThreadClose[i].setEnabled(true);
 				multiThreadOnRunEnd();
 				collect();
 			}
@@ -434,23 +456,22 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @param spinner_maxthread Spinner
 	 */
 	protected void startECTFRunThread(Spinner spinner_maxthread) {
-		List<InterfaceThreadRunUnit> workList = getECTFThreadRunUnitList();
-		startECTFRunThread(spinner_maxthread, workList);
+		Collection<InterfaceThreadRunUnit> workList = getECTFThreadRunUnitList();
+		startECTFRunThread(workList,spinner_maxthread);
 	}
-
 	/**
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 自定义线程数
+	 * @param workList Collection<InterfaceThreadRunUnit>
 	 * @param spinner_maxthread Spinner
-	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(Spinner spinner_maxthread, List<InterfaceThreadRunUnit> workList) {
+	protected void startECTFRunThread(Collection<InterfaceThreadRunUnit> workList,Spinner spinner_maxthread) {
 		if (workList == null || workList.size() == 0) return;
 		int selectNum = 1;
 		if (spinner_maxthread != null) {
 			selectNum = spinner_maxthread.getSelection();
 			if (selectNum <= 0) selectNum = 2;
 		}
-		startECTFRunThread(selectNum, workList);
+		startECTFRunThread(workList,selectNum);	
 	}
 
 	/**
@@ -467,18 +488,18 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表 list总数为线程数
 	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(List<InterfaceThreadRunUnit> workList) {
+	protected void startECTFRunThread(Collection<InterfaceThreadRunUnit> workList) {
 		if (workList == null || workList.size() == 0) return;
 		int selectNum = workList.size();
-		startECTFRunThread(selectNum, workList);
+		startECTFRunThread(workList,selectNum);
 	}
 
 	/**
 	 * 以线程池的形式运行 ExcelCTabFolder组件内部的信息列表
+	 * @param workList Collection<InterfaceThreadRunUnit>
 	 * @param selectNum int
-	 * @param workList List<InterfaceThreadRunUnit>
 	 */
-	protected void startECTFRunThread(int selectNum, List<InterfaceThreadRunUnit> workList) {
+	protected void startECTFRunThread(Collection<InterfaceThreadRunUnit> workList,int selectNum) {
 		if (workList == null) return;
 		int size = workList.size();
 		if (size == 0) return;
@@ -490,14 +511,14 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 			newList.add(e);
 		startECTFRunThreadWork(newList, threadNum);
 	}
-
+	
 	/**
 	 * -
 	 * 以线程池的形式运行工作 ExcelCTabFolder组件组件内部的信息列表
 	 * @param workList List<InterfaceThreadRunUnit>
 	 * @param maxThreadNum int
 	 */
-	private void startECTFRunThreadWork(List<InterfaceThreadRunUnit> workList, int maxThreadNum) {
+	private final void startECTFRunThreadWork(List<InterfaceThreadRunUnit> workList, int maxThreadNum) {
 		if (maxThreadNum <= 0) return;
 		setIsBreakChange(false);
 		allControlEnabledChange(false);
@@ -527,9 +548,9 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @param enabled boolean
 	 */
 	protected void allControlEnabledChange(boolean enabled) {
-		parentControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(this, !enabled);
-		for (int i = 0; i < parentControlThreadClose.length; i++)
-			parentControlThreadClose[i].setEnabled(enabled);
+		childrenControlThreadClose = UtilsSWTComposite.getCompositeChildrenEnable(this, !enabled);
+		for (int i = 0; i < childrenControlThreadClose.length; i++)
+			childrenControlThreadClose[i].setEnabled(enabled);
 	}
 
 	/**
@@ -538,7 +559,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	String getModelProjectFileLeft() {
-		return UtilsPathFile.getModelJarBasicPath() + "/" + AbstractTask.ACC_PROHead + getIdentifierLowerCase();
+		return UtilsPathFile.getJarBasicPathmodel() + "/" + AbstractTask.ACC_PROHead + getIdentifierLowerCase();
 	}
 
 	/**
@@ -592,7 +613,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 */
 	public final String getBaseSourceFile(String fileExt) {
 		String filename = AbstractTask.ACC_PROHead + getIdentifierAll().toLowerCase() + "." + fileExt;
-		filename = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
+		filename = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
 		return filename;
 	}
 
@@ -602,14 +623,49 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	public final String getSubSourceFile(String filename) {
-		return UtilsPathFile.getModelJarBasicPath() + "/" + getIdentifierAll() + "/" + filename;
+		return UtilsPathFile.getJarBasicPathmodel() + "/" + getIdentifierAll() + "/" + filename;
 	}
 
 	/** 设置线程运算量进行回收 */
 	protected int skipGC = 0;
 
+	@Override
 	public int getSkipGC() {
 		return skipGC;
 	}
+	/** 项目的扩展对象，用于伴随 */
+	TaskObjectClass baseTaskTOC=null;
+	
+	/**
+	 * 设置项目的扩展对象
+	 * @param baseTaskTOC TaskObjectClass
+	 */
+	public final void setBaseTaskTOC(TaskObjectClass baseTaskTOC) {
+		this.baseTaskTOC = baseTaskTOC;
+	}
 
+	@Override
+	public void startupProject() {
+		List<MenuItem> list=baseTaskTOC.getTaskMenuItemAll();
+		MenuItem[] arrs=SWTSearch.menuSearch(baseTaskTOC.getMenu(), baseTaskTOC.getId());
+		for(MenuItem g:list) {
+			if(!g.isEnabled())continue;
+			for(MenuItem f:arrs) {
+				if(g.equals(f)) {
+					g.setEnabled(false);
+				}
+			}
+		}
+	}
+	@Override
+	public void disposeProject() {
+		if(baseTaskTOC==null)return;
+		int id=baseTaskTOC.getId();
+		boolean isexist=DesktopUtils.isExist(id);
+		if(!isexist)return;
+		List<MenuItem> list=baseTaskTOC.getTaskMenuItemAll();
+		for(MenuItem g:list) {
+			if(g.getID()==id)g.setEnabled(true);
+		}		
+	}
 }

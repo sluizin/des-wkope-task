@@ -3,6 +3,8 @@ package des.wangku.operate.standard.utls;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import des.wangku.operate.standard.Constants;
 /**
  * 针对jar包的操作的工具类
  * @author Sunjian
@@ -38,7 +40,7 @@ public final class UtilsJar {
 		String urlpath = url.toString();
 		if (urlpath.indexOf('!') == -1) return null;
 		String newpath = urlpath.substring(0, urlpath.indexOf('!') + 1) + filename;
-		/*String urlstr="jar:file:D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/model/des-wkope-task-aizhan-1.2.jar!/update.info";*/
+		/*String urlstr="jar:file:Constants.WorkSpaceLib/model/des-wkope-task-aizhan-1.2.jar!/update.info";*/
 		try {
 			return new URL(newpath);
 		} catch (MalformedURLException e) {

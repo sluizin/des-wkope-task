@@ -11,8 +11,10 @@ import java.util.Comparator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import des.wangku.operate.standard.PV;
-import des.wangku.operate.standard.PV.Env;
+
+import des.wangku.operate.standard.Pv;
+import des.wangku.operate.standard.Pv.Env;
+import des.wangku.operate.standard.desktop.DesktopConst;
 
 /**
  * 关于路径与文件的工具
@@ -25,7 +27,7 @@ public final class UtilsPathFile {
 
 	/**
 	 * 得到jar文件所在目录<br>
-	 * 如本地eclipse运行时class文件，则:D:\Eclipse\eclipse-oxygen\Workspaces\des-wkope\build\classes\main<br>
+	 * 如本地eclipse运行时class文件，则:{constants.DEVWorkSpaceMainProject}\build\classes\main<br>
 	 * 生成jar文件时，则显示所在目录
 	 * @return String
 	 */
@@ -220,16 +222,31 @@ public final class UtilsPathFile {
 	 * 得到model绝对目录
 	 * @return String
 	 */
-	public static final String getModelJarBasicPath() {
-		if (PV.ACC_ENV == Env.DEV) return "D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/model";
+	public static final String getJarBasicPathmodel() {
+		return getJarBasicPathCatalog(DesktopConst.ACC_ModelCatalog, DesktopConst.DEVWorkSpaceModel);
+	}
+	/**
+	 * 得到config绝对目录
+	 * @return String
+	 */
+	public static final String getJarBasicPathconfig() {
+		return getJarBasicPathCatalog(DesktopConst.ACC_ConfigCatalog, DesktopConst.DEVWorkSpaceConfig);
+	}
+	/**
+	 * 得到主项目目录中某个目录，如果是开发环境，则返回 devpath
+	 * @param Catalog String
+	 * @param devpath String
+	 * @return String
+	 */
+	public static final String getJarBasicPathCatalog(String Catalog,String devpath) {
+		if (Pv.ACC_ENV == Env.DEV) return devpath;
 		URL c = UtilsPathFile.class.getClassLoader().getResource("");
-		//logger.debug(" UtilsPathFile.class.getClassLoader().getResource:" + c);
-		if (c == null) return UtilsPathFile.getJarBasicPath() + "/model";
+		if (c == null) return UtilsPathFile.getJarBasicPath() + "/"+Catalog;
 		try {
 			File file = new File(c.toURI().getPath());
 			String filePath = file.getAbsolutePath();//得到windows下的正确路径
 			logger.debug(" UtilsPathFile.class.getClassLoader().getResource c.toURI().getPath():" + filePath);
-			return filePath + "/model";
+			return filePath + "/"+Catalog;
 		} catch (URISyntaxException e) {
 			return "";
 		}

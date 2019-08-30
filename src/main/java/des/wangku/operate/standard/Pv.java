@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import des.wangku.operate.standard.desktop.DesktopConst;
 import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
@@ -14,9 +16,9 @@ import des.wangku.operate.standard.utls.UtilsPathFile;
  * @version 1.0
  * @since jdk1.8
  */
-public final class PV {
+public class Pv {
 	/** 日志 */
-	static Logger logger = LoggerFactory.getLogger(PV.class);
+	static final Logger logger = LoggerFactory.getLogger(Pv.class);
 	/**
 	 * Env.DEV/Env.TEST/Env.ONLINE<br>
 	 * 默认Env.ONLINE
@@ -29,7 +31,8 @@ public final class PV {
 	public static final void Initialization() {
 		String env = System.getProperty("env");//getString("env");
 		if (env == null) {
-			logger.debug("env:" + null);
+			logger.debug("env:null");
+			ACC_ENV = Env.ONLINE;
 			return;
 		}
 		if (env.equalsIgnoreCase("dev")) ACC_ENV = Env.DEV;
@@ -97,15 +100,13 @@ public final class PV {
 		}
 	}
 
-	static final String WorkSpaceLib = "D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs";
-
 	/**
 	 * 得到绝对目录 跟环境变量有关
 	 * @return String
 	 */
 	public static final String getJarBasicPath() {
-		if (PV.ACC_ENV == Env.DEV) return WorkSpaceLib;
-		URL c = PV.class.getClassLoader().getResource("");
+		if (Pv.ACC_ENV == Env.DEV) return DesktopConst.DEVWorkSpaceLib;
+		URL c = Pv.class.getClassLoader().getResource("");
 		logger.debug(" Config.class.getClassLoader().getResource:" + c);
 		if (c == null) return UtilsPathFile.getJarBasicPath() + "";
 		try {
@@ -118,15 +119,13 @@ public final class PV {
 		}
 	}
 
-	/** 文件输出目录名 */
-	public static final String ACC_OutputCatalog = "output";
 	/**
 	 * 文件输出目录的详细地址<br>
 	 * c:/XXX/XXXX/output
 	 * @return String
 	 */
 	public static final String getOutpoutCatalog() {
-		String path=PV.getJarBasicPath() + "/" + PV.ACC_OutputCatalog;
+		String path=Pv.getJarBasicPath() + "/" + DesktopConst.ACC_OutputCatalog;
 		File file = new File(path);
 		if (!file.exists()) file.mkdirs();
 		return path;		

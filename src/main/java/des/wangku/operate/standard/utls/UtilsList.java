@@ -38,7 +38,7 @@ public final class UtilsList {
 		}
 		return result;
 	}
-
+	
 	/**
 	 * 通过list的大小决定使用池的大小
 	 * @param listLen int

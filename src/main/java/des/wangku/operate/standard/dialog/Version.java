@@ -56,7 +56,7 @@ public class Version extends Dialog {
 	 * 初始化
 	 */
 	void initialization() {
-		shell.setText("制作：孙健");
+		shell.setText("制作:孙健    QQ:75583378    GitHub:github.com/sluizin");
 		shell.setSize(442, 266);
 		text = new Text(shell, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text.setBounds(10, 10, 424, 219);

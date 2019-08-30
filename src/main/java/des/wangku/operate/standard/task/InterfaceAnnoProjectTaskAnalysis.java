@@ -10,6 +10,15 @@ import des.wangku.operate.standard.utls.UtilsDate;
  */
 public interface InterfaceAnnoProjectTaskAnalysis {
 	/**
+	 * 从注解中提出是否自动装载
+	 * @return boolean
+	 */
+	public default boolean getAnnoAutoLoad() {
+		AnnoProjectTask anno = getAnnoProjectTask();
+		if (anno == null) return false;
+		return anno.autoLoad();
+	}
+	/**
 	 * 得到注解对象，通过反射得到
 	 * @return AnnoProjectTask
 	 */

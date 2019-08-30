@@ -59,6 +59,15 @@ public class SearchText extends AbstractSearch {
 		});
 	}
 	/**
+	 * 设置shell的setText值
+	 * @param text String
+	 * @return SearchText
+	 */
+	public SearchText setTextHead(String text) {
+		shell.setText(text);		
+		return this;
+	}
+	/**
 	 * 检索信息
 	 */
 	void search() {

@@ -22,8 +22,28 @@ import des.wangku.operate.standard.utls.UtilsString;
 public class AIBaidurank {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(AIBaidurank.class);
+	public static final String intervalkey=",";
 	/**
-	 * 通过要查询的网址与类型得到结果
+	 * 
+	 * 通过要查询的网址与类型得到结果 以","查询多个结果集<br>
+	 * type:baidu / mobile
+	 * @param type String
+	 * @param urlArrs String
+	 * @return List&lt;AIInfor&gt;
+	 */
+	public static final List<AIInfor> getBaidurankMultiList(String type,String urlArrs) {
+		List<AIInfor> list=new ArrayList<>();
+		String[] arrs=urlArrs.split(intervalkey);
+		for(String url:arrs) {
+			if(url.length()==0)continue;
+			AIInfor e=getBaidurankList(url,type);
+			list.add(e);
+		}
+		return list;
+	}
+	/**
+	 * 通过要查询的网址与类型得到结果<br>
+	 * type:baidu / mobile
 	 * @param urlPath String
 	 * @param type String
 	 * @return AIInfor

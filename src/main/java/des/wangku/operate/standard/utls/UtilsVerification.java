@@ -1,5 +1,7 @@
 package des.wangku.operate.standard.utls;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +68,7 @@ public final class UtilsVerification {
 		if (!isNum.matches()) { return false; }
 		return true;
 	}
+
 	/**
 	 * 利用正则表达式判断字符串是否是整数型数字或字母
 	 * @param str String
@@ -77,7 +80,7 @@ public final class UtilsVerification {
 		if (!isNum.matches()) { return false; }
 		return true;
 	}
-	
+
 	/**
 	 * 从字符串提取出第一个"[****]"中括号中的字符串<br>
 	 * 如果没有查到，则返回null
@@ -93,6 +96,7 @@ public final class UtilsVerification {
 		}
 		return null;
 	}
+
 	/**
 	 * 过滤掉[****]得到剩余字符串<br>
 	 * 如果没有ID，则返回null
@@ -100,10 +104,11 @@ public final class UtilsVerification {
 	 * @return String
 	 */
 	public static final String getStringName(String content) {
-		String id=getStringID(content);
-		if(id==null)return null;
-		return content.replace("["+id+"]", "");
+		String id = getStringID(content);
+		if (id == null) return null;
+		return content.replace("[" + id + "]", "");
 	}
+
 	public static void main(String[] args) {
 		String content = "abc[p10中a]ef";
 		System.out.println("Hello World!:" + getStringID(content));
@@ -172,6 +177,33 @@ public final class UtilsVerification {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * 功能：检测当前URL是否可连接或是否有效,
+	 * 描述：最多连接网络 5 次, 如果 5 次都不成功，视为该地址不可用
+	 * @param urlStr 指定URL网络地址
+	 * @return boolean
+	 */
+	public synchronized static boolean isConnect(final String urlStr) {
+		if (urlStr == null || urlStr.length() <= 0) return false;
+		URL url = null;
+		HttpURLConnection con;
+		int counts = 0;
+		while (counts < 5) {
+			try {
+				url = new URL(urlStr);
+				con = (HttpURLConnection) url.openConnection();
+				con.getResponseCode();
+				//System.out.println(counts + "= " + state);
+				return true;
+			} catch (Exception ex) {
+				counts++;
+				//System.out.println("URL不可用，连接第 " + counts + " 次");
+				continue;
+			}
+		}
+		return false;
 	}
 
 }

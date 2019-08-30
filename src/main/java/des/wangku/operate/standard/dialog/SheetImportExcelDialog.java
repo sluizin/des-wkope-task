@@ -35,9 +35,9 @@ import org.eclipse.swt.events.SelectionEvent;
  * @version 1.0
  * @since jdk1.8
  */
-public class ImportExcelSheet extends Dialog {
+public class SheetImportExcelDialog extends Dialog {
 	/** 日志 */
-	static Logger logger = LoggerFactory.getLogger(ImportExcelSheet.class);
+	static Logger logger = LoggerFactory.getLogger(SheetImportExcelDialog.class);
 	protected Shell shlsheet;
 	AbstractCTabFolder parentExcel;
 	FileDialog fileselect = null;
@@ -47,7 +47,7 @@ public class ImportExcelSheet extends Dialog {
 	String url = "";
 	private Text text;
 
-	public ImportExcelSheet(Shell parent, int style, AbstractCTabFolder parentExce) {
+	public SheetImportExcelDialog(Shell parent, int style, AbstractCTabFolder parentExce) {
 		super(parent, style);
 		this.parentExcel = parentExce;
 		this.shlsheet = new Shell(parent);
@@ -164,7 +164,13 @@ public class ImportExcelSheet extends Dialog {
 		}
 		return result;
 	}
-
+	/**
+	 * 导入sheet信息主类
+	 * 
+	 * @author Sunjian
+	 * @version 1.0
+	 * @since jdk1.8
+	 */
 	public static final class ImportSheetInfor {
 		String url = null;
 		String sheetname = null;

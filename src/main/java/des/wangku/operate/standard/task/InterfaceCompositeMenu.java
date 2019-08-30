@@ -4,7 +4,8 @@
 package des.wangku.operate.standard.task;
 
 /**
- * 
+ * 项目初始化时对鼠标右键子菜单进行设置<br>
+	 * 父菜单为 abstractMenu<br>
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8

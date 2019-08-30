@@ -128,7 +128,10 @@ public class MQClassVisitor implements ClassVisitor, Opcodes {
 
 		}
 	}
-
+	/**
+	 * 得到类的名称，例：des.wangku.operate.task.xxx
+	 * @return String
+	 */
 	public String getClassFile() {
 		return classFile;
 	}

@@ -82,6 +82,7 @@ public final class UtilsRegular {
 
 	}
 	private static final String pattern = "\\[[0-9]+\\]";
+	private static final String Patternidentifier = "\\[[\\s\\S]+\\]";
 	/**
 	 * 得到字符串提取的[102]此类的子串，得到指定下标
 	 * @param content String
@@ -118,8 +119,8 @@ public final class UtilsRegular {
 	 * @param content String
 	 * @return String
 	 */
-	public static final String getArrayIDFirst(String content) {
-		String[] arr=getArrayID(content);
+	public static final String getArrayIdentifierFirst(String content) {
+		String[] arr=getArrayIdentifier(content);
 		if(arr==null || arr.length==0)return null;
 		return arr[0];
 	}
@@ -128,7 +129,34 @@ public final class UtilsRegular {
 	 * @param content String
 	 * @return String[]
 	 */
+	public static final String[] getArrayIdentifier(String content) {
+		return getRegexArray(Patternidentifier,content);		
+	}
+	/**
+	 * 从字符串中提取所有[102],[103]此类的子串，并得到字符串
+	 * @param content String
+	 * @return String
+	 */
+	public static final String getArrayIDFirst(String content) {
+		String[] arr=getArrayID(content);
+		if(arr==null || arr.length==0)return null;
+		return arr[0];
+	}
+	/**
+	 * 从字符串中提取所有[102],[104]此类的子串，并得到字符串数组
+	 * @param content String
+	 * @return String[]
+	 */
 	public static final String[] getArrayID(String content) {
+		return getRegexArray(pattern,content);
+	}
+	/**
+	 * 得到正则的结果数组
+	 * @param pattern String
+	 * @param content String
+	 * @return String[]
+	 */
+	public static final String[] getRegexArray(String pattern,String content) {
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(content);
 		List<String> list=new ArrayList<>();

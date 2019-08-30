@@ -55,13 +55,13 @@ public class DBACCESSCTabFolder extends AbstractDBCTabFolder {
 
 	/**
 	 * 获取model中的新建项目的accdb文件<br>
-	 * D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/model/des-wkope-task-p000.accdb
+	 * {Constants.DEVWorkSpaceModel}/des-wkope-task-p000.accdb
 	 * @param abstractTask AbstractTask
 	 * @return String
 	 */
 	public static final String getModelAccessPath(AbstractTask abstractTask) {
 		String filename = abstractTask.getNewModelFile("accdb");
-		String filepath = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
+		String filepath = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
 		return filepath;
 	}
 

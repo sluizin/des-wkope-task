@@ -3,6 +3,7 @@ package des.wangku.operate.standard.swt;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,6 +36,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 import des.wangku.operate.standard.dialog.InputValueDialog;
 import des.wangku.operate.standard.dialog.SearchResultTable;
+import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaClass;
 import des.wangku.operate.standard.task.InterfaceExcelChange;
 import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
@@ -214,24 +216,86 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @param repeat boolean
 	 */
 	public void addColumn(boolean isasync, String columnName, boolean repeat) {
+		if (columnName == null) return;
 		if (!repeat) {
 			TableColumn[] arr = this.getColumns();
 			for (TableColumn e : arr) {
-				if (e.getText().equals(columnName)) { return; }
+				if (e.getText().equals(columnName)) return;
 			}
 		}
-		if (isasync) {
-			getShell().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, 150, columnName);
-					ResultTable.setDefaultTableColumnPos(base, e);
-				}
-			});
-		} else {
-			TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, 150, columnName);
-			ResultTable.setDefaultTableColumnPos(base, e);
+		if (!isasync) {
+			addColumn(columnName);
+			return;
 		}
+		getShell().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				addColumn(columnName);
+			}
+		});
+	}
+
+	/**
+	 * 默认添加新列
+	 * @param columnName String 列名
+	 */
+	public void addColumn(String columnName) {
+		addColumn(columnName, 150);
+	}
+
+	/**
+	 * 得到顺序随机id以sj0001以例<br>
+	 * 数字范围: 1--9999之间
+	 * @return String
+	 */
+	public final String getAutoTitle() {
+		for (int i = 1; i < 10000; i++) {
+			String newid = MultiTree.format(i + "", MultiTree.ACC_AutoIDNumLen);
+			String id = MultiTree.ACC_AutoIDPrefix + newid;
+			if (!isColumn(id)) return id;
+		}
+		return null;
+	}
+
+	/**
+	 * 判断是否含有此名称的列
+	 * @param title String
+	 * @return boolean
+	 */
+	public boolean isColumn(String title) {
+		if (title == null) return false;
+		TableColumn[] arrs = base.getColumns();
+		for (TableColumn e : arrs) {
+			if (e.getText().equals(title)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 自动添加新列
+	 * @param size int
+	 * @return boolean
+	 */
+	public boolean addColumnAuto(int size) {
+		for (int i = 0; i < size; i++) {
+			String columnName = getAutoTitle();
+			if(columnName==null)return false;
+			addColumn(columnName, 150);
+		}
+		return true;
+	}
+
+	/**
+	 * 默认添加新列 有宽度
+	 * @param columnName String 列名
+	 * @param width int
+	 * @return boolean
+	 */
+	public boolean addColumn(String columnName, int width) {
+		if (columnName == null) return false;
+		TableColumn e = ResultTable.getDefaultTableColumn(base, SWT.LEFT, width, columnName);
+		ResultTable.setDefaultTableColumnPos(base, e);
+		return true;
 	}
 
 	/**
@@ -318,7 +382,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				}
 				if (e.stateMask == SWT.CTRL && (e.keyCode == 'f')) {
 					InterfaceTablesDialog parent = UtilsSWTTools.getParentInterfaceObj(base, InterfaceTablesDialog.class);
-					parent.setSearchDialog((new SearchResultTable(shell,0)).putCombo(base));
+					parent.setSearchDialog((new SearchResultTable(shell, 0)).putCombo(base));
 					//parent.setSearchDialog(new SearchDialog(shell, 0, base));
 					parent.getSearchDialog().open();
 				}
@@ -539,7 +603,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	void setMenuItemCheckExport(Menu parent) {
 		MenuItem menuItemCopyline = new MenuItem(parent, SWT.NONE);
 		menuItemCopyline.setText("复制行-粘贴板-多行");
-		menuItemCopyline.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyLine(this));
+		menuItemCopyline.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyClipboard(this));
 		MenuItem menuItemCopyJson = new MenuItem(parent, SWT.NONE);
 		menuItemCopyJson.setText("复制行-粘贴板-Json");
 		menuItemCopyJson.addListener(SWT.Selection, UtilsSWTTableListener.getListenerCopyJson(this));
@@ -713,6 +777,23 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
+	 * 通过查找ResultTable中的栏目名称中的标识[XXX]得到栏目的下标，如果没有查到，则返回-1<br>
+	 * 规范格式:[102]XXX
+	 * @param table ResultTable
+	 * @param key String
+	 * @return int
+	 */
+	public int getColumnsIndex(String key) {
+		if (key == null) return -1;
+		TableColumn[] arr = getColumns();
+		for (int i = 0; i < arr.length; i++) {
+			String title = arr[i].getText();
+			if (title.indexOf("[" + key + "]") == 0) return i;
+		}
+		return -1;
+	}
+
+	/**
 	 * 添加记录，如果point在[0---len-1]之间，则为插入，否则为添加
 	 * @param point int
 	 * @param arrs String[]
@@ -722,6 +803,33 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		if (point > -1 && point < getItemCount()) item = new TableItem(this, SWT.NONE, point);
 		else item = new TableItem(this, SWT.NONE);
 		item.setText(arrs);
+	}
+
+	/**
+	 * 更新指定行列的内容，如果没有此行此列，则添加多行多列
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 */
+	public final synchronized void make(int x, int y, String value) {
+		if (value == null || x < 0 || y < 0) return;
+		int colcount = getColumnCount();
+		if (y >= colcount) {
+			int size = y - colcount + 1;
+			/* 添加列时失败，不能添加某列，可能会已经添加了几列 */
+			if(!addColumnAuto(size))return;
+		}
+		int rowcount = getItemCount();
+		if (x >= rowcount) {
+			int size = x - rowcount + 1;
+			String[] arrs = new String[getColumnCount()];
+			Arrays.fill(arrs, "");
+			for (int i = 0; i < size; i++)
+				addTableItem(-1, arrs);
+		}
+		//System.out.println("["+this.getItemCount()+","+this.getColumnCount()+"]->["+x+","+y+"]");
+		TableItem e = getItem(x);
+		e.setText(y, value);
 	}
 
 	@Override
@@ -817,5 +925,63 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 			}
 		}
 		UtilsSWTTableSQL.update(base, x, y, newValue);
+	}
+
+	/**
+	 * 得到某行的数据列表
+	 * @param index int
+	 * @return List&lt;String&gt;
+	 */
+	public List<String> toList(int index) {
+		List<String> list = new ArrayList<>();
+		TableItem e = this.getItem(index);
+		if (e == null) return list;
+		int len = getColumnCount();
+		for (int i = 0; i < len; i++) {
+			String value = e.getText(i);
+			if (value == null) value = "";
+			list.add(value);
+		}
+		return list;
+	}
+
+	/**
+	 * 把表格内容提取
+	 * @param epc ExcelParaClass
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public List<List<String>> toList(ExcelParaClass epc) {
+		List<List<String>> list = new ArrayList<>();
+		int size = this.getItemCount();
+		if (epc != null && epc.isHead()) list.add(toColumnsList());
+		for (int i = 0; i < size; i++)
+			list.add(toList(i));
+		return list;
+	}
+
+	/**
+	 * 得到表格的表头列表
+	 * @return List&lt;String&gt;
+	 */
+	public List<String> toColumnsList() {
+		TableColumn[] arrs = this.getColumns();
+		List<String> list = new ArrayList<>(arrs.length);
+		for (TableColumn e : arrs) {
+			list.add(e.getText());
+		}
+		return list;
+	}
+
+	/**
+	 * 删除所有行与列
+	 */
+	public void disposeAll() {
+		TableItem[] arrs = getItems();
+		for (int i = 0; i < arrs.length; i++)
+			arrs[i].dispose();
+		TableColumn[] arr = getColumns();
+		for (int i = 0; i < arr.length; i++)
+			arr[i].dispose();
+		redraw();
 	}
 }

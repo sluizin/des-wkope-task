@@ -22,7 +22,8 @@ public interface InterfaceMultiThreadOnRun {
 		
 	}
 	/**
-	 * 得到线程总数
+	 * 得到线程单元总数<br>
+	 * 使用接口中的默认方法
 	 * @return List&lt;InterfaceThreadRunUnit&gt;
 	 */
 	public default List<InterfaceThreadRunUnit> getECTFThreadRunUnitList() {

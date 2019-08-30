@@ -2,6 +2,8 @@ package des.wangku.operate.standard.swt;
 
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.Sheet;
+
 import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaClass;
 
 /**
@@ -13,13 +15,32 @@ import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaCl
  *
  */
 public interface InterfaceMultiSave {
+
 	/**
-	 * 把ResultTable中选中的记录另存为 Excel
+	 * 把ResultTable中选中的记录另存为 Excel[第一步]
+	 * @param table ResultTable
+	 * @param epc ExcelParaClass
+	 */
+	public default void multiSaveExcel(ResultTable table,ExcelParaClass epc) {
+		
+	}
+	/**
+	 * 把ResultTable中选中的记录另存为 Excel[第二步]
 	 * @param table ResultTable
 	 * @param epc ExcelParaClass
 	 * @param list List&lt;List&lt;String&gt;&gt;
 	 */
 	public default void multiSaveExcel(ResultTable table,ExcelParaClass epc,List<List<String>> list) {
+		
+	}
+	/**
+	 * 把ResultTable中选中的记录另存为 Excel[第三步]
+	 * @param table ResultTable
+	 * @param epc ExcelParaClass
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param firstSave Sheet
+	 */
+	public default void multiSaveExcel(ResultTable table,ExcelParaClass epc,List<List<String>> list,Sheet firstSave) {
 		
 	}
 	/**

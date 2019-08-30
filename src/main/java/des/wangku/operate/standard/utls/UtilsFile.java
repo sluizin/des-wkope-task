@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import des.wangku.operate.standard.PV;
+import des.wangku.operate.standard.Pv;
 
 /**
  * 文件的读写操作
@@ -37,16 +37,28 @@ public final class UtilsFile {
 	/**
 	 * 把excel写到文件中
 	 * @param filename String
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @return boolean
 	 */
-	public static final boolean writeWorkbookFile(String filename, Workbook workbook) {
+	public static final boolean writeWorkbookFile(String filename, Workbook wb) {
+		return writeWorkbookFile(filename,wb,true);
+	}
+	/**
+	 * 把excel写到文件中， 是否关闭workbook
+	 * @param filename String
+	 * @param wb Workbook
+	 * @param close boolean
+	 * @return boolean
+	 */
+	public static final boolean writeWorkbookFile(String filename, Workbook wb,boolean close) {
 		try {
 			File file = new File(filename);
-			FileOutputStream fileoutputStream = new FileOutputStream(file);
-			workbook.write(fileoutputStream);
-			fileoutputStream.close();
-			workbook.close();
+			File catalog=file.getParentFile();
+			if(!catalog.exists())catalog.mkdirs();/* 如果没有目录，则建立目录 */
+			FileOutputStream fos = new FileOutputStream(file);
+			wb.write(fos);
+			fos.close();
+			if(close)wb.close();
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -176,7 +188,7 @@ public final class UtilsFile {
 	 * @return File
 	 */
 	public static final File mkModelFile(String proFolder, String filename, String fileExt) {
-		String path = PV.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
+		String path = Pv.getOutpoutCatalog() + ((proFolder == null || proFolder.length() == 0) ? "" : "/" + proFolder);
 		File filefolder = new File(path);
 		if (!filefolder.exists()) filefolder.mkdirs();
 		if (filename == null) filename = UtilsRnd.getNewFilenameNow(4, 1);
@@ -219,6 +231,7 @@ public final class UtilsFile {
 	public static final int fileModify(String fileName, String oldstr, String newStr) {
 		int hits = 0;
 		File file = new File(fileName);
+		if(!file.exists())return 0;
 		try (FileReader in = new FileReader(file); BufferedReader br = new BufferedReader(in); CharArrayWriter caw = new CharArrayWriter();) {
 			String line = null;
 			final String findStr = "(?:" + oldstr + ")";/* 支持多个关键字 以|间隔 */

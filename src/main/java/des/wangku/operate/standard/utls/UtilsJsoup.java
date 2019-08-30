@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -101,6 +102,37 @@ public final class UtilsJsoup {
 	}
 
 	/**
+	 * 得到url的title值
+	 * @param url String
+	 * @return String
+	 */
+	public static final String getURLTitle(String url) {
+		if(url==null || url.trim().length()==0)return null;
+		if(!UtilsVerification.isConnect(url))return null;
+		Document doc = getDoc(url);
+		if (doc == null) return null;
+		Elements es = doc.getElementsByTag("title");
+		if (es.size() == 0) return null;
+		return es.get(0).text();
+
+	}
+
+	/**
+	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
+	 * @param url String
+	 * @return Document
+	 */
+	public static final Document getDoc(String url) {
+		try {
+			URL url1 = new URL(url);
+			return getDoc(url1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
 	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
 	 * @param url URL
 	 * @return Document
@@ -145,7 +177,7 @@ public final class UtilsJsoup {
 			return null;
 		}
 		String newCode = getCode(url);
-		logger.debug("newCode:" + newCode);
+		//logger.debug("newCode:" + newCode);
 		if (isCompare(mode, MODE_Socket)) {
 			String content = UtilsReadURL.getSocketContent(url, newCode, 20000);
 			if (content != null && content.length() > 0) return Jsoup.parse(content);
@@ -365,5 +397,144 @@ public final class UtilsJsoup {
 			}
 		}
 
+	}
+
+	/**
+	 * 得到图片链接，即有链接，内又是图片，的信息
+	 * @param body Element
+	 * @return List&lt;HrefPictClass&gt;
+	 */
+	public static final List<HrefPictClass> getBodyHrefPict(Element body) {
+		List<HrefPictClass> list = new ArrayList<>();
+		Elements as = body.select("a[href]");
+		for (Element f : as) {
+			Elements arr = f.getElementsByTag("img");
+			if (arr.size() == 0) continue;
+			HrefPictClass n = new HrefPictClass();
+			n.aId = f.attr("id");
+			n.aHref = f.attr("abs:href");
+			n.aAlt = f.attr("alt");
+			Element e = arr.get(0);
+			n.pSrc = e.attr("abs:src");
+			n.pAlt = e.attr("alt");
+			list.add(n);
+		}
+		return list;
+	}
+
+	/**
+	 * 得到图片链接，即有链接，内又是图片，的信息<br>
+	 * 
+	 * <pre>
+	* {@code
+	*<a href="/pangpanghuan/"><img src="images/logo.gif" alt="返回主页" /></a>	
+	*  }
+	 * </pre>
+	 * 
+	 * @author Sunjian
+	 * @version 1.0
+	 * @since jdk1.8
+	 */
+	public static class HrefPictClass {
+		String aId = null;
+		String aHref = null;
+		String aAlt = null;
+		String pSrc = null;
+		String pAlt = null;
+
+		public final String getaId() {
+			return aId;
+		}
+
+		public final String getaHref() {
+			return aHref;
+		}
+
+		public final String getaAlt() {
+			return aAlt;
+		}
+
+		public final String getpSrc() {
+			return pSrc;
+		}
+
+		public final String getpAlt() {
+			return pAlt;
+		}
+	}
+	/**
+	 * 链接对象，含有链接数量
+	 * 
+	 * @author Sunjian
+	 * @version 1.0
+	 * @since jdk1.8
+	 */
+	public static class HrefClass{
+		int count=1;
+		String url="";
+		public HrefClass(String url,int count) {
+			this.url=url;
+			this.count=count;
+		}
+		@Override
+		public String toString() {
+			return "HrefClass [count=" + count + ", url=" + url + "]";
+		}
+		public final int getCount() {
+			return count;
+		}
+		public final String getUrl() {
+			return url;
+		}
+		
+		
+		
+	}
+	/**
+	 * 得到Element中所有链接的列表，出现重复，则对像数量+1
+	 * @param e Element
+	 * @return List&lt;HrefClass&gt;
+	 */
+	public static final List<HrefClass> getListHref(Element e){
+		List<HrefClass> list=new ArrayList<>();
+		if(e==null)return list;
+		Elements as = e.select("a[href]");
+		for(Element f:as) {
+			String href=f.attr("abs:href");
+			if(href==null || href.trim().length()==0)continue;
+			addHrefList(list,href);			
+		}
+		/* 删除不重复的链接 */
+		for(int i=list.size()-1;i>=0;i--) {
+			HrefClass f=list.get(i);
+			if(f.count<2)list.remove(i);
+		}
+		/* 倒序重整 */
+		Collections.sort(list, new Comparator<HrefClass>() {
+			@Override
+			public int compare(HrefClass arg0, HrefClass arg1) {
+				if(arg0.count>arg1.count)return -1;
+				if(arg0.count<arg1.count)return 1;
+				return 0;
+			}
+		});
+		return list;
+	}
+	/**
+	 *添加新地址到列表中，如果列表中含此链接，则此链接数量+1
+	 * @param list List&lt;HrefClass&gt;
+	 * @param href String
+	 */
+	private static final void addHrefList(List<HrefClass> list,String href) {
+		if(href==null || href.trim().length()==0)return;
+		href=href.trim();
+		for(HrefClass e:list) {
+			if(href.equalsIgnoreCase(e.url)) {
+				e.count++;
+				return;
+			}			
+		}
+		list.add(new HrefClass(href,1));
+		
 	}
 }

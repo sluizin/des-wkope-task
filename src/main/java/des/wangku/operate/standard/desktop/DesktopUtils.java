@@ -1,0 +1,65 @@
+package des.wangku.operate.standard.desktop;
+
+import static des.wangku.operate.standard.desktop.DesktopConst.ExtendTaskMap;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
+import des.wangku.operate.standard.task.AbstractTask;
+
+/**
+ * 桌面调动时需要的一些方法
+ * @author Sunjian
+ * @version 1.0
+ * @since jdk1.8
+ */
+public class DesktopUtils {
+	/**
+	 * 判断是否有任务ID
+	 * @param taskID int
+	 * @return boolean
+	 */
+	public static final boolean isExist(int taskID) {
+		for (String key : ExtendTaskMap.keySet()) {
+			TaskObjectClass ff = ExtendTaskMap.get(key);
+			if (ff.getId() == taskID) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 退出系统<br>
+	 * 项目退出时，要从堆栈轨迹查看是哪个工作调用，再因收资源
+	 */
+	public static final void existProject() {
+		AbstractTask task = LoadTaskUtils.getStackTracebstractTask();
+		existTask(task);
+		System.exit(0);
+	}
+	/**
+	 * 项目退出时，因收任务资源
+	 * @param task
+	 */
+	public static final void existTask(AbstractTask task) {
+		if (task == null) return; 
+		System.out.println("Quit Task :" + task.getProjectNameAll());
+		task.disposeAll();
+	}
+
+	/**
+	 * 退出系统<br>
+	 * 从某个容器中提取任务，并回收任务资源
+	 * @param main Composite
+	 */
+	public static final void existProject(Composite main) {
+		Control[] arrs = main.getChildren();
+		for (Control f : arrs) {
+			if (f instanceof AbstractTask) {
+				AbstractTask task = (AbstractTask) f;
+				existTask(task);
+			}
+		}
+		main.dispose();
+		System.exit(0);
+	}
+}

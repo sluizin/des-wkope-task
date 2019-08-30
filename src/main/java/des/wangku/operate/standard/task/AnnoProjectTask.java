@@ -8,7 +8,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 /**
  * 
- * 设置项目基础信息注解
+ * 设置项目基础信息注解<br>
+ * <code>group:组名		name:项目名称	identifier:项目编号
+ * expire:是否过期<br>
+ * dateStart:开始日期	dateEnd:结束日期<br>
+ * autoLoad:是否自动装载(平台打开时自动调取最新保存的允许自动装载的工程[懒人操作])
+ * </code>
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -17,6 +22,11 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target({TYPE})
 public @interface AnnoProjectTask {
+	/**
+	 * 是否自动装载
+	 * @return boolean
+	 */
+	public boolean autoLoad() default false;
 	/**
 	 * 项目所在的组
 	 * @return String

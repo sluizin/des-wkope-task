@@ -2,6 +2,7 @@ package des.wangku.operate.standard.utls;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -11,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -45,7 +47,7 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
  * @version 1.0
  * @since jdk1.8
  */
-@SuppressWarnings("resource")
+@SuppressWarnings({ "resource", "deprecation" })
 public final class UtilsSWTPOI {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsSWTPOI.class);
@@ -54,12 +56,12 @@ public final class UtilsSWTPOI {
 	 * 保存workbook到model目录里的随机数文件，是否关闭Workbook
 	 * @param saveFolder String
 	 * @param shell Shell
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @param isClose boolean
 	 * @param isAlert boolean
 	 * @return File
 	 */
-	public static File save(String saveFolder, Shell shell, Workbook workbook, boolean isClose, boolean isAlert) {
+	public static File save(String saveFolder, Shell shell, Workbook wb, boolean isClose, boolean isAlert) {
 		//AbstractTask e=UtilsSWTTools.getParentObj(shell, AbstractTask.class);
 		String proFolder = "";
 		if (saveFolder != null) proFolder = saveFolder;
@@ -71,7 +73,7 @@ public final class UtilsSWTPOI {
 			}
 			return null;
 		}
-		boolean t = UtilsSWTPOI.save(workbook, isClose, file);
+		boolean t = UtilsSWTPOI.save(wb, isClose, file);
 		if (t) {
 			String filename = UtilsFileMethod.getFileName(file);
 			if (isAlert) {
@@ -86,18 +88,17 @@ public final class UtilsSWTPOI {
 
 	/**
 	 * 保存Workbook到File，，是否关闭Workbook
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @param isClose boolean
 	 * @param file File
 	 * @return boolean
 	 */
-	public static final boolean save(Workbook workbook, boolean isClose, File file) {
-		try {
-			if (workbook == null || file == null) return false;
-			FileOutputStream fileoutputStream = new FileOutputStream(file);
-			workbook.write(fileoutputStream);
+	public static final boolean save(Workbook wb, boolean isClose, File file) {
+		if (wb == null || file == null) return false;
+		try (FileOutputStream fileoutputStream = new FileOutputStream(file)) {
+			wb.write(fileoutputStream);
 			fileoutputStream.close();
-			if (isClose) workbook.close();
+			if (isClose) wb.close();
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -106,14 +107,49 @@ public final class UtilsSWTPOI {
 	}
 
 	/**
+	 * 添加Sheet<br>
+	 * 如果发现有此名称的sheet，则添加数据<br>
+	 * 否则添加新的sheet<br>
+	 * 返回sheet名称<br>
+	 * @param wb Workbook
+	 * @param sheetName String
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @return String
+	 */
+	public static final String addSheet(Workbook wb, String sheetName, List<List<String>> list) {
+		if (wb == null || sheetName == null || sheetName.length() == 0) return null;
+		String newSheetName = getSheetNameFormat(sheetName);
+		Sheet sheet = wb.getSheet(newSheetName);
+		if (sheet != null) {
+			addSheet(sheet, list);
+			return newSheetName;
+		}
+		Sheet newsheet = wb.createSheet(newSheetName);
+		addSheet(newsheet, list);
+		return newSheetName;
+	}
+
+	/**
+	 * 向sheet中添加数据
+	 * @param sheet Sheet
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 */
+	public static final void addSheet(Sheet sheet, List<List<String>> list) {
+		if (sheet == null || list.size() == 0) return;
+		for (List<String> l : list)
+			addSheetRow(sheet, l);
+	}
+
+	/**
 	 * 添加数组为一行
 	 * @param sheet Sheet
 	 * @param list List&lt;String&gt;
 	 */
 	public static final void addSheetRow(Sheet sheet, List<String> list) {
-		String[] arr= {};
-		addSheetRow(sheet,list.toArray(arr));
+		String[] arr = {};
+		addSheetRow(sheet, list.toArray(arr));
 	}
+
 	/**
 	 * 添加数组为一行
 	 * @param sheet Sheet
@@ -125,27 +161,27 @@ public final class UtilsSWTPOI {
 		for (int i = 0; i < arrs.length; i++) {
 			String value = arrs[i];
 			Cell cell = row.createCell(i);
-			cell.setCellValue(value);
+			cell.setCellValue(arrangementString(value));
 		}
 	}
 
 	/**
 	 * 把table放入 Workbook 中 默认名称 "信息"
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @param table ResultTable
 	 */
-	public static final void addWorkbookSheet(Workbook workbook, ResultTable table) {
+	public static final void addWorkbookSheet(Workbook wb, ResultTable table) {
 		String sheetName = ExcelCTabFolder.getSheetName(table, "信息");
-		UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, table);
+		UtilsSWTPOI.addWorkbookSheet(wb, sheetName, table);
 	}
 
 	/**
-	 * 把table放入 Workbook 中
-	 * @param workbook Workbook
+	 * 把多个table放入 Workbook 中
+	 * @param wb Workbook
 	 * @param sheetName String
 	 * @param arrs ResultTable[]
 	 */
-	public static final void addWorkbookSheet(Workbook workbook, String sheetName, ResultTable... arrs) {
+	public static final void addWorkbookSheet(Workbook wb, String sheetName, ResultTable... arrs) {
 		if (arrs.length == 0) return;
 		ResultTable first = arrs[0];
 		InterfaceExcelChange change = UtilsSWTTools.getParentInterfaceObj(first, InterfaceExcelChange.class);
@@ -158,20 +194,20 @@ public final class UtilsSWTPOI {
 			List<List<String>> list1 = UtilsSWTTable.getTableItemList(i == 0 ? isHead : false, arrs.length > 1 ? sheetName2 : null, table, arr);
 			list.addAll(list1);
 		}
-		UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, list, change);
+		UtilsSWTPOI.addWorkbookSheet(wb, sheetName, list, change);
 	}
 
 	/**
 	 * 把list放入 Workbook 中
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @param sheetName String
 	 * @param list List&lt;List&lt;String&gt;&gt;
 	 * @param change InterfaceExcelChange
 	 */
-	public static final void addWorkbookSheet(Workbook workbook, String sheetName, List<List<String>> list, InterfaceExcelChange change) {
-		sheetName = (sheetName == null) ? "信息" : sheetName;
-		Sheet sheet = workbook.createSheet(sheetName);
-		CellStyle cellStyle = workbook.createCellStyle();
+	public static final void addWorkbookSheet(Workbook wb, String sheetName, List<List<String>> list, InterfaceExcelChange change) {
+		String newSheetName = getNewSheetNameDefault(wb, sheetName);
+		Sheet sheet = wb.createSheet(newSheetName);
+		CellStyle cellStyle = wb.createCellStyle();
 		// 设置这些样式  
 		cellStyle.setAlignment(HorizontalAlignment.LEFT);
 		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -185,9 +221,7 @@ public final class UtilsSWTPOI {
 			Row row = sheet.createRow(i);
 			for (int ii = 0, len2 = li.size(); ii < len2; ii++) {
 				row.createCell(ii).setCellStyle(cellStyle);
-				String value = li.get(ii);
-				if (value == null) value = "";
-				if (value.length() > 30000) value = value.substring(0, 30000);
+				String value = arrangementString(li.get(ii));
 				Cell cell = row.createCell(ii);
 				cell.setCellValue(value);
 			}
@@ -205,8 +239,8 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			Workbook workbook = new XSSFWorkbook(file);
-			return workbook.getSheet(sheetName);
+			Workbook wb = new XSSFWorkbook(file);
+			return wb.getSheet(sheetName);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -222,10 +256,10 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			Workbook workbook = new XSSFWorkbook(file);
+			Workbook wb = new XSSFWorkbook(file);
 			List<Sheet> list = new ArrayList<>();
-			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
-				Sheet sheet = workbook.getSheetAt(i);
+			for (int i = 0, len = wb.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = wb.getSheetAt(i);
 				list.add(sheet);
 			}
 			Sheet[] arr = {};
@@ -246,8 +280,8 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			Workbook workbook = new XSSFWorkbook(file);
-			return workbook.getSheetAt(sheetNum);
+			Workbook wb = new XSSFWorkbook(file);
+			return wb.getSheetAt(sheetNum);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -270,9 +304,9 @@ public final class UtilsSWTPOI {
 				System.out.println("e:" + e);
 				File file = new File(e);
 				if (file == null || !file.isFile()) continue;
-				Workbook workbook = new XSSFWorkbook(file);
-				for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
-					Sheet sheet = workbook.getSheetAt(i);
+				Workbook wb = new XSSFWorkbook(file);
+				for (int i = 0, len = wb.getNumberOfSheets(); i < len; i++) {
+					Sheet sheet = wb.getSheetAt(i);
 					if (sheet.getSheetName().indexOf(sheetLeft) == 0) list.add(sheet);
 				}
 			}
@@ -280,11 +314,6 @@ public final class UtilsSWTPOI {
 			e.printStackTrace();
 		}
 		return list;
-	}
-
-	public static final int getSheetIDLeftKey(String filePath, String fileLeft, String sheetLeft) {
-
-		return 0;
 	}
 
 	/**
@@ -297,9 +326,9 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
-			Workbook workbook = new XSSFWorkbook(file);
-			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
-				Sheet sheet = workbook.getSheetAt(i);
+			Workbook wb = new XSSFWorkbook(file);
+			for (int i = 0, len = wb.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = wb.getSheetAt(i);
 				if (sheet.getSheetName().indexOf(sheetName) > -1) return sheet;
 			}
 		} catch (Exception e) {
@@ -320,9 +349,9 @@ public final class UtilsSWTPOI {
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return -1;
-			Workbook workbook = new XSSFWorkbook(file);
-			for (int i = 0, len = workbook.getNumberOfSheets(); i < len; i++) {
-				Sheet sheet = workbook.getSheetAt(i);
+			Workbook wb = new XSSFWorkbook(file);
+			for (int i = 0, len = wb.getNumberOfSheets(); i < len; i++) {
+				Sheet sheet = wb.getSheetAt(i);
 				String sheetname = sheet.getSheetName();
 				if (isContain) {
 					if (sheetname.indexOf(keyword) > -1) return i;
@@ -330,11 +359,52 @@ public final class UtilsSWTPOI {
 					if (sheetname.indexOf(keyword) == index) return i;
 				}
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	/**
+	 * 得到一个空的sheet名称 发现key同名，则以 key+(0~999)<br>
+	 * 否则得到一个日期+随机(4位)的字符串
+	 * @param wb Workbook
+	 * @param key String
+	 * @return String
+	 */
+	public static final String getNewSheetName(final Workbook wb, final String key) {
+		if (wb == null || key == null) return UtilsRnd.getNewFilenameNow(4, 4);
+		String newKey = getSheetNameFormat(key);
+		Sheet sheet = wb.getSheet(newKey);
+		if (sheet == null) return newKey;
+		for (int i = 0; i <= 999; i++) {
+			String name = newKey + "(" + i + ")";
+			sheet = wb.getSheet(name);
+			if (sheet == null) return name;
+		}
+		return newKey + UtilsRnd.getNewFilenameNow(4, 4);
+	}
+
+	/**
+	 * 控制sheet名称不允许超出28个字符<br>
+	 * 如key为null或空，则返回null 因为excel不允许使用空sheet名
+	 * @param key String
+	 * @return String
+	 */
+	public static final String getSheetNameFormat(String key) {
+		if (key == null || key.length() == 0) return null;
+		if (key.length() > 28) return key.substring(0, 28);
+		return key;
+	}
+
+	/**
+	 * 得到sheet名字，如果sheetname为空，则使用"信息"作为key
+	 * @param wb Workbook
+	 * @param sheetName String
+	 * @return String
+	 */
+	public static final String getNewSheetNameDefault(Workbook wb, String sheetName) {
+		return getNewSheetName(wb, sheetName == null ? "信息" : sheetName);
 	}
 
 	/**
@@ -344,16 +414,25 @@ public final class UtilsSWTPOI {
 	 * @param sheetName String
 	 * @param change InterfaceExcelChange
 	 * @param epc ExcelParaClass
-	 * @return boolean
+	 * @return Sheet
 	 */
-	public static final boolean makeExcel(String filename, String sheetName, List<List<String>> list, InterfaceExcelChange change, ExcelParaClass epc) {
-		Workbook workbook = new XSSFWorkbook();
-		Sheet sheet = workbook.createSheet(sheetName == null ? "信息" : sheetName);
-		makeExcel(sheet,list,change,epc);
-		return UtilsFile.writeWorkbookFile(filename, workbook);
+	public static final Sheet makeExcel(String filename, String sheetName, List<List<String>> list, InterfaceExcelChange change, ExcelParaClass epc) {
+		Workbook wb = new XSSFWorkbook();
+		String newSheetName = getNewSheetNameDefault(wb, sheetName);
+		Sheet sheet = wb.createSheet(newSheetName);
+		makeExcel(sheet, list, change, epc);
+		boolean t = UtilsFile.writeWorkbookFile(filename, wb, false);
+		if (t) return sheet;
+		try {
+			if (wb != null) wb.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
+
 	/**
-	 * 生成excel文件
+	 * 生成excel文件 修改sheet内容
 	 * @param sheet Sheet
 	 * @param list List&lt;List&lt;String&gt;&gt;
 	 * @param change InterfaceExcelChange
@@ -373,10 +452,8 @@ public final class UtilsSWTPOI {
 			for (int ii = 0, len2 = li.size(); ii < len2; ii++) {
 				row.createCell(ii).setCellStyle(cellStyle);
 				String value = li.get(ii);
-				if (value == null) value = "";
-				if (value.length() > 30000) value = value.substring(0, 30000);
 				Cell cell = row.createCell(ii);
-				cell.setCellValue(value);
+				cell.setCellValue(arrangementString(value));
 				if (epc != null) epc.makeStyle(cell);
 			}
 		}
@@ -414,10 +491,11 @@ public final class UtilsSWTPOI {
 	public static final boolean makeExcel(String filename, String sheetName, ResultSet rs, boolean isMetaData) {
 		if (rs == null) return false;
 		try {
-			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("0123456789");
-			workbook.setSheetName(0, sheetName == null ? "信息" : sheetName);
-			CellStyle cellStyle = getCellStyleBase(workbook);
+			Workbook wb = new XSSFWorkbook();
+			String newSheetName = getNewSheetNameDefault(wb, sheetName);
+			Sheet sheet = wb.createSheet(newSheetName);
+			//wb.setSheetName(0, sheetName == null ? "信息" : sheetName);
+			CellStyle cellStyle = getCellStyleBase(wb);
 			int p = 0;
 			ResultSetMetaData rsmd = rs.getMetaData();
 			int count = rsmd.getColumnCount();
@@ -427,7 +505,7 @@ public final class UtilsSWTPOI {
 					String value = rsmd.getColumnName(i + 1);
 					row.createCell(i).setCellStyle(cellStyle);
 					Cell cell = row.createCell(i);
-					cell.setCellValue(value);
+					cell.setCellValue(arrangementString(value));
 				}
 			}
 			rs.beforeFirst();
@@ -439,11 +517,11 @@ public final class UtilsSWTPOI {
 					//logger.debug("value:"+value);
 					row.createCell(i).setCellStyle(cellStyle);
 					Cell cell = row.createCell(i);
-					cell.setCellValue(value);
+					cell.setCellValue(arrangementString(value));
 				}
 			}
 			logger.debug("filename:" + filename);
-			return UtilsFile.writeWorkbookFile(filename, workbook);
+			return UtilsFile.writeWorkbookFile(filename, wb);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -453,12 +531,12 @@ public final class UtilsSWTPOI {
 
 	/**
 	 * 得到通用表格样式
-	 * @param workbook Workbook
+	 * @param wb Workbook
 	 * @return CellStyle
 	 */
-	public static final CellStyle getCellStyleBase(Workbook workbook) {
-		if (workbook == null) return null;
-		CellStyle cellStyle = workbook.createCellStyle();/* 设置这些样式 */
+	public static final CellStyle getCellStyleBase(Workbook wb) {
+		if (wb == null) return null;
+		CellStyle cellStyle = wb.createCellStyle();/* 设置这些样式 */
 		cellStyle.setAlignment(HorizontalAlignment.LEFT);
 		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		return cellStyle;
@@ -552,7 +630,6 @@ public final class UtilsSWTPOI {
 	 * @param cell Cell
 	 * @return String
 	 */
-	@SuppressWarnings("deprecation")
 	public static String getCellValueFormula(Cell cell) {
 		if (cell == null) return null;
 		switch (cell.getCellType()) {
@@ -664,7 +741,7 @@ public final class UtilsSWTPOI {
 	 * @param def double
 	 * @return double
 	 */
-	public static double getCellValueByDouble(Cell cell, double def) {
+	public static final double getCellValueByDouble(Cell cell, double def) {
 		if (cell == null || cell.toString().trim().length() == 0) return def;
 		CellType cellType = cell.getCellTypeEnum();
 		if (cellType == null) return def;
@@ -680,7 +757,7 @@ public final class UtilsSWTPOI {
 	 * @param def int
 	 * @return int
 	 */
-	public static int getCellValueByInteger(Cell cell, int def) {
+	public static final int getCellValueByInteger(final Cell cell, final int def) {
 		if (cell == null || cell.toString().trim().length() == 0) return def;
 		CellType cellType = cell.getCellTypeEnum();
 		if (cellType == null) return def;
@@ -701,21 +778,33 @@ public final class UtilsSWTPOI {
 	 * @param value String
 	 * @return boolean
 	 */
-	public static boolean setCellValue(Sheet sheet, boolean isCreate, int x, int y, String value) {
+	public static final boolean setCellValue(Sheet sheet, boolean isCreate, int x, int y, String value) {
 		if (sheet == null) return false;
 		if (isCreate) {
 			Cell cell = createCell(sheet, x, y);
 			if (cell == null) return false;
-			cell.setCellValue(value);
+			cell.setCellValue(arrangementString(value));
 			return true;
 		}
 		Row row = sheet.getRow(x);
 		if (row == null) return false;
 		Cell cell = row.getCell(y);
 		if (cell == null) return false;
-		if (value.length() >= 32767) value = value.substring(0, 32766);
-		cell.setCellValue(value);
+		cell.setCellValue(arrangementString(value));
 		return true;
+	}
+
+	/**
+	 * 整理要输入的字符串<br>
+	 * 如果字符串为null，则返回""<br>
+	 * 如果字符串长度超出范围，则截取字符串
+	 * @param value String
+	 * @return String
+	 */
+	public static final String arrangementString(String value) {
+		if (value == null) return "";
+		if (value.length() >= 32767) return value.substring(0, 32766);
+		return value;
 	}
 
 	/**
@@ -869,7 +958,8 @@ public final class UtilsSWTPOI {
 			return true;
 		}
 		if (obj instanceof String) {
-			cell.setCellValue((String) obj);
+			String str = arrangementString((String) obj);
+			cell.setCellValue(str);
 			return true;
 		}
 		return false;
@@ -900,7 +990,7 @@ public final class UtilsSWTPOI {
 	 * @param b Point
 	 * @return boolean
 	 */
-	public static final boolean move(Sheet sheet, Point a, Point b) {
+	public static final boolean move(final Sheet sheet, Point a, Point b) {
 		if (sheet == null || a == null || b == null) return false;
 		return move(sheet, a.x, a.y, b.x, b.y);
 	}
@@ -961,7 +1051,7 @@ public final class UtilsSWTPOI {
 	 * @param cell Cell
 	 * @return boolean
 	 */
-	public static final boolean delete(Sheet sheet, Cell cell) {
+	public static final boolean delete(final Sheet sheet, Cell cell) {
 		if (sheet == null) return false;
 		if (cell == null) return true;
 		Row row = cell.getRow();
@@ -976,9 +1066,10 @@ public final class UtilsSWTPOI {
 	 * @param y int
 	 * @return boolean
 	 */
-	public static final boolean delete(Sheet sheet, int x, int y) {
+	public static final boolean delete(final Sheet sheet, int x, int y) {
 		if (sheet == null) return false;
 		Cell cell = getCell(sheet, x, y);
+		if (cell == null) return false;
 		return delete(sheet, cell);
 	}
 
@@ -1014,7 +1105,6 @@ public final class UtilsSWTPOI {
 	 * @param toCell Cell
 	 * @return Cell
 	 */
-	@SuppressWarnings("deprecation")
 	public static final Cell getCellCopy(Cell fromCell, Cell toCell) {
 		if (fromCell == null || toCell == null) return null;
 		short newheight = fromCell.getRow().getHeight();
@@ -1050,6 +1140,115 @@ public final class UtilsSWTPOI {
 		int ny2 = ny1 + ysize;
 		CellRangeAddress region1 = new CellRangeAddress(nx1, nx2, ny1, ny2);
 		toCell.getSheet().addMergedRegion(region1);
+	}
+
+	/**
+	 * Sheet复制
+	 * @param srcWb Workbook
+	 * @param fromSheet Sheet
+	 * @param toSheet Sheet
+	 * @param copyValueFlag boolean
+	 */
+	public static final void copySheet(Workbook srcWb, Sheet fromSheet, Sheet toSheet, boolean copyValueFlag) {
+		//合并区域处理
+		mergerRegion(fromSheet, toSheet);
+		for (Iterator<Row> rowIt = fromSheet.rowIterator(); rowIt.hasNext();) {
+			Row tmpRow = rowIt.next();
+			Row newRow = toSheet.createRow(tmpRow.getRowNum());
+			copyRow(srcWb, tmpRow, newRow, copyValueFlag);//行复制
+		}
+	}
+
+	/**
+	 * 行复制功能
+	 * @param srcWb Workbook
+	 * @param fromRow Row
+	 * @param toRow Row
+	 * @param copyValueFlag boolean
+	 */
+	public static final void copyRow(Workbook srcWb, Row fromRow, Row toRow, boolean copyValueFlag) {
+		for (Iterator<Cell> cellIt = fromRow.cellIterator(); cellIt.hasNext();) {
+			Cell tmpCell = cellIt.next();
+			//HSSFCell newCell = toRow.createCell(tmpCell.getCellNum());
+			Cell newCell = toRow.createCell(tmpCell.getColumnIndex());
+			copyCell(srcWb, tmpCell, newCell, copyValueFlag);
+		}
+	}
+
+	/**
+	 * 复制原有sheet的合并单元格到新创建的sheet
+	 * @param fromSheet Sheet 新创建sheet
+	 * @param toSheet Sheet 原有的sheet
+	 */
+	public static final void mergerRegion(Sheet fromSheet, Sheet toSheet) {
+		int sheetMergerCount = fromSheet.getNumMergedRegions();
+		for (int i = 0; i < sheetMergerCount; i++) {
+			CellRangeAddress mergedRegionAt = fromSheet.getMergedRegion(i);
+			toSheet.addMergedRegion(mergedRegionAt);
+		}
+	}
+
+	/**
+	 * 复制单元格
+	 * @param srcCell
+	 * @param distCell
+	 * @param copyValueFlag true则连同cell的内容一起复制
+	 */
+	public static void copyCell(Workbook srcWb, Cell srcCell, Cell distCell, boolean copyValueFlag) {
+		CellStyle newstyle = srcWb.createCellStyle();
+		copyCellStyle(srcCell.getCellStyle(), newstyle);
+		//样式
+		distCell.setCellStyle(newstyle);
+		//评论
+		if (srcCell.getCellComment() != null) {
+			distCell.setCellComment(srcCell.getCellComment());
+		}
+		// 不同数据类型处理
+		int srcCellType = srcCell.getCellType();
+		distCell.setCellType(srcCellType);
+		if (copyValueFlag) {
+			if (srcCellType == HSSFCell.CELL_TYPE_NUMERIC) {
+				if (HSSFDateUtil.isCellDateFormatted(srcCell)) {
+					distCell.setCellValue(srcCell.getDateCellValue());
+				} else {
+					distCell.setCellValue(srcCell.getNumericCellValue());
+				}
+			} else if (srcCellType == HSSFCell.CELL_TYPE_STRING) {
+				distCell.setCellValue(srcCell.getRichStringCellValue());
+			} else if (srcCellType == HSSFCell.CELL_TYPE_BLANK) {
+				// nothing21
+			} else if (srcCellType == HSSFCell.CELL_TYPE_BOOLEAN) {
+				distCell.setCellValue(srcCell.getBooleanCellValue());
+			} else if (srcCellType == HSSFCell.CELL_TYPE_ERROR) {
+				distCell.setCellErrorValue(srcCell.getErrorCellValue());
+			} else if (srcCellType == HSSFCell.CELL_TYPE_FORMULA) {
+				distCell.setCellFormula(srcCell.getCellFormula());
+			} else { // nothing29
+			}
+		}
+	}
+
+	/**
+	 * 复制一个单元格样式到目的单元格样式
+	 * @param fromStyle CellStyle
+	 * @param toStyle CellStyle
+	 */
+	public static void copyCellStyle(CellStyle fromStyle, CellStyle toStyle) {
+		//边框和边框颜色
+		toStyle.setTopBorderColor(fromStyle.getTopBorderColor());
+		toStyle.setBottomBorderColor(fromStyle.getBottomBorderColor());
+		toStyle.setRightBorderColor(fromStyle.getRightBorderColor());
+		toStyle.setLeftBorderColor(fromStyle.getLeftBorderColor());
+		//背景和前景
+		toStyle.setFillBackgroundColor(fromStyle.getFillBackgroundColor());
+		toStyle.setFillForegroundColor(fromStyle.getFillForegroundColor());
+		toStyle.setDataFormat(fromStyle.getDataFormat());
+		//		toStyle.setFont(fromStyle.getFont(null));
+		toStyle.setHidden(fromStyle.getHidden());
+		toStyle.setIndention(fromStyle.getIndention());//首行缩进
+		toStyle.setLocked(fromStyle.getLocked());
+		toStyle.setRotation(fromStyle.getRotation());//旋转
+		toStyle.setWrapText(fromStyle.getWrapText());
 	}
 
 	/**
@@ -1252,6 +1451,7 @@ public final class UtilsSWTPOI {
 		return true;
 	}
 
+	/** 格式化字符串 */
 	private static final DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
 
 	/**
@@ -1309,6 +1509,49 @@ public final class UtilsSWTPOI {
 			}
 		}
 		return -1;
+	}
+	/**
+	 * 判断sheet是否是隐藏型
+	 * @param wb Workbook
+	 * @param sheetIx int
+	 * @return boolean
+	 */
+	public static final boolean isHiddenSheet(Workbook wb, int sheetIx) {
+		if (wb == null || sheetIx< 0) return false;
+		return isHiddenSheet(wb, wb.getSheetAt(sheetIx));
+	}
+	/**
+	 * 判断sheet是否是隐藏型
+	 * @param wb Workbook
+	 * @param sheetname String
+	 * @return boolean
+	 */
+	public static final boolean isHiddenSheet(Workbook wb, String sheetname) {
+		if (wb == null || sheetname == null || sheetname.length() == 0) return false;
+		return isHiddenSheet(wb, wb.getSheet(sheetname));
+	}
+
+	/**
+	 * 判断sheet是否是隐藏型
+	 * @param sheet Sheet
+	 * @return boolean
+	 */
+	public static final boolean isHiddenSheet(Sheet sheet) {
+		if (sheet == null) return false;
+		return isHiddenSheet(sheet.getWorkbook(), sheet);
+	}
+
+	/**
+	 * 判断sheet是否是隐藏型
+	 * @param wb Workbook
+	 * @param sheet Sheet
+	 * @return boolean
+	 */
+	public static final boolean isHiddenSheet(Workbook wb, Sheet sheet) {
+		if (wb == null) return false;
+		if (sheet == null) return false;
+		int sheetIx = wb.getSheetIndex(sheet);
+		return wb.isSheetHidden(sheetIx);
 	}
 
 	/**

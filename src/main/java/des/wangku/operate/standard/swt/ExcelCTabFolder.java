@@ -13,10 +13,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
+
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPathFile;
@@ -26,6 +24,8 @@ import des.wangku.operate.standard.utls.UtilsSWTTools;
 
 /**
  * 自定义excel转成多页表格 UI组件<br>
+ * 默认不显示隐藏Sheet，不显示隐藏列，不显示隐藏行<br>
+ * 如需开启，请使用showHiddenSheet()和showHiddenColumn()和showHiddenRow()<br>
  * 请使用initialization()进行初始化
  * @author Sunjian
  * @version 1.0
@@ -48,6 +48,14 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	boolean isRADIO = false;
 	/** 读取时是否过滤空行 */
 	boolean isFilterBlankLines = false;
+	/** 是否显示隐藏sheet 默认为隐藏sheet不显示 鼠标右键可显示 */
+	boolean showHiddenSheet = false;
+	/** 是否显示隐藏列 默认为隐藏列不显示 */
+	boolean showHiddenColumn = false;
+	/** 是否显示隐藏行 默认为隐藏行不显示 */
+	boolean showHiddenRow = false;
+	/** 过滤sheet名称 */
+	String[] filterSheetName = {};
 
 	/**
 	 * AbstractTask 项目组中的各项目自定义，配置信息与excel文件名相同 "des-wkope-task-XXXX.xlsx"<br>
@@ -73,6 +81,42 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	}
 
 	/**
+	 * 过滤Sheet页名称
+	 * @return ExcelCTabFolder
+	 */
+	public ExcelCTabFolder filterSheetName(String... arrs) {
+		this.filterSheetName = arrs;
+		return this;
+	}
+
+	/**
+	 * 输出隐藏的sheet  鼠标右键可显示
+	 * @return ExcelCTabFolder
+	 */
+	public ExcelCTabFolder showHiddenSheet() {
+		showHiddenSheet = true;
+		return this;
+	}
+
+	/**
+	 * 输出隐藏的列
+	 * @return ExcelCTabFolder
+	 */
+	public ExcelCTabFolder showHiddenColumn() {
+		showHiddenColumn = true;
+		return this;
+	}
+
+	/**
+	 * 输出隐藏的行
+	 * @return ExcelCTabFolder
+	 */
+	public ExcelCTabFolder showHiddenRow() {
+		showHiddenRow = true;
+		return this;
+	}
+
+	/**
 	 * 构造初始化
 	 */
 	public void initialization() {
@@ -80,7 +124,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		if (t == null) return;
 		this.properties = t.getProProperties();
 		this.pc = t.getPc();
-		if (filename == null && t.getIdentifierAll()!=null) filename = AbstractTask.ACC_PROHead + t.getIdentifierAll().toLowerCase() + ".xlsx";
+		if (filename == null && t.getIdentifierAll() != null) filename = AbstractTask.ACC_PROHead + t.getIdentifierAll().toLowerCase() + ".xlsx";
 		init();
 	}
 
@@ -103,7 +147,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		String newString = filename;
 		switch (type) {
 		case 0:
-			newString = UtilsPathFile.getModelJarBasicPath() + "/" + filename;
+			newString = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
 		default:
 		}
 		this.filename = newString;
@@ -117,17 +161,34 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		logger.debug("提取excel文件:" + filename);
 		try {
 			File file = new File(filename);
-			if(!file.exists()) {
+			if (!file.exists()) {
 				logger.debug("未发现excel文件:" + filename);
 				return;
 			}
 			workbook = new XSSFWorkbook(file);
 			int type = isRADIO ? ResultTable.ACC_ResultTableStateRadio : ResultTable.ACC_ResultTableState;
 			for (int sheetnum = 0; sheetnum < workbook.getNumberOfSheets(); sheetnum++) {
-				ResultTable t = new ResultTable(this, type, properties, workbook.getSheetName(sheetnum));
-				makeCTabFolderFromExcel(this, t, workbook.getSheetAt(sheetnum));
+				Sheet sheet = workbook.getSheetAt(sheetnum);
+				String sheetname = sheet.getSheetName();
+				if (isFilterSheetName(sheetname)) continue;
+				boolean isHidden=(!showHiddenSheet) && workbook.isSheetHidden(sheetnum);
+				ResultTable t = new ResultTable(this, type, properties, sheetname);	
+				/*
+				if (isHidden) {
+					System.out.println("hidden sheet:"+sheetname);
+					hiddenControlList.add(new ControlHiddenClass(sheetname,t));
+				}else {
+					CTabItem tbtmExcel = new CTabItem(this, SWT.NONE);
+					tbtmExcel.setText(sheetname);
+					tbtmExcel.setControl(t);
+				}*/
+				ControlClass cc=new ControlClass(sheetname,t,isHidden);
+				
+				makeCTabFolderFromExcel(t, sheet);
 				t.initialization();
+				controlList.add(cc);
 			}
+			openControlList();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -141,15 +202,23 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 	}
 
 	/**
-	 * 把Sheet读取到CTabFolder中
+	 * 判断名称是否在过滤字符数组中
+	 * @param sheetname String
+	 * @return boolean
+	 */
+	public final boolean isFilterSheetName(final String sheetname) {
+		if (sheetname == null) return false;
+		for (String e : filterSheetName)
+			if (e.equals(sheetname)) return true;
+		return false;
+	}
+
+	/**
+	 * 把Sheet读取到ResultTable中
+	 * @param t ResultTable
 	 * @param sheet Sheet
 	 */
-	void makeCTabFolderFromExcel(CTabFolder parent, ResultTable t, Sheet sheet) {
-		String sheetname = sheet.getSheetName();
-		CTabItem tbtmExcel = new CTabItem(parent, SWT.NONE);
-		tbtmExcel.setText(sheetname);
-		tbtmExcel.setControl(t);
-
+	private void makeCTabFolderFromExcel(ResultTable t, Sheet sheet) {
 		final int rowslen = sheet.getLastRowNum();/* 行数 */
 		mkExcelResultTableHead(t, sheet);
 		int cellLen = t.getColumnCount();
@@ -158,8 +227,10 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			if (i == t.getEctpara().headRowSuffix) continue;
 			Row r = sheet.getRow(i);
 			if (r == null) continue;
+			if (r.getZeroHeight() && !showHiddenRow) continue;
 			list.clear();
-			for (int ii = 0; ii < cellLen; ii++) {
+			for (int ii = 0; ii <= cellLen; ii++) {
+				if (!showHiddenColumn && sheet.isColumnHidden(ii)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
 				Cell cell = r.getCell(ii);
 				String value = UtilsSWTPOI.getCellValueByString(cell, true);
 				if (t.getEctpara().isTrim) value = value.trim();
@@ -184,13 +255,15 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		Row first = isBadSuffix ? sheet.getRow(0) : sheet.getRow(t.getEctpara().headRowSuffix);
 		int cellLen = first.getLastCellNum();/* 列数 */
 		String value = null;
-		String[] newArray = new String[cellLen];
+		List<String> list = new ArrayList<>(cellLen);
 		for (int i = 0; i < cellLen; i++) {
+			if (!showHiddenColumn && sheet.isColumnHidden(i)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
 			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByString(first.getCell(i), true);
 			else value = "" + i;
-			newArray[i] = value;
+			list.add(value);
 		}
-		t.mkResultTableHead(newArray);
+		String[] arr = {};
+		t.mkResultTableHead(list.toArray(arr));
 	}
 
 	@Override
@@ -245,6 +318,30 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 
 	public final void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public final boolean isShowHiddenSheet() {
+		return showHiddenSheet;
+	}
+
+	public final void setShowHiddenSheet(boolean showHiddenSheet) {
+		this.showHiddenSheet = showHiddenSheet;
+	}
+
+	public final boolean isShowHiddenColumn() {
+		return showHiddenColumn;
+	}
+
+	public final void setShowHiddenColumn(boolean showHiddenColumn) {
+		this.showHiddenColumn = showHiddenColumn;
+	}
+
+	public final boolean isShowHiddenRow() {
+		return showHiddenRow;
+	}
+
+	public final void setShowHiddenRow(boolean showHiddenRow) {
+		this.showHiddenRow = showHiddenRow;
 	}
 
 }
