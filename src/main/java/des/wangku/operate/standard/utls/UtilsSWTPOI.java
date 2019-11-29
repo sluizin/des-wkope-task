@@ -65,7 +65,7 @@ public final class UtilsSWTPOI {
 		//AbstractTask e=UtilsSWTTools.getParentObj(shell, AbstractTask.class);
 		String proFolder = "";
 		if (saveFolder != null) proFolder = saveFolder;
-		File file = UtilsFile.mkModelRNDFile(proFolder, "xlsx");
+		File file = UtilsFile.mkOutputRNDFile(proFolder, "xlsx");
 		if (file == null) {
 			if (isAlert) {
 				logger.debug("文件生成失败");

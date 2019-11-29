@@ -31,7 +31,13 @@ public class CustomExcel {
 	Sheet sheet = null;
 	/** 保存目录 */
 	String saveFolder = "";
-
+	/**
+	 * 构造函数
+	 * @param parent AbstractTask
+	 * @param isSubSource boolean
+	 * @param filename String
+	 * @param sheetnum int
+	 */
 	public CustomExcel(AbstractTask parent, boolean isSubSource, String filename, int sheetnum) {
 		this.shell = parent.getShell();
 		saveFolder = parent.getIdentifierAll();
@@ -183,7 +189,7 @@ public class CustomExcel {
 	}
 	public void save(String saveFolder,String filename,boolean isAlert) {
 		if (saveFolder == null) saveFolder = "";
-		File file = UtilsFile.mkModelFile(saveFolder,filename, "xlsx");
+		File file = UtilsFile.mkOutputFile(saveFolder,filename, "xlsx");
 			
 		boolean t = UtilsSWTPOI.save(workbook, false, file);
 		String filename2 = UtilsFileMethod.getFileName(file);

@@ -19,7 +19,11 @@ import org.objectweb.asm.Opcodes;
  * @version 1.0
  * @since jdk1.8
  */
-public class MQClassVisitor implements ClassVisitor, Opcodes {
+public class MQClassVisitor extends ClassVisitor implements Opcodes {
+	public MQClassVisitor(int api) {
+		super(api);
+	}
+
 	/** asm查找到的标准的父类 */
 	static final String ACC_StandardTaskClass = "des/wangku/operate/standard/task/AbstractTask";
 	static Logger logger = LoggerFactory.getLogger(MQClassVisitor.class);
@@ -36,7 +40,7 @@ public class MQClassVisitor implements ClassVisitor, Opcodes {
 	@Override
 	public AnnotationVisitor visitAnnotation(String arg0, boolean arg1) {
 		if (AnnoProjectString.equals(arg0)) {
-			AnnotationValueVisitor avv = new AnnotationValueVisitor();
+			AnnotationValueVisitor avv = new AnnotationValueVisitor(Opcodes.ASM6);
 			this.map = avv.map;
 			return avv;
 		}
@@ -94,15 +98,17 @@ public class MQClassVisitor implements ClassVisitor, Opcodes {
 
 	}
 
-	public static class AnnotationValueVisitor implements AnnotationVisitor, Opcodes {
+	public static class AnnotationValueVisitor extends AnnotationVisitor implements Opcodes {
+		public AnnotationValueVisitor(int api) {
+			super(api);
+		}
+
 		Map<String, Object> map = new HashMap<>();
 
-		public AnnotationValueVisitor() {
-		}
-
+/*
 		public AnnotationValueVisitor(AnnotationVisitor annotationVisitor) {
 		}
-
+*/
 		@Override
 		public void visit(String name, Object value) {
 			map.put(name, value);

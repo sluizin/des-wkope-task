@@ -13,7 +13,6 @@ import des.wangku.operate.standard.utls.UtilsProperties;
  * @since jdk1.8
  */
 public final class DesktopProperties implements InterfaceProperties {
-
 	@Override
 	public Properties getProProperties() {
 		Properties properties = new Properties();

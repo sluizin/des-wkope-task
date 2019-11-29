@@ -14,7 +14,6 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsProperties;
 
 /**
@@ -58,7 +57,7 @@ public class MainSource {
 	public static final Connection getConnWKjixiao() {
 		Connection conn = null;
 		try {
-			Properties properties = AbstractTask.getProPropertiesTaskJar("/database/jixiaowk.properties");
+			Properties properties = UtilsProperties.getProPropertiesTaskJar("/database/jixiaowk.properties");
 			if (properties != null) {
 				String driver = UtilsProperties.getProPropValue(properties, "jdbc.driver");
 				String url = UtilsProperties.getProPropValue(properties, "jdbc.url");
@@ -81,7 +80,7 @@ public class MainSource {
 		Connection conn = null;
 		if (propFile == null) return conn;
 		try {
-			Properties properties = AbstractTask.getProPropertiesTaskJar("/database/" + propFile + ".properties");
+			Properties properties = UtilsProperties.getProPropertiesTaskJar("/database/" + propFile + ".properties");
 			if (properties != null) {
 				String driver = UtilsProperties.getProPropValue(properties, "jdbc.driver");
 				String url = UtilsProperties.getProPropValue(properties, "jdbc.url");

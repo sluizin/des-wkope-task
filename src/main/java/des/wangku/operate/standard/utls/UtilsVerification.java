@@ -1,7 +1,9 @@
 package des.wangku.operate.standard.utls;
 
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,7 +187,7 @@ public final class UtilsVerification {
 	 * @param urlStr 指定URL网络地址
 	 * @return boolean
 	 */
-	public synchronized static boolean isConnect(final String urlStr) {
+	public synchronized static final boolean isConnect(final String urlStr) {
 		if (urlStr == null || urlStr.length() <= 0) return false;
 		URL url = null;
 		HttpURLConnection con;
@@ -204,6 +206,24 @@ public final class UtilsVerification {
 			}
 		}
 		return false;
+	}
+	/**
+	 * 判断url是否存在
+	 * @param url URL
+	 * @return boolean
+	 */
+	public synchronized static final boolean isURL(URL url) {
+		if(url==null)return false;
+		try {
+			URLConnection urlConn = url.openConnection();
+			if (null == urlConn)return false;
+			InputStream iss = urlConn.getInputStream();
+			if (null == iss)return false;			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			return false;
+		}		
+		return true;
 	}
 
 }

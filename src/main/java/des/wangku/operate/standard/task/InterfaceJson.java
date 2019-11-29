@@ -1,11 +1,6 @@
 package des.wangku.operate.standard.task;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +14,7 @@ import des.wangku.operate.standard.utls.UtilsFile;
  * @version 1.0
  * @since jdk1.8
  */
-public interface InterfaceJson {
+public interface InterfaceJson extends InterfaceProjectFile{
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(InterfaceJson.class);
 
@@ -33,18 +28,13 @@ public interface InterfaceJson {
 		Object obj = this;
 		AbstractTask t = (AbstractTask) obj;
 		String json = "";
-		String filename = t.getModelProjectFileLeft() + ".json";
+		String filename = t.getBaseSourceFile("json");
 		File file = new File(filename);
 		if (!file.exists() || !file.isFile()) {
 			logger.debug("未发现项目Json文件:" + filename);
 			return json;
 		}
-		try (InputStream is2 = new FileInputStream(file); InputStream in = new BufferedInputStream(is2);) {
-			json = UtilsFile.readFile(in).toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return json;
+		return UtilsFile.readFile(file).toString();
 	}
 
 	/**

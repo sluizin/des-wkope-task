@@ -20,7 +20,13 @@ import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-
+/**
+ * 过滤时间对话框
+ * 
+ * @author Sunjian
+ * @version 1.0
+ * @since jdk1.8
+ */
 public class FilteringTimeDialog extends Dialog {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(FilteringTimeDialog.class);

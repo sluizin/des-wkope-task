@@ -1,13 +1,10 @@
 package des.wangku.operate.standard.task;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.Pv;
-import des.wangku.operate.standard.database.DatabaseProperties;
+import des.wangku.operate.standard.desktop.DesktopConst;
 import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.desktop.TaskObjectClass;
 import des.wangku.operate.standard.dialog.AbstractSearch;
@@ -555,38 +552,37 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 
 	/**
 	 * 得到d:/XXX/XXX/model/des-wkope-task-P101<br>
-	 * 后面加上扩展名
+	 * 后面不加扩展名
 	 * @return String
 	 */
 	String getModelProjectFileLeft() {
-		return UtilsPathFile.getJarBasicPathmodel() + "/" + AbstractTask.ACC_PROHead + getIdentifierLowerCase();
+		return UtilsPathFile.getJarBasicPathmodel() + "/" + getProNameHead();
 	}
 
 	/**
-	 * 从Taskjar中读取配置文件 用于保护配置信息，直接封装到exe文件中
-	 * @param filename String
-	 * @return Properties
+	 * 得到des-wkope-task-p001 [p001]小写
+	 * @return String
 	 */
-	public static final Properties getProPropertiesTaskJar(String filename) {
-		Properties properties = new Properties();
-		try {
-			InputStream is2 = UtilsJar.getJarInputStreamBase(DatabaseProperties.class, filename);
-			properties.load(new InputStreamReader(is2, "UTF-8"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return properties;
+	public final String getProNameHead() {
+		return AbstractTask.ACC_PROHead + getIdentifierLowerCase();
 	}
-
 	/**
 	 * 得到此项目相关不同文件 des-wkope-task-XXXX.YYY
 	 * @param fileExt String
 	 * @return String
 	 */
 	public final String getNewModelFile(String fileExt) {
-		return AbstractTask.ACC_PROHead + getIdentifierAll().toLowerCase() + "." + fileExt;
+		return  getProNameHead()+ "." + fileExt;
 	}
 
+	/**
+	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}XXXX.xlsx
+	 * @param fileExt String
+	 * @return String
+	 */
+	public final String getBaseSourceFile(String fileExt) {
+		return getModelProjectFileLeft() + "." + fileExt;
+	}
 	/**
 	 * 得到本地jar包中resources目录里的文件
 	 * @param filename String
@@ -606,16 +602,6 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		return null;
 	}
 
-	/**
-	 * 得到与model同目录的资源文件{des-wkope-task-}XXXX.xlsx
-	 * @param fileExt String
-	 * @return String
-	 */
-	public final String getBaseSourceFile(String fileExt) {
-		String filename = AbstractTask.ACC_PROHead + getIdentifierAll().toLowerCase() + "." + fileExt;
-		filename = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
-		return filename;
-	}
 
 	/**
 	 * 得到与model目录下的具体项目里的资源文件 如"d:/XXXXX/model/Px/XXX"
@@ -629,7 +615,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	/** 设置线程运算量进行回收 */
 	protected int skipGC = 0;
 
-	@Override
+	@Override	
 	public int getSkipGC() {
 		return skipGC;
 	}
@@ -645,7 +631,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	}
 
 	@Override
-	public void startupProject() {
+	public void afterLoadProject() {
+		/* 更改任务菜单的状态 */
 		List<MenuItem> list=baseTaskTOC.getTaskMenuItemAll();
 		MenuItem[] arrs=SWTSearch.menuSearch(baseTaskTOC.getMenu(), baseTaskTOC.getId());
 		for(MenuItem g:list) {
@@ -655,6 +642,12 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 					g.setEnabled(false);
 				}
 			}
+		}
+	}
+	@Override
+	public void afterRepaintComposite() {
+		if(DesktopConst.Remember_Input) {
+			UtilsSWTListener.button_remember_Input(this);
 		}
 	}
 	@Override

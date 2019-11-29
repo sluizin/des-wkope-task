@@ -3,8 +3,6 @@ package des.wangku.operate.standard.utls;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import des.wangku.operate.standard.Constants;
 /**
  * 针对jar包的操作的工具类
  * @author Sunjian

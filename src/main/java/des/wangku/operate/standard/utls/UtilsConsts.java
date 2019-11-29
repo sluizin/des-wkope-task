@@ -10,8 +10,6 @@ import java.util.Map;
  * @since jdk1.8
  */
 public final class UtilsConsts {
-	/** 项目平台 原始标题名称 换项目时更改标题名称，模块退出，则显示此字符串 */
-	public static final String ACC_ProjectTitleDefault="SWT Application";
 
 	public static final Map<String, String> header = new HashMap<>();
 

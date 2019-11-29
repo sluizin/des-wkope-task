@@ -9,6 +9,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 字符串工具类
@@ -17,6 +19,8 @@ import org.eclipse.swt.widgets.Shell;
  * @since jdk1.8
  */
 public final class UtilsString {
+	/** 日志 */
+	static Logger logger = LoggerFactory.getLogger(UtilsString.class);
 
 	/**
 	 * 得到字符串的宽度
@@ -93,7 +97,7 @@ public final class UtilsString {
 		return -1;
 	}
 
-	public static void main(String[] args) {
+	public static void main2(String[] args) {
 		String strInput = "3a7s10@5d2a6s17s56;3553";
 		String regEx = "[^0-9]";//匹配指定范围内的数字
 
@@ -283,5 +287,35 @@ public final class UtilsString {
 		int index = str.indexOf(".");
 		if (index == -1) return str;
 		return str.substring(0, index);
+	}
+	private static final String ACC_ShowStringkeySplit="\t";
+	/**
+	 * 多个对象整合成一个字符串，以\t以间隔，可以含有多个数组
+	 * @param arrs Object[]
+	 * @return String
+	 */
+	public static final String showString(Object...arrs) {
+		StringBuilder sb=new StringBuilder();
+		for(Object e:arrs) {
+			if(e==null) {
+				sb.append(ACC_ShowStringkeySplit);
+				sb.append("null");
+				continue;
+			}
+			if(e.getClass().isArray()) {
+				Object[] arr=(Object[])e;
+				sb.append(showString(arr));
+			}else {
+				sb.append(ACC_ShowStringkeySplit);
+				sb.append(e.toString());
+			}
+		}
+		return sb.toString();
+	}
+	public static void main(String[] args) {
+		Object[] ar= {"ee",null};
+		Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
+		String result=showString(arr);
+		logger.debug(":"+result);
 	}
 }

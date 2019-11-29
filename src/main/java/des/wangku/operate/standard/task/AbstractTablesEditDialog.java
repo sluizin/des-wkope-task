@@ -23,7 +23,7 @@ public abstract class AbstractTablesEditDialog extends Dialog{
 	 * 关闭
 	 */
 	public void close() {
-		if (shell != null) shell.close();
+		if (shell != null && !shell.isDisposed()) shell.close();
 	}
 	/**
 	 * Open the dialog.

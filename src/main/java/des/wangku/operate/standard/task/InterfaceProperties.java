@@ -76,6 +76,8 @@ public interface InterfaceProperties {
 
 	/**
 	 * 得到模块参数值内容<br>
+	 * 如为真:on/true<br>
+	 * 如为假:off/false<br>
 	 * key为null时返回 def
 	 * @param key String
 	 * @param def boolean

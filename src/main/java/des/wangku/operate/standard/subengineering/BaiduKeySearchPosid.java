@@ -77,11 +77,18 @@ public class BaiduKeySearchPosid {
 	public static final int getBaiduPosid(String type, int maxPage, String key, String url, String intervalkey, int cutUrl) {
 		return getBaiduPosid(type, maxPage, key, url, intervalkey, 20000, cutUrl);
 	}
+	public static final int getBaiduPosid(boolean isgene,String type, int maxPage, String key, String url, String intervalkey, int cutUrl) {
+		return getBaiduPosid(isgene,type, maxPage, key, url, intervalkey, 20000, cutUrl);
+	}
 
+	public static final int getBaiduPosid(String type, int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
+		return getBaiduPosid(false, type, maxPage, key, url,intervalkey, timeout, cutUrl);
+	}
 	/**
 	 * url 必须 为 "abc.99114.com" 不能有协议与空格，并已截取
 	 * 得到baidu中的排名 如没检索到，则返回-1<br>
 	 * 如检索到，则返回第N条 以0为第1条
+	 * @param isgene boolean
 	 * @param type String
 	 * @param maxPage int
 	 * @param key String
@@ -91,7 +98,7 @@ public class BaiduKeySearchPosid {
 	 * @param cutUrl int
 	 * @return String
 	 */
-	public static final int getBaiduPosid(String type, int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
+	public static final int getBaiduPosid(boolean isgene,String type, int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
 		int maxbaiduPage = (maxPage - 1) * 10;
 		if (key == null || key.length() == 0) return -1;
 		if (url == null || url.length() == 0) return -1;
@@ -147,8 +154,15 @@ public class BaiduKeySearchPosid {
 							for (Element t1 : as) {
 								String baiduUrl = t1.attr("abs:href");
 								searchurl = UtilsReadURL.getRealLocation(baiduUrl);
-								logger.debug("searchurl:" + searchurl);
-								if (searchurl.toLowerCase().indexOf(url) > -1) { return p; }
+								//logger.debug("searchurl:" + searchurl);
+								String newurl=searchurl.toLowerCase();
+								if(isgene) {
+									if(newurl.indexOf("www.99114.com")==-1 && newurl.indexOf(".99114.com")>-1) {
+										return p;
+									}
+								}else {
+									if (newurl.indexOf(url) > -1) { return p; }
+								}
 							}
 							continue;
 						}
@@ -237,13 +251,19 @@ public class BaiduKeySearchPosid {
 		TableItem tt;
 		int y;
 		String value;
+		boolean isgene=false;
 
 		public BaiduWorkClass(String type, String keyword, String url, TableItem tt, int y) {
-			this.type = type;
-			this.keyword = keyword;
-			this.url = url;
-			this.tt = tt;
-			this.y = y;
+			this(type,keyword,url,tt,y,0);
+		}
+		public BaiduWorkClass(boolean isgene,String type, String keyword, String url, TableItem tt, int y) {
+			this(type,keyword,url,tt,y,0);
+			this.isgene=isgene;
+		}
+
+		public BaiduWorkClass(boolean isgene,String type, String keyword, String url, TableItem tt, int y, int cutUrl) {
+			this(type,keyword,url,tt,y,cutUrl);
+			this.isgene=isgene;
 		}
 
 		public BaiduWorkClass(String type, String keyword, String url, TableItem tt, int y, int cutUrl) {
@@ -254,7 +274,6 @@ public class BaiduKeySearchPosid {
 			this.y = y;
 			this.cutUrl = cutUrl;
 		}
-
 		public void run() {
 			if (isUrl) {
 				boolean isfind = BaiduKeySearchPosid.getBaiduUrlPosid(type, keyword);

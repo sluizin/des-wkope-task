@@ -2,12 +2,17 @@ package des.wangku.operate.standard.utls;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -15,7 +20,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import des.wangku.operate.standard.desktop.DesktopUtils;
-import des.wangku.operate.standard.dialog.Version;
+import des.wangku.operate.standard.dialog.HelpDialog;
+import des.wangku.operate.standard.task.AbstractTask;
 
 /**
  * SWT里对Listener的工具类
@@ -57,6 +63,8 @@ public final class UtilsSWTListener {
 		return t;
 	}
 
+	private static final int ACC_Vers_Style = SWT.CLOSE | SWT.MIN | SWT.DIALOG_TRIM;
+
 	/**
 	 * 查看版本信息
 	 * @param clazz Class&lt;?&gt;
@@ -64,13 +72,13 @@ public final class UtilsSWTListener {
 	 */
 	public static final void showVersion(Class<?> clazz, String filename) {
 		Display display = Display.getDefault();
-		Shell shell = new Shell(display, SWT.CLOSE | SWT.MIN | SWT.DIALOG_TRIM);
+		Shell shell = new Shell(display, ACC_Vers_Style);
 		/* String path = basicClass.getProtectionDomain().getCodeSource().getLocation().getPath(); */
 		try {
 			URL url = UtilsJar.getJarSourceURL(clazz, filename);/* "/update.info" */
-			if (url == null) return;
+			if (!UtilsVerification.isURL(url)) return;
 			InputStream is = url.openStream();
-			Version ver = new Version(shell, 0, is);
+			HelpDialog ver = new HelpDialog(shell, 0, is);
 			ver.open();
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -95,4 +103,22 @@ public final class UtilsSWTListener {
 		};
 		return t;
 	}
+	/**
+	 * 向容器中的每个button按扭加载点击监听器，用于记录所有Text的内容，并保存进入到记忆文档中
+	 * @param base AbstractTask
+	 */
+	public static final void button_remember_Input(AbstractTask base) {
+		List<Button> list = UtilsSWTComposite.getCompositeSearchChildrenControl(Button.class, base.parentComposite);
+		for (Button e : list) {
+			e.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					List<Text> list2 = UtilsSWTComposite.getCompositeSearchChildrenControl(Text.class, base.parentComposite);
+					for (Text f : list2) {
+						System.out.println(f.hashCode() + ":" + f.getText());
+					}
+				}
+			});
+		}
+	}
+
 }

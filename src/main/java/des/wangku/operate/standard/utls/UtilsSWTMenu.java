@@ -1,6 +1,9 @@
 package des.wangku.operate.standard.utls;
 
 import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+
+import des.wangku.operate.standard.desktop.DesktopConst;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -30,7 +33,7 @@ public final class UtilsSWTMenu {
 		mi.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 				logger.debug("model Exit!!!");
-				parentComposite.getParent().getShell().setText(UtilsConsts.ACC_ProjectTitleDefault);
+				parentComposite.getParent().getShell().setText(DesktopConst.ACC_ProjectTitleDefault);
 				parentComposite.dispose();
 			}
 		});

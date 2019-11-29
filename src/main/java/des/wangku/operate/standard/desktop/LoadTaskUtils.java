@@ -17,6 +17,7 @@ import java.util.jar.JarFile;
 
 import org.eclipse.swt.widgets.Composite;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +132,7 @@ public final class LoadTaskUtils {
 				if (jarEntry.isDirectory() || (!jarEntry.getName().endsWith(".class"))) continue;
 				InputStream input = jarFile.getInputStream(jarEntry);
 				ClassReader cr = new ClassReader(input);
-				MQClassVisitor mqcv = new MQClassVisitor();
+				MQClassVisitor mqcv = new MQClassVisitor(Opcodes.ASM6);
 				cr.accept(mqcv, 0);
 				cr = null;
 				Map<String, Object> map = mqcv.getMap();

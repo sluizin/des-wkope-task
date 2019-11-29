@@ -35,7 +35,7 @@ public final class Constants {
 			CTabItemBaseOffset = UNSAFE.arrayBaseOffset(CTabItem[].class);
 			CTabItemIndexScale = UNSAFE.arrayIndexScale(CTabItem[].class);
 			CTabFolderItemsOffset = UNSAFE.objectFieldOffset(CTabFolder.class.getDeclaredField("items"));
-			
+
 			TreeBaseOffset = UNSAFE.arrayBaseOffset(TreeItem[].class);
 			TreeIndexScale = UNSAFE.arrayIndexScale(TreeItem[].class);
 			TreeItemsOffset = UNSAFE.objectFieldOffset(Tree.class.getDeclaredField("items"));

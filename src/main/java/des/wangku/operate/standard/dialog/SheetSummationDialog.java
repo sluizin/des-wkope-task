@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.swt.AbstractCTabFolder;
-import des.wangku.operate.standard.swt.MultiTree;
+import des.wangku.operate.standard.swt.MultiTreeSingleColumn;
 import des.wangku.operate.standard.utls.UtilsDialogState;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 
@@ -32,7 +32,7 @@ public class SheetSummationDialog extends Dialog {
 	String[] result= {};
 	Group group = null;
 	Tree parent=null;
-	MultiTree tree = null;
+	MultiTreeSingleColumn tree = null;
 	public SheetSummationDialog(Shell parent, int style, AbstractCTabFolder parentExce) {
 		super(parent, style);
 		this.parentExcel = parentExce;
@@ -48,9 +48,9 @@ public class SheetSummationDialog extends Dialog {
 		group.setText("多选与调序");
 		group.setToolTipText("勾选即选中");
 		
-		tree = new MultiTree(group, 0,false);//(new MultiTree(group, 0,false)).formatID();
+		tree = new MultiTreeSingleColumn(group,arrs);//(new MultiTree(group, 0,false)).formatID();
 		tree.setBounds(10, 20, 10, 10);
-		tree.singleAutoAddArrs(arrs);
+		//tree.singleAutoAddArrs(arrs);
 		tree.setSize(190, 140);
 		
 		

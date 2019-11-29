@@ -61,19 +61,33 @@ public class AlibabaSearch {
 	 * 得到某页的商家列表
 	 * @param para parameter
 	 * @param keyword String
+	 * @param city String
 	 * @param p int
 	 * @param timeout int
 	 * @param isArchives boolean
 	 * @param isContactinformation boolean
 	 * @return List &lt; AlibabaEnterpriseClass &gt; 
 	 */
-	public static final List<AlibabaEnterpriseClass> getEnterprise(parameter para,String keyword, int p, int timeout, boolean isArchives, boolean isContactinformation) {
+	public static final List<AlibabaEnterpriseClass> getEnterprise(parameter para,String keyword,String city, int p, int timeout, boolean isArchives, boolean isContactinformation) {
 		List<AlibabaEnterpriseClass> list = new ArrayList<>();
 		if (keyword == null || keyword.length() == 0) return list;
 		try {
 			String newKeyword = java.net.URLEncoder.encode(keyword, "GBK");
-			String urlString = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=" + p;
-			logger.debug("urlString:" + urlString);
+			String newCity = java.net.URLEncoder.encode(city, "GBK");
+			System.out.println("city："+city);
+			System.out.println("newCity："+newCity);
+			//String a = "https://s.1688.com/company/company_search.htm?keywords=" ;
+			//a+= newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=" + p;
+			StringBuilder sb=new StringBuilder();
+			sb.append( "https://s.1688.com/company/company_search.htm?keywords="+newKeyword);
+			if(city!=null && city.length()>0) {
+				sb.append("&city="+newCity);
+			}
+			sb.append("&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=" + p);
+			
+			
+			String urlString= sb.toString();
+			logger.debug("urlString:" +urlString);
 			
 			
 			//String urlString2 = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=1";

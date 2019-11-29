@@ -2,7 +2,8 @@ package des.wangku.operate.standard.utls;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -32,6 +33,40 @@ public final class UtilsSWTComposite {
 			if (e.isEnabled() == isEnable) list.add(e);
 		}
 		return list.toArray(t);
+	}
+
+	/**
+	 * 从容器中提取泛型对象，如果有则保存在list中<br>
+	 * 如果还有类似于group性质的容器，则自动嵌套查找
+	 * @param clazz Class&lt;?&gt;
+	 * @param parent Composite
+	 */
+	public static final <T> List<T> getCompositeSearchChildrenControl(Class<?> clazz, Composite parent) {
+		List<T> list = new ArrayList<>();
+		compositeSearch(clazz, list, parent);
+		return list;
+	}
+
+	/**
+	 * 从容器中提取泛型对象，如果有则保存在list中<br>
+	 * 如果还有类似于group性质的容器，则自动嵌套查找
+	 * @param clazz Class&lt;?&gt;
+	 * @param list List &lt;T&gt;
+	 * @param parent Composite
+	 */
+	@SuppressWarnings("unchecked")
+	private static final <T> void compositeSearch(Class<?> clazz, List<T> list, Composite parent) {
+		if(clazz==null || parent==null)return;
+		Control[] arrs = parent.getChildren();
+		for (Control e : arrs) {
+			if (e.getClass().equals(clazz)) {
+				list.add((T) e);
+			}
+			if (e instanceof Composite) {
+				Composite base = (Composite) e;
+				compositeSearch(clazz, list, base);
+			}
+		}
 	}
 
 	/**

@@ -5,6 +5,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 针对数组的操作
  * @author Sunjian
@@ -13,6 +16,8 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public class UtilsArrays {
+	/** 日志 */
+	static Logger logger = LoggerFactory.getLogger(UtilsArrays.class);
 	/**
 	 * 把list转成数组
 	 * @param type Class&lt;T&gt;泛型类型
@@ -52,7 +57,6 @@ public class UtilsArrays {
 			if (key.indexOf(arr[i]) > -1) return true;
 		return false;
 	}
-
 	/**
 	 * 是否存在过滤数值
 	 * @param v int

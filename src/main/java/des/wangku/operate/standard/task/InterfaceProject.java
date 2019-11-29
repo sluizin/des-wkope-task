@@ -43,9 +43,16 @@ public interface InterfaceProject {
 	/**
 	 * model加载后直接运行的前置程序<br>
 	 * TaskObjectClass对象已注入，进行二次修改<br>
-	 * 加载第二步
+	 * 加载第二步<br>
+	 * 注意:对象已经构造后才运行此方法<br>
 	 */
-	public default void startupProject() {
+	public default void afterLoadProject() {
+
+	}
+	/**
+	 * 对象已经加载并构造后，刷新屏幕后运行此方法
+	 */
+	public default void afterRepaintComposite() {
 
 	}
 }

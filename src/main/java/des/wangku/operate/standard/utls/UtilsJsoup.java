@@ -535,6 +535,35 @@ public final class UtilsJsoup {
 			}			
 		}
 		list.add(new HrefClass(href,1));
-		
+	
+	}
+	/**
+	 * 读取url得到 name 这个字符串，id class tag，所有单元
+	 * @param url String
+	 * @param name String
+	 * @return List&lt;Element&gt;
+	 */
+	public static final List<Element> getAllElements(String url,String name){
+		Document doc=UtilsJsoup.getDoc(url);
+		List<Element> list=new ArrayList<>();
+		if(doc==null)return list;
+		return getAllElements(doc,name);
+	}
+	/**
+	 * 读取Element得到 name 这个字符串，id class tag，所有单元
+	 * @param f Element
+	 * @param name String
+	 * @return List&lt;Element&gt;
+	 */
+	public static final List<Element> getAllElements(Element f,String name){
+		List<Element> list=new ArrayList<>();
+		if(f==null)return list;
+		Element e=f.getElementById(name);
+		if(e!=null)list.add(e);
+		Elements arr=f.getElementsByClass(name);
+		list.addAll(arr);
+		Elements arrs=f.getElementsByTag(name);
+		list.addAll(arrs);
+		return list;
 	}
 }

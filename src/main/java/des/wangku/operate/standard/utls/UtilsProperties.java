@@ -15,6 +15,8 @@ import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
+import des.wangku.operate.standard.database.DatabaseProperties;
+
 
 /**
  * 读取配置信息
@@ -168,6 +170,8 @@ public final class UtilsProperties {
 
 	/**
 	 * 得到模块参数值内容<br>
+	 * 如为真:on/true<br>
+	 * 如为假:off/false<br>
 	 * key为null时返回 def
 	 * @param properties Properties
 	 * @param key String
@@ -178,8 +182,10 @@ public final class UtilsProperties {
 		if (properties == null || key == null) return def;
 		String value = getProPropValue(properties, key);
 		if (value == null) return def;
-		System.out.println("value:"+value);
 		try {
+			value=value.toLowerCase();
+			if(value.equals("on"))return true;
+			if(value.equals("off"))return false;
 			return Boolean.parseBoolean(value);
 		} catch (Exception e) {
 			return def;
@@ -352,6 +358,20 @@ public final class UtilsProperties {
 			e.printStackTrace();
 			return false;
 		}
-		
+	}
+	/**
+	 * 从Taskjar中读取配置文件 用于保护配置信息，直接封装到exe文件中
+	 * @param filename String
+	 * @return Properties
+	 */
+	public static final Properties getProPropertiesTaskJar(String filename) {
+		Properties properties = new Properties();
+		try {
+			InputStream is2 = UtilsJar.getJarInputStreamBase(DatabaseProperties.class, filename);
+			properties.load(new InputStreamReader(is2, "UTF-8"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return properties;
 	}
 }

@@ -5,10 +5,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.HelpEvent;
+import org.eclipse.swt.events.HelpListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -34,9 +37,9 @@ import static des.wangku.operate.standard.Constants.UNSAFE;
 import static des.wangku.operate.standard.Constants.TreeItemsOffset;
 
 import des.wangku.operate.standard.desktop.LoadTaskUtils;
+import des.wangku.operate.standard.dialog.HelpDialog;
 import des.wangku.operate.standard.dialog.SearchText;
 import des.wangku.operate.standard.task.AbstractTask;
-import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsClipboard;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
@@ -70,6 +73,10 @@ public class MultiTree extends Tree {
 	Object additional = null;
 	/** 列表排序 如果设置排序，则主列表同级不可修改 */
 	boolean sorting = false;
+	/** 允许上下移动，默认为不允许上下移动 */
+	boolean allowMoveUD = false;
+	/** 允许左右移动，默认为不允许左右移动 */
+	boolean allowMoveLR = false;
 
 	/**
 	 * 构造函数 只允许选择一个项目
@@ -158,10 +165,11 @@ public class MultiTree extends Tree {
 				}
 
 				if (e.stateMask == SWT.CTRL && (e.keyCode == 'f' || e.keyCode == 'F')) {
-					InterfaceTablesDialog parent = UtilsSWTTools.getParentInterfaceObj(base, InterfaceTablesDialog.class);
+					//InterfaceTablesDialog parent = UtilsSWTTools.getParentInterfaceObj(base, InterfaceTablesDialog.class);
 					//parent.setSearchDialog(new SearchDialog(table.getShell(), 0, table));
-					parent.setSearchDialog((new SearchText(shell, 0)).setTextHead("搜索关键字并选中"));
-					Object obj = parent.getSearchDialog().open();
+					//parent.setSearchDialog((new SearchText(shell, 0)).setTextHead("搜索关键字并选中"));
+					SearchText st = (new SearchText(shell, 0)).setTextHead("搜索关键字并选中");
+					Object obj = st.open();
 					if (obj == null) return;
 					String value = (String) obj;
 					List<TreeItem> list = base.getTreeItemListByChecked(null);
@@ -211,6 +219,7 @@ public class MultiTree extends Tree {
 				}
 			}
 		});
+		this.addHelpListener(getHelpListener());
 		this.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -263,6 +272,22 @@ public class MultiTree extends Tree {
 	}
 
 	/**
+	 * 按键盘F1时弹出窗体
+	 * @return HelpListener
+	 */
+	HelpListener getHelpListener() {
+		HelpListener t = new HelpListener() {
+			@Override
+			public void helpRequested(HelpEvent e) {
+				String content = "自定义树型控件结构：\n" + "\t允许上下移动\t[allowMoveUD方法]\n" + "\t左右移动\t[allowMoveLR方法]\n" + "\t删除\t[Delete键]\n" + "\t检索关键字并选中\t[Ctrl+f]";
+				HelpDialog ver = new HelpDialog(shell, 0, content);
+				ver.open();
+			}
+		};
+		return t;
+	}
+
+	/**
 	 * 添加一个单级项目
 	 * @param id String
 	 * @param title String
@@ -279,7 +304,7 @@ public class MultiTree extends Tree {
 	 * @return TreeItem
 	 */
 	public final TreeItem addTo(String parentID, String id, String title) {
-		TreeItem f = this.getTreeItemByID(parentID);
+		TreeItem f = this.getTreeItByID(parentID);
 		if (f == null) return null;
 		return mkItem(f, id, title, id);
 	}
@@ -295,6 +320,26 @@ public class MultiTree extends Tree {
 	 */
 	public final MultiTree formatID() {
 		this.isFormatID = false;
+		return this;
+	}
+
+	/**
+	 * 允许左右移动
+	 * @return MultiTree
+	 */
+	public final MultiTree allowMoveLR() {
+		this.allowMoveLR = true;
+		menuGradediffMove.setEnabled(allowMoveLR);
+		return this;
+	}
+
+	/**
+	 * 允许上下移动
+	 * @return MultiTree
+	 */
+	public final MultiTree allowMoveUD() {
+		this.allowMoveUD = true;
+		menuGradeSameMove.setEnabled(allowMoveUD);
 		return this;
 	}
 
@@ -566,6 +611,7 @@ public class MultiTree extends Tree {
 		};
 		return t;
 	}
+
 	/**
 	 * 按顺序查找id所在的深度。多级深度展示 输出ID
 	 * @param id String
@@ -584,7 +630,7 @@ public class MultiTree extends Tree {
 	 */
 	public final List<TreeItem> getOrderDeepListByID(String id) {
 		List<TreeItem> list = new ArrayList<>();
-		TreeItem target = getTreeItemByID(id);
+		TreeItem target = getTreeItByID(id);
 		if (target == null) return list;
 		privateReverseParentDeep(list, target);
 		return list;
@@ -638,11 +684,24 @@ public class MultiTree extends Tree {
 	 * @param id String
 	 * @return TreeItem
 	 */
-	public final TreeItem getTreeItemByID(String id) {
-		if (id == null) return null;
+	public final TreeItem getTreeItByID(String id) {
+		return getTreeIt(id, 0);
+	}
+
+	/**
+	 * 在树中查看是否含有value值<br>
+	 * type:0 按id查<br>
+	 * type:1 按名称查[排队id]<br>
+	 * type:2 按value查<br>
+	 * @param value String
+	 * @param type int
+	 * @return TreeItem
+	 */
+	public final TreeItem getTreeIt(String value, int type) {
+		if (value == null) return null;
 		TreeItem[] arrs = this.getItems();
 		for (TreeItem e : arrs) {
-			TreeItem f = getSearchTreeItem(e, id, 0);
+			TreeItem f = getSearchTreeItem(e, value, type);
 			if (f != null) return f;
 		}
 		return null;
@@ -845,6 +904,7 @@ public class MultiTree extends Tree {
 		setMenu(menu);
 		setMoveMenuItem();
 	}
+
 	/**
 	 * 从MultiTree查找编号id，是否存在
 	 * @param id String
@@ -858,6 +918,7 @@ public class MultiTree extends Tree {
 		}
 		return false;
 	}
+
 	/**
 	 * 批量导入单元 列表中允许乱序
 	 * @param list List&lt;UnitClass&gt;
@@ -1011,9 +1072,21 @@ public class MultiTree extends Tree {
 		if (e == null) return null;
 		String targetid = e.getTargetid();
 		if (targetid == null || targetid.trim().length() == 0) return singleAdd(e);
-		TreeItem f = this.getTreeItemByID(targetid);
+		TreeItem f = this.getTreeItByID(targetid);
 		if (f == null) return singleAdd(e);
 		return mkItem(f, e.id, e.name, e.checked, e.expanded, e.grayed);
+	}
+
+	/**
+	 * 通过id值查找name值
+	 * @param id String
+	 * @return String
+	 */
+	public final String getNameByID(String id) {
+		if (id == null || id.length() == 0) return null;
+		TreeItem e = this.getTreeItByID(id);
+		if (e == null) return null;
+		return getTitle(e);
 	}
 
 	/**
@@ -1097,6 +1170,23 @@ public class MultiTree extends Tree {
 		AbstractTask task = LoadTaskUtils.getStackTracebstractTask();
 		if (task == null) return;
 		putAbstractTaskJson(task, jsonkey);
+	}
+
+	/**
+	 * 导入二级Item
+	 * @param map Map&lt;String,List&lt;String&gt;&gt;
+	 */
+	public final void putItemLevel2(Map<String, List<String>> map) {
+		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+			String key = entry.getKey();
+			List<String> list = entry.getValue();
+			TreeItem[] arrs = singleAutoAddArrays(key);
+			if (arrs.length == 0) continue;
+			TreeItem parent = arrs[0];
+			for (String e : list) {
+				singleAutoAdd(parent, e);
+			}
+		}
 	}
 
 	/**
@@ -1220,14 +1310,20 @@ public class MultiTree extends Tree {
 		setMoveMenuItemLeft();
 	}
 
+	/** 异级移动 */
+	MenuItem menuGradediffMove = null;
+	/** 同级移动 */
+	MenuItem menuGradeSameMove = null;
+
 	/**
 	 * 左右移动右键菜单
 	 */
 	final void setMoveMenuItemLeft() {
-		MenuItem a = new MenuItem(menu, SWT.CASCADE);
-		a.setText("异级移动");
+		menuGradediffMove = new MenuItem(menu, SWT.CASCADE);
+		menuGradediffMove.setEnabled(allowMoveLR);
+		menuGradediffMove.setText("异级移动");
 		Menu b = new Menu(this.getShell(), SWT.DROP_DOWN);
-		a.setMenu(b);
+		menuGradediffMove.setMenu(b);
 		MenuItem c = new MenuItem(b, SWT.NONE);
 		c.setText("左移");
 		c.addListener(SWT.Selection, getListenerControlMoveLeft(true));
@@ -1240,10 +1336,11 @@ public class MultiTree extends Tree {
 	 * 上下移动右键菜单
 	 */
 	final void setMoveMenuItemUp() {
-		MenuItem a = new MenuItem(menu, SWT.CASCADE);
-		a.setText("同级移动");
+		menuGradeSameMove = new MenuItem(menu, SWT.CASCADE);
+		menuGradeSameMove.setText("同级移动");
+		menuGradeSameMove.setEnabled(allowMoveUD);
 		Menu b = new Menu(this.getShell(), SWT.DROP_DOWN);
-		a.setMenu(b);
+		menuGradeSameMove.setMenu(b);
 		MenuItem c = new MenuItem(b, SWT.NONE);
 		c.setText("上移");
 		c.addListener(SWT.Selection, getListenerControlMove(true));
@@ -1251,6 +1348,7 @@ public class MultiTree extends Tree {
 		d.setText("下移");
 		d.addListener(SWT.Selection, getListenerControlMove(false));
 	}
+
 	/**
 	 * 向TreeItem添加监听器
 	 * @param t TreeItem
@@ -1306,16 +1404,41 @@ public class MultiTree extends Tree {
 	/**
 	 * 添加多个单级字符串<br>
 	 * id号优先级：自带id([id]xxx) &gt;自动随机编号 &gt;text
-	 * @param textArrs String[]
+	 * @param arrs String[]
 	 * @return TreeItem[]
 	 */
-	public final TreeItem[] singleAutoAddArrs(String... textArrs) {
+	public final TreeItem[] singleAutoAddArrays(String... arrs) {
 		List<TreeItem> list = new ArrayList<>();
-		for (String e : textArrs) {
+		for (String e : arrs) {
 			TreeItem f = singleAutoAddOne(e);
 			if (f != null) list.add(f);
 		}
 		return UtilsArrays.toArray(TreeItem.class, list);
+	}
+	/**
+	 * 添加多个节点，自动编号
+	 * @param parent TreeItem
+	 * @param arrs String[]
+	 * @return TreeItem[]
+	 */
+	public final TreeItem[] singleAutoAdd(TreeItem parent, String... arrs) {
+		List<TreeItem> list = new ArrayList<>();
+		for (String title : arrs) {
+			String id = this.getAutoID();
+			TreeItem f = mkItem(parent, id, title, id);
+			if (f != null) list.add(f);
+		}
+		return UtilsArrays.toArray(TreeItem.class, list);
+	}
+	/**
+	 * 给某个节点添加下属节点
+	 * @param parentid String
+	 * @param arrs String[]
+	 * @return TreeItem[]
+	 */
+	public final TreeItem[] singleAutoAdd(String parentid, String... arrs) {
+		TreeItem e = this.getTreeItByID(parentid);
+		return singleAutoAdd(e, arrs);
 	}
 
 	/**
@@ -1394,6 +1517,7 @@ public class MultiTree extends Tree {
 		String arrs[] = list.toArray((new String[list.size()]));
 		return TreeItemChangeLeft(isLeft, arrs);
 	}
+
 	/**
 	 * 按id查找位置，并依次左移[升一级]或右移一位[降一级]
 	 * @param isLeft boolean
@@ -1411,51 +1535,6 @@ public class MultiTree extends Tree {
 	}
 
 	/**
-	 * 第一参数 为总记录，isLeft是左移还是右移,arrs为id数组
-	 * @param elist List&lt;String&gt;
-	 * @param isLeft boolean
-	 * @param idArrs String[]
-	 * @return boolean
-	 */
-	public final boolean TreeItemChangeLeft(List<UnitClass> elist, boolean isLeft, String... idArrs) {
-		boolean ischange = false;
-		for (String id : idArrs) {
-			UnitClass e = UnitClass.getUCSearch(elist, id, 0);/* 查找到当前的单元位置 */
-			if (e == null) continue;
-			UnitClass parent=UnitClass.getUCParent(elist, e);
-			if(isLeft) {/* 向左移动，上升一级 */
-				if(e.targetid==null)continue;/* 在第一列中，不允许左移 */
-				if(parent==null)continue;
-				e.targetid=parent.targetid;/* 把本节点的targetid改成父节点的targetid */
-				/* 从父节点的列表中删除节点 */
-				for(int i=parent.list.size()-1;i>=0;i--) {
-					if(parent.list.get(i).equals(e)) {
-						parent.list.remove(i);
-						break;
-					}
-				}
-				/* 在父节点所在的列中插入本节点 */
-				List<UnitClass>newlist=UnitClass.getUCParentBaseList(elist, parent);
-				int index=UnitClass.getIndex(newlist, parent);
-				if(index<0)continue;
-				newlist.add(index, e);
-				ischange = true;
-			}else {/* 向右移动，下降一级 */
-				List<UnitClass>newlist=UnitClass.getUCParentBaseList(elist, e);
-				int index=UnitClass.getIndex(newlist, e);
-				if(index<=0)continue;
-				int p=index-1;
-				UnitClass t=newlist.get(p);
-				t.list.add(e);
-				e.targetid=t.id;
-				newlist.remove(index);
-				ischange = true;
-			}
-		}
-		return ischange;
-	}
-
-	/**
 	 * 按id查找位置，并依次上移或下移一位
 	 * @param isUP boolean
 	 * @param list List&lt;String&gt;
@@ -1465,6 +1544,7 @@ public class MultiTree extends Tree {
 		String arrs[] = list.toArray((new String[list.size()]));
 		return TreeItemChangeUp(isUP, arrs);
 	}
+
 	/**
 	 * 按id查找位置，并依次同级上移或下移一位
 	 * @param isUP boolean
@@ -1487,6 +1567,7 @@ public class MultiTree extends Tree {
 		 */
 		return true;
 	}
+
 	/**
 	 * 第一参数 为总记录，step移动数量或为负数，负数为上移,arrs为id数组
 	 * @param elist List&lt;String&gt;
@@ -1511,6 +1592,7 @@ public class MultiTree extends Tree {
 		}
 		return ischange;
 	}
+
 	/**
 	 * TreeItem中data所携带的值
 	 * @author Sunjian
@@ -1866,7 +1948,6 @@ public class MultiTree extends Tree {
 			return -1;
 		}
 
-
 		/**
 		 * 判断当前UnitClass在列表中的下标
 		 * @param list List&lt;UnitClass&gt;
@@ -1874,11 +1955,12 @@ public class MultiTree extends Tree {
 		 * @return int
 		 */
 		static final int getListIndex(final List<UnitClass> list, UnitClass e) {
-			if(e==null)return -1;
-			for(int i=0,len=list.size();i<len;i++)
-				if(e.equals(list.get(i)))return i;
+			if (e == null) return -1;
+			for (int i = 0, len = list.size(); i < len; i++)
+				if (e.equals(list.get(i))) return i;
 			return -1;
 		}
+
 		/**
 		 * 从list查找单元所在的上级节点
 		 * @param list List&lt;UnitClass&gt;
@@ -1886,14 +1968,15 @@ public class MultiTree extends Tree {
 		 * @return UnitClass;
 		 */
 		static final UnitClass getUCParent(final List<UnitClass> list, String targetid) {
-			if(list.size()==0 || targetid==null)return null;
+			if (list.size() == 0 || targetid == null) return null;
 			for (UnitClass f : list) {
 				if (f.id.equals(targetid)) return f;
 				UnitClass uc = getUCParent(f.list, targetid);
-				if (uc!=null) return uc;
+				if (uc != null) return uc;
 			}
 			return null;
 		}
+
 		/**
 		 * 从list查找单元所在的上级节点
 		 * @param list List&lt;UnitClass&gt;
@@ -1901,10 +1984,11 @@ public class MultiTree extends Tree {
 		 * @return UnitClass;
 		 */
 		static final UnitClass getUCParent(final List<UnitClass> list, UnitClass e) {
-			if(list.size()==0 || e==null)return null;
-			UnitClass f=getUCParent(list,e.targetid);
+			if (list.size() == 0 || e == null) return null;
+			UnitClass f = getUCParent(list, e.targetid);
 			return f;
 		}
+
 		/**
 		 * 从list查找单元所在的list
 		 * @param list List&lt;UnitClass&gt;
@@ -1912,9 +1996,9 @@ public class MultiTree extends Tree {
 		 * @return List&lt;UnitClass&gt;
 		 */
 		static final List<UnitClass> getUCParentBaseList(List<UnitClass> list, UnitClass e) {
-			UnitClass f=getUCParent(list,e);
-			if(f!=null) return f.list;
-			if(e.targetid==null)return list;/* 如果在第一列，则返回当前list */
+			UnitClass f = getUCParent(list, e);
+			if (f != null) return f.list;
+			if (e.targetid == null) return list;/* 如果在第一列，则返回当前list */
 			return new ArrayList<>();
 		}
 
@@ -2084,11 +2168,11 @@ public class MultiTree extends Tree {
 		switch (type) {
 		case 0:
 			String id1 = getID(name);
-			if (id1.equals(value)) return e;
+			if (value.equals(id1)) return e;
 			break;
 		case 1:
 			String title = getTitle(name);
-			if (title.equals(value)) return e;
+			if (value.equals(title)) return e;
 			break;
 		default:
 			Object val = e.getData();
@@ -2349,6 +2433,86 @@ public class MultiTree extends Tree {
 		if (obj == null) return null;
 		if (obj instanceof DataClass) return (DataClass) obj;
 		return null;
+	}
+
+	/**
+	 * 第一参数 为总记录，isLeft是左移还是右移,arrs为id数组
+	 * @param elist List&lt;String&gt;
+	 * @param isLeft boolean
+	 * @param idArrs String[]
+	 * @return boolean
+	 */
+	public static final boolean TreeItemChangeLeft(List<UnitClass> elist, boolean isLeft, String... idArrs) {
+		boolean ischange = false;
+		for (String id : idArrs) {
+			ischange = ischange | TreeItemChangeToLeft(elist, isLeft, id);
+		}
+		return ischange;
+	}
+
+	/**
+	 * 单元向左移动，并返回是否成功
+	 * @param elist List&lt;String&gt;
+	 * @param e UnitClass
+	 * @return boolean
+	 */
+	private static final boolean TreeItemChangeLeft(List<UnitClass> elist, UnitClass e) {
+		if (e.targetid == null) return false;/* 在第一列中，不允许左移 */
+		UnitClass parent = UnitClass.getUCParent(elist, e);
+		if (parent == null) return false;
+		e.targetid = parent.targetid;/* 把本节点的targetid改成父节点的targetid */
+		/* 从父节点的列表中删除节点 */
+		for (int i = parent.list.size() - 1; i >= 0; i--) {
+			if (parent.list.get(i).equals(e)) {
+				parent.list.remove(i);
+				break;
+			}
+		}
+		/* 在父节点所在的列中插入本节点 */
+		List<UnitClass> newlist = UnitClass.getUCParentBaseList(elist, parent);
+		int index = UnitClass.getIndex(newlist, parent);
+		if (index < 0) return false;
+		newlist.add(index, e);
+		return true;
+	}
+
+	/**
+	 * 单元向右移动，并返回是否成功
+	 * @param elist List&lt;String&gt;
+	 * @param e UnitClass
+	 * @return boolean
+	 */
+	private static final boolean TreeItemChangeRight(List<UnitClass> elist, UnitClass e) {
+		List<UnitClass> newlist = UnitClass.getUCParentBaseList(elist, e);
+		int index = UnitClass.getIndex(newlist, e);
+		if (index <= 0) return false;
+		int p = index - 1;
+		UnitClass t = newlist.get(p);
+		t.list.add(e);
+		t.expanded = true;
+		e.targetid = t.id;
+		newlist.remove(index);
+		return true;
+	}
+
+	/**
+	 * 第一参数 为总记录，isLeft是左移还是右移,id编号
+	 * @param elist List&lt;String&gt;
+	 * @param isLeft boolean
+	 * @param id String
+	 * @return boolean
+	 */
+	private static final boolean TreeItemChangeToLeft(List<UnitClass> elist, boolean isLeft, String id) {
+		if (id == null) return false;
+		UnitClass e = UnitClass.getUCSearch(elist, id, 0);/* 查找到当前的单元位置 */
+		if (e == null) return false;
+		if (isLeft) {/* 向左移动，上升一级 */
+			if (!TreeItemChangeLeft(elist, e)) return false;
+			return true;
+		} else {/* 向右移动，下降一级 */
+			if (!TreeItemChangeRight(elist, e)) return false;
+			return true;
+		}
 	}
 
 	/**

@@ -787,15 +787,15 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	 */
 	private void setMenuItemCheckExport(Menu parent) {
 		MenuItem a = new MenuItem(parent, SWT.NONE);
-		a.setText("Excel-选中页");
+		a.setText("Excel-选中页[单sheet]");
 		a.addListener(SWT.Selection, getListenerSelectSheetToExcel());
 
 		MenuItem b = new MenuItem(parent, SWT.NONE);
-		b.setText("Excel-所有页");
+		b.setText("Excel-所有页[多sheet]");
 		b.addListener(SWT.Selection, getListenerCTabFolderToExcel());
 
 		MenuItem c = new MenuItem(parent, SWT.NONE);
-		c.setText("Excel-综合页[所有页合成]");
+		c.setText("Excel-综合页[多sheet合成]");
 		c.addListener(SWT.Selection, getListenerCTabFolderToExcelAccumulate());
 	}
 
