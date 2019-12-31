@@ -20,6 +20,7 @@ import org.objectweb.asm.Opcodes;
  * @since jdk1.8
  */
 public class MQClassVisitor extends ClassVisitor implements Opcodes {
+	public static final int asm=Opcodes.ASM5;
 	public MQClassVisitor(int api) {
 		super(api);
 	}
@@ -40,7 +41,7 @@ public class MQClassVisitor extends ClassVisitor implements Opcodes {
 	@Override
 	public AnnotationVisitor visitAnnotation(String arg0, boolean arg1) {
 		if (AnnoProjectString.equals(arg0)) {
-			AnnotationValueVisitor avv = new AnnotationValueVisitor(Opcodes.ASM6);
+			AnnotationValueVisitor avv = new AnnotationValueVisitor(asm);
 			this.map = avv.map;
 			return avv;
 		}

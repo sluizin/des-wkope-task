@@ -37,7 +37,13 @@ public final class UtilsDate {
 		ACC_DateFormat.setLenient(false);
 		ACC_DateFormatMonth.setLenient(false);
 	}
-
+	/**
+	 * 得到当前时间 yyyy-MM-dd HH:mm:ss
+	 * @return String
+	 */
+	public final static String getDateTimeNow() {
+		return ACC_DateFormatStandard.format(new Date());
+	}
 	/**
 	 * 得到当前日期的某种格式
 	 * @param dateform String "yyyyMMddHHmmss"

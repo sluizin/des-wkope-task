@@ -59,7 +59,6 @@ public final class UtilsRegular {
 		 * }
 		 * System.out.println("-----------------------------------------------");
 		 * }
-		 */
 		String content = "[1]sadsaasfdweqew[100]effewasdf[022]asdfas[a]fa[d00]sdf[5]asf[580]rr[005]";
 		String pattern = "\\[[0-9]+\\]";
 		Pattern r = Pattern.compile(pattern);
@@ -79,6 +78,15 @@ public final class UtilsRegular {
 		for(int a:arr) {
 			System.out.println("a:"+a);
 		}
+		 */
+		String str="[aaa]aeee eeww[1234] ytttt [1a4a5a]";
+		String str2=str.replaceAll("\\[[^]]*\\]", "");
+		System.out.println(str2);
+		String str3="【哀号】 ：1.因悲伤而呼号痛哭。 2.指兽类悲啼。 【哀鸣】AA";
+		String[] str4=UtilsRegular.getRegexArray(str3,"【","】");
+		for(String ee:str4)
+		System.out.print(ee);
+		
 
 	}
 	private static final String pattern = "\\[[0-9]+\\]";
@@ -166,6 +174,21 @@ public final class UtilsRegular {
 		}
 		String[] arr= {};
 		return list.toArray(arr);
+	}
+	/**
+	 * 得到正则的结果数组 查出同对性质的数据组 如【】 最好使用全角
+	 * @param pattern String
+	 * @param first String
+	 * @param end String
+	 * @return String[]
+	 */
+	public static final String[] getRegexArray(String content,String first,String end) {
+		String regex=first+"([^"+end+"])*"+end;
+		return getRegexArray(regex,content);
+	}
+	public static final String[] getRegexArray(String content,char first,char end) {
+		String regex=first+"([^"+end+"])*"+end;
+		return getRegexArray(regex,content);
 	}
 
 	/**

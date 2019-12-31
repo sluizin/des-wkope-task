@@ -42,7 +42,7 @@ public class SWTSearch {
 	 * @param t Menu
 	 */
 	private static final void menuPrivate(List<MenuItem> list, Menu t) {
-		if (t == null) return;
+		if (t == null || t.isDisposed()) return;
 		MenuItem[] arrs = t.getItems();
 		for (MenuItem g : arrs) {
 			list.add(g);

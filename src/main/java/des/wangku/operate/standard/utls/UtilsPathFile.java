@@ -50,6 +50,7 @@ public final class UtilsPathFile {
 	 */
 	public static final String getJarBasicPath() {
 		String filePath = System.getProperty("java.class.path");
+		logger.debug("JarBasicPath :"+filePath);
 		URL url = UtilsPathFile.class.getProtectionDomain().getCodeSource().getLocation();
 		try {
 			filePath = URLDecoder.decode(url.getPath(), "utf-8");// 转化为utf-8编码，支持中文
@@ -59,6 +60,7 @@ public final class UtilsPathFile {
 		if (filePath.endsWith(".jar")) filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
 		File file = new File(filePath);
 		filePath = file.getAbsolutePath();//得到windows下的正确路径
+		logger.debug("JarBasicPath:"+filePath);
 		return filePath;
 	}
 
@@ -241,14 +243,19 @@ public final class UtilsPathFile {
 	public static final String getJarBasicPathCatalog(String Catalog,String devpath) {
 		if (Pv.ACC_ENV == Env.DEV) return devpath;
 		URL c = UtilsPathFile.class.getClassLoader().getResource("");
-		if (c == null) return UtilsPathFile.getJarBasicPath() + "/"+Catalog;
+		if (c == null) {
+			String path=UtilsPathFile.getJarBasicPath() + "/"+Catalog;
+			logger.debug(" UtilsPathFile.class.getClassLoader().getResource c.toURI().getPath():" + path);
+			
+			return path;
+		}
 		try {
 			File file = new File(c.toURI().getPath());
 			String filePath = file.getAbsolutePath();//得到windows下的正确路径
 			logger.debug(" UtilsPathFile.class.getClassLoader().getResource c.toURI().getPath():" + filePath);
 			return filePath + "/"+Catalog;
 		} catch (URISyntaxException e) {
-			return "";
+			return e.toString();
 		}
 	}
 }

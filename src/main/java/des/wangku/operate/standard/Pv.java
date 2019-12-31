@@ -132,7 +132,10 @@ public class Pv {
 		if (Pv.ACC_ENV == Env.DEV) return DesktopConst.DEVWorkSpaceLib;
 		URL c = Pv.class.getClassLoader().getResource("");
 		logger.debug(" Config.class.getClassLoader().getResource:" + c);
-		if (c == null) return UtilsPathFile.getJarBasicPath() + "";
+		if (c == null) {
+			logger.debug("c.toURI().getPath():" + UtilsPathFile.getJarBasicPath());
+			return UtilsPathFile.getJarBasicPath() + "";
+		}
 		try {
 			File file = new File(c.toURI().getPath());
 			String filePath = file.getAbsolutePath();//得到windows下的正确路径

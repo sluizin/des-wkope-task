@@ -19,6 +19,7 @@ public final class DesktopConst {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(DesktopConst.class);
 	
+	
 	/** 项目平台 原始标题名称 换项目时更改标题名称，模块退出，则显示此字符串 */
 	public static final String ACC_ProjectTitleDefault="程序运行平台 SWT Application";
 	
@@ -93,5 +94,10 @@ public final class DesktopConst {
 
 	public static final boolean isSysMSRInput=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_rem_input", false);
 	/** 是否记忆控件值 */
-	public static boolean Remember_Input = false;
+	public static boolean isRemember_Input = false;
+	
+	
+	
+	
+	
 }

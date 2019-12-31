@@ -99,7 +99,7 @@ public class InputNewSheetDialog extends Dialog {
 		text_rows.setText("0");
 		text_rows.setTextLimit(3);
 		text_rows.setBounds(57, 45, 39, 18);
-		text_rows.addVerifyListener(UtilsSWTListener.getVerifyListener(text_rows));
+		text_rows.addVerifyListener(UtilsSWTListener.getVerifyListener());
 
 		Label label_2 = new Label(shlsheet, SWT.NONE);
 		label_2.setAlignment(SWT.RIGHT);
@@ -110,7 +110,7 @@ public class InputNewSheetDialog extends Dialog {
 		text_cols.setText("0");
 		text_cols.setTextLimit(3);
 		text_cols.setBounds(137, 45, 39, 18);
-		text_cols.addVerifyListener(UtilsSWTListener.getVerifyListener(text_cols));
+		text_cols.addVerifyListener(UtilsSWTListener.getVerifyListener());
 	}
 
 	/**

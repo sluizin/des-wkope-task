@@ -140,14 +140,16 @@ public final class UtilsJsoup {
 	public static final Document getDoc(URL url) {
 		String newCode = getCode(url);
 		try {
-			Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
-			Document document = connect.timeout(20000).maxBodySize(0).get();
+			Connection conn = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
+			if(conn==null)return null;
+			conn=conn.timeout(30000).maxBodySize(0);
+			if(conn==null)return null;
+			Document document =conn.get();
 			if (document != null) return document;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		String content = UtilsReadURL.getSocketContent(url, newCode, 20000);
+		String content = UtilsReadURL.getSocketContent(url, newCode, 30000);
 		if (content != null && content.length() > 0) return Jsoup.parse(content);
 
 		content = UtilsReadURL.getUrlContent(url, newCode, 20000);

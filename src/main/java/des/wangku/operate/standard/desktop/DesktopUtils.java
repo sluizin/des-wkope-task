@@ -15,7 +15,7 @@ import des.wangku.operate.standard.task.AbstractTask;
  * @version 1.0
  * @since jdk1.8
  */
-public class DesktopUtils {
+public final class DesktopUtils {
 	/**
 	 * 判断是否有任务ID
 	 * @param taskID int

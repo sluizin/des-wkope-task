@@ -30,6 +30,7 @@ public class DatabaseProperties {
 			InputStream is2=UtilsJar.getJarInputStreamBase(DatabaseProperties.class, filename);
 			properties.load(new InputStreamReader(is2, "UTF-8"));
 		} catch (IOException e) {
+			logger.debug("未发现配置文件，或读取出现错误");
 			e.printStackTrace();
 		}
 		return properties;

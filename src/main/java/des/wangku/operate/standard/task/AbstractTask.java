@@ -14,6 +14,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.HelpEvent;
 import org.eclipse.swt.events.HelpListener;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -21,11 +22,11 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.Pv;
-import des.wangku.operate.standard.desktop.DesktopConst;
 import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.desktop.TaskObjectClass;
 import des.wangku.operate.standard.dialog.AbstractSearch;
@@ -37,6 +38,7 @@ import des.wangku.operate.standard.swt.InterfaceMultiTreeExtend;
 import des.wangku.operate.standard.swtComposite.SWTSearch;
 import des.wangku.operate.standard.utls.UtilsShiftCompare;
 import des.wangku.operate.standard.utls.UtilsFile;
+import des.wangku.operate.standard.utls.UtilsMemberFloatCombo;
 import des.wangku.operate.standard.utls.UtilsJar;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPathFile;
@@ -51,7 +53,7 @@ import des.wangku.operate.standard.utls.UtilsSWTMenu;
  * @version 1.0
  * @since jdk1.8
  */
-public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile, InterfaceMultiSave, InterfaceJson,
+public abstract class AbstractTask extends Composite implements InterfaceProject, InterfaceRunDialog, InterfaceChanged, InterfaceCollect, InterfaceTablesDialog, InterfaceProperties, InterfaceVersionFile, InterfaceMultiSave, InterfaceJson,InterfaceExtRemember,
 		InterfaceMultiThreadOnRun, InterfaceCompositeMenu, InterfaceAnnoProjectTaskAnalysis, InterfaceMultiTreeExtend, InterfaceSubject {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(AbstractTask.class);
@@ -59,7 +61,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 项目文件头部如：<br>
 	 * {des-wkope-task-}XXXX.accdb<br>
 	 * {des-wkope-task-}XXXX.properties<br>
-	 * {des-wkope-task-}XXXX.xlsx
+	 * {des-wkope-task-}XXXX.xlsx<br>
 	 */
 	public static final String ACC_PROHead = "des-wkope-task-";
 	/** 容器宽度 */
@@ -76,7 +78,6 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	protected AbstractTask abstractTask = this;
 	/** 搜索时弹出的窗口 */
 	AbstractSearch searchDialog = null;
-
 	@Override
 	public void setSearchDialog(AbstractSearch e) {
 		searchDialog = e;
@@ -255,7 +256,6 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		super(parent, style);
 		init(parent, style, basicClass, abstractMenuValue);
 	}
-
 	/**
 	 * 初始化
 	 * @param parent 父容器
@@ -271,6 +271,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		parentComposite = parent;
 		parentDisplay = parent.getDisplay();
 		parentShell = parent.getShell();
+		UtilsMemberFloatCombo.make_FloatCombo(this);
 		setMenu(abstractMenu);
 		initCompositeMenu();
 		initMenu();
@@ -281,7 +282,11 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		}
 		initListener();
 	}
-
+	/** 记忆提示下拉框 */
+	public Combo remFloatOutCombo = null;
+	/** 记忆提示下拉框对应的Text修改目标 */
+	public Text remFloatOutText=null;
+	
 	public final ParaClass getPc() {
 		return pc;
 	}
@@ -644,11 +649,13 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 			}
 		}
 	}
+
+
 	@Override
 	public void afterRepaintComposite() {
-		if(DesktopConst.Remember_Input) {
-			UtilsSWTListener.button_remember_Input(this);
-		}
+		/* 记录历史 针对text的值进行记录 */
+		System.out.println("afterRepaintComposite....");
+		UtilsMemberFloatCombo.setListenerbutton_remember(this);
 	}
 	@Override
 	public void disposeProject() {

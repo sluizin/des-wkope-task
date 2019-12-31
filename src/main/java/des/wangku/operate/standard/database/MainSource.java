@@ -22,6 +22,7 @@ import des.wangku.operate.standard.utls.UtilsProperties;
  * @version 1.0
  * @since jdk1.8
  */
+@Deprecated
 public class MainSource {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(MainSource.class);
@@ -31,7 +32,7 @@ public class MainSource {
 		//使用MyBatis提供的Resources类加载mybatis的配置文件
 		if (booleanLinkMysql) {
 			try {
-				Reader reader = Resources.getResourceAsReader("mybatis/mybatis.cfg.xml");
+				Reader reader = Resources.getResourceAsReader("database/mybatis/mybatis.cfg.xml");
 				//构建sqlSession的工厂
 				sessionFactory = new SqlSessionFactoryBuilder().build(reader);
 			} catch (Exception e) {
@@ -55,21 +56,7 @@ public class MainSource {
 	 * @return Connection
 	 */
 	public static final Connection getConnWKjixiao() {
-		Connection conn = null;
-		try {
-			Properties properties = UtilsProperties.getProPropertiesTaskJar("/database/jixiaowk.properties");
-			if (properties != null) {
-				String driver = UtilsProperties.getProPropValue(properties, "jdbc.driver");
-				String url = UtilsProperties.getProPropValue(properties, "jdbc.url");
-				String dbName = UtilsProperties.getProPropValue(properties, "jdbc.user");
-				String password = UtilsProperties.getProPropValue(properties, "jdbc.pass");
-				Class.forName(driver);
-				conn = DriverManager.getConnection(url, dbName, password);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return conn;
+		return getConnection("wk_jixiao");
 	}
 	/**
 	 *通过database目录下的不同的properties得到Connection，以配置文件名为标准
@@ -93,7 +80,6 @@ public class MainSource {
 			e.printStackTrace();
 		}
 		return conn;
-
 	}
 	public static void main(String[] args) 
 	{
@@ -122,5 +108,48 @@ public class MainSource {
 		String sql="select count(*) from article where site_id="+stie_id+" and (datediff(add_time,'"+date1+" 00:00:00')>=0 and datediff('"+date2+" 23:59:59',add_time)>=0)";
 		System.out.println("sql:"+sql);
 		return sql;
+	}
+	
+	
+	
+	/**
+	 * 得到本地某个数据库的Connection<br>
+	 * 默认帐号与密码同为 数据库名+user 如："dbuser"
+	 * @param database String
+	 * @return Connection
+	 */
+	public static final Connection getConnDEVLocalhostMQSQL(String database) {
+		return getConnDEVLocalhostMQSQL(database,database+"user",database+"user");
+	}
+	/**
+	 * 得到本地某个数据库的Connection
+	 * @param database String
+	 * @param dbName String
+	 * @param password String
+	 * @return Connection
+	 */
+	public static final Connection getConnDEVLocalhostMQSQL(String database,String dbName,String password) {
+		return getConnMYSQL("127.0.0.1","3306",database,dbName,password);
+	}
+	/**
+	 * 得到本地某个数据库的Connection
+	 * @param ip String
+	 * @param port String
+	 * @param database String
+	 * @param dbName String
+	 * @param password String
+	 * @return Connection
+	 */
+	public static final Connection getConnMYSQL(String ip,String port,String database,String dbName,String password) {
+		Connection conn = null;
+		try {
+				String driver = "com.mysql.jdbc.Driver";
+				Class.forName(driver);
+				String url="jdbc:mysql://"+ip+":"+port+"/"+database+"?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=GMT&autoReconnect=true";
+				conn = DriverManager.getConnection(url, dbName, password);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return conn;
 	}
 }

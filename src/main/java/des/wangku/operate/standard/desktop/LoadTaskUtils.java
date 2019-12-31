@@ -17,7 +17,6 @@ import java.util.jar.JarFile;
 
 import org.eclipse.swt.widgets.Composite;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +83,6 @@ public final class LoadTaskUtils {
 			}
 			ExtendTaskMap.clear();
 			ExtendTaskMap.putAll(ExtendTaskMapOrder);
-
 		} catch (Exception excep) {
 			excep.printStackTrace();
 		}
@@ -114,6 +112,7 @@ public final class LoadTaskUtils {
 		for (int i = 0; i < jarList.size(); i++) {
 			String jarPath = jarList.get(i);
 			LoadTaskUtils.isSearchJar(jarPath);
+			//logger.debug("jarPath:"+jarPath);
 		}
 		return jarList;
 	}
@@ -127,12 +126,15 @@ public final class LoadTaskUtils {
 		try {
 			JarFile jarFile = new JarFile(jarPath);
 			Enumeration<JarEntry> entrys = jarFile.entries();
+			//for (entrys.hasMoreElements()) {
 			while (entrys.hasMoreElements()) {
 				JarEntry jarEntry = entrys.nextElement();
-				if (jarEntry.isDirectory() || (!jarEntry.getName().endsWith(".class"))) continue;
+				if (jarEntry.isDirectory() || (!jarEntry.getName().endsWith(".class"))) {
+					continue;
+				}
 				InputStream input = jarFile.getInputStream(jarEntry);
 				ClassReader cr = new ClassReader(input);
-				MQClassVisitor mqcv = new MQClassVisitor(Opcodes.ASM6);
+				MQClassVisitor mqcv = new MQClassVisitor(MQClassVisitor.asm);
 				cr.accept(mqcv, 0);
 				cr = null;
 				Map<String, Object> map = mqcv.getMap();
@@ -161,6 +163,7 @@ public final class LoadTaskUtils {
 				ff.autoLoad = ff.getAnnoAutoLoad();
 				ff.jarTimestamp = jarTimestamp;
 				ff.group = ff.getAnnoGroup();
+				
 				ExtendTaskMap.put(mqcv.getClassFile(), ff);
 
 			}

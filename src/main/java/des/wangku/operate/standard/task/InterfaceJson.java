@@ -26,6 +26,9 @@ public interface InterfaceJson extends InterfaceProjectFile{
 	 */
 	public default String getProJson() {
 		Object obj = this;
+		if(!(obj instanceof AbstractTask)) {
+			return "";
+		}
 		AbstractTask t = (AbstractTask) obj;
 		String json = "";
 		String filename = t.getBaseSourceFile("json");

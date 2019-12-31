@@ -21,7 +21,15 @@ import org.slf4j.LoggerFactory;
 public final class UtilsString {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsString.class);
-
+	/**
+	 * 过滤字符串中的所有中括号
+	 * @param word String
+	 * @return String
+	 */
+	public static final String splitWordMiddleBrackets(String word) {
+		if(word==null|| word.length()==0)return word;
+		return word.replaceAll("\\[[^]]*\\]", "");
+	}
 	/**
 	 * 得到字符串的宽度
 	 * @param string String

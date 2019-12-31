@@ -1,6 +1,8 @@
 package des.wangku.operate.standard.dialog;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.desktop.DesktopConst;
 import des.wangku.operate.standard.utls.UtilsDialogState;
 import des.wangku.operate.standard.utls.UtilsFile;
+import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
  * 帮助时弹出的窗口
@@ -38,10 +41,25 @@ public class HelpDialog extends Dialog {
 	 */
 	public HelpDialog(Shell parent, int style) {
 		super(parent, style);
-		structure(parent, style);
-		initialization();
+		init(parent, style);
 	}
 
+	/**
+	 * 构造函数 内容使用流进行显示
+	 * @param parent Shell
+	 * @param style int
+	 * @param url URL
+	 */
+	public HelpDialog(Shell parent, int style, URL url) {
+		super(parent, style);
+		init(parent, style);
+		try {
+			if(url!=null &&UtilsVerification.isURL(url))
+			setTextContent(url.openStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * 构造函数 内容使用流进行显示
 	 * @param parent Shell
@@ -50,9 +68,17 @@ public class HelpDialog extends Dialog {
 	 */
 	public HelpDialog(Shell parent, int style, InputStream is) {
 		super(parent, style);
+		init(parent, style);
+		setTextContent(is);
+	}
+	/**
+	 * 初始化
+	 * @param parent Shell
+	 * @param style int
+	 */
+	private final void init(Shell parent, int style) {
 		structure(parent, style);
 		initialization();
-		setTextContent(is);
 	}
 
 	/**
@@ -63,8 +89,7 @@ public class HelpDialog extends Dialog {
 	 */
 	public HelpDialog(Shell parent, int style, String content) {
 		super(parent, style);
-		structure(parent, style);
-		initialization();
+		init(parent, style);
 		if (content != null) text.setText(content);
 	}
 
