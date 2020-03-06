@@ -38,6 +38,9 @@ public final class DesktopConst {
 	/** 文件输出目录名 */
 	public static final String ACC_OutputCatalog = "output";
 
+	/** 扩展库目录 */
+	public static final String ACC_ExtLibsCatalog = "ext";
+	
 	public static final String ACC_DesktopProperties = "desktop.properties";
 
 	/** D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs */
@@ -49,6 +52,9 @@ public final class DesktopConst {
 	/** D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/config */
 	public static final String DEVWorkSpaceConfig = DEVWorkSpaceLib + "/" + ACC_ConfigCatalog;
 
+	/** D:/Eclipse/eclipse-oxygen/Workspaces/des-wkope/build/libs/ext */
+	public static final String DEVWorkSpaceExtLibs = DEVWorkSpaceLib + "/" + ACC_ExtLibsCatalog;
+	
 	/** 桌面程序的资源配置信息 */
 	public static final DesktopProperties DesktopPro = new DesktopProperties();
 	/** images目录 */
@@ -57,12 +63,7 @@ public final class DesktopConst {
 	public static final String ACC_ImagesIcon = ACC_Images+"/icon";
 
 	public static final Class<?> classzz = DesktopConst.class;
-	
-	
-	
-	
-	
-	
+
 	/** 主窗口的图标 */
 	public static final Image ACC_Shell = DesktopUtils.getImagesIcon("favicon.ico");
 	/** 任务菜单前的图标 */
@@ -91,12 +92,10 @@ public final class DesktopConst {
 	public static final boolean isSysMSVwarning=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_voice_warning", false);
 	public static final boolean isSysMSVconfirm=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_voice_confirm", false);
 	public static final boolean isSysMSVthread=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_voice_thread", false);
-
-	public static final boolean isSysMSRInput=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_rem_input", false);
 	/** 是否记忆控件值 */
-	public static boolean isRemember_Input = false;
-	
-	
+	public static boolean isRemember_Input=DesktopConst.DesktopPro.getProPropBoolean("sys_menu_set_rem_input", false);
+	/** 是否扩展jar目录 */	
+	public static boolean isExtJarLibs =DesktopConst.DesktopPro.getProPropBoolean("sys_ext_jar_libs", false);
 	
 	
 	

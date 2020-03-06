@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.TableItem;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -84,6 +85,7 @@ public class BaiduKeySearchPosid {
 	public static final int getBaiduPosid(String type, int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
 		return getBaiduPosid(false, type, maxPage, key, url,intervalkey, timeout, cutUrl);
 	}
+	public static long BaiduSleepTime=200;
 	/**
 	 * url 必须 为 "abc.99114.com" 不能有协议与空格，并已截取
 	 * 得到baidu中的排名 如没检索到，则返回-1<br>
@@ -125,8 +127,9 @@ public class BaiduKeySearchPosid {
 			baiduUrlHref = sb.toString();
 			//String urlString = "https://" + type + ".baidu.com/s?wd=" + key + "&pn=" + i;
 			//logger.debug("urlString:"+urlString);
-			//logger.debug("newUrl:"+newUrl);
+			logger.debug("search:"+baiduUrlHref);
 			try {
+				if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime);
 				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.header_a);
 				Document document = connect.timeout(timeout).maxBodySize(0).get();
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());

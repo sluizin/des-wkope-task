@@ -41,7 +41,6 @@ import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsMemberFloatCombo;
 import des.wangku.operate.standard.utls.UtilsJar;
 import des.wangku.operate.standard.utls.UtilsList;
-import des.wangku.operate.standard.utls.UtilsPathFile;
 import des.wangku.operate.standard.utls.UtilsSWTComposite;
 import des.wangku.operate.standard.utls.UtilsSWTListener;
 import des.wangku.operate.standard.utls.UtilsSWTMenu;
@@ -561,7 +560,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	String getModelProjectFileLeft() {
-		return UtilsPathFile.getJarBasicPathmodel() + "/" + getProNameHead();
+		return DesktopUtils.getJarBasicPathmodel() + "/" + getProNameHead();
 	}
 
 	/**
@@ -572,7 +571,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		return AbstractTask.ACC_PROHead + getIdentifierLowerCase();
 	}
 	/**
-	 * 得到此项目相关不同文件 des-wkope-task-XXXX.YYY
+	 * 得到此项目相关不同文件 des-wkope-task-p001.XXX
 	 * @param fileExt String
 	 * @return String
 	 */
@@ -581,12 +580,21 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	}
 
 	/**
-	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}XXXX.xlsx
+	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}p001.XXXX
 	 * @param fileExt String
 	 * @return String
 	 */
 	public final String getBaseSourceFile(String fileExt) {
 		return getModelProjectFileLeft() + "." + fileExt;
+	}
+	/**
+	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}p001_XXXX.YYYY
+	 * @param ext String
+	 * @param fileExt String
+	 * @return String
+	 */
+	public final String getBaseSourceFile(String ext,String fileExt) {
+		return getModelProjectFileLeft()+"_"+ ext + "." + fileExt;
 	}
 	/**
 	 * 得到本地jar包中resources目录里的文件
@@ -614,7 +622,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	public final String getSubSourceFile(String filename) {
-		return UtilsPathFile.getJarBasicPathmodel() + "/" + getIdentifierAll() + "/" + filename;
+		return DesktopUtils.getJarBasicPathmodel() + "/" + getIdentifierAll() + "/" + filename;
 	}
 
 	/** 设置线程运算量进行回收 */

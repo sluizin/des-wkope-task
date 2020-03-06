@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.Pv;
 import des.wangku.operate.standard.Pv.Env;
-import des.wangku.operate.standard.desktop.DesktopConst;
 
 /**
  * 关于路径与文件的工具
@@ -24,162 +23,6 @@ import des.wangku.operate.standard.desktop.DesktopConst;
  */
 public final class UtilsPathFile {
 	static Logger logger = LoggerFactory.getLogger(UtilsPathFile.class);
-
-	/**
-	 * 得到jar文件所在目录<br>
-	 * 如本地eclipse运行时class文件，则:{constants.DEVWorkSpaceMainProject}\build\classes\main<br>
-	 * 生成jar文件时，则显示所在目录
-	 * @return String
-	 */
-	public static String getProjectPath() {
-		java.net.URL url = UtilsPathFile.class.getProtectionDomain().getCodeSource().getLocation();
-		String filePath = null;
-		try {
-			filePath = java.net.URLDecoder.decode(url.getPath(), "utf-8");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (filePath.endsWith(".jar")) filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
-		java.io.File file = new java.io.File(filePath);
-		return file.getAbsolutePath();
-	}
-
-	/**
-	 * 得到jar文件所在的目录
-	 * @return String
-	 */
-	public static final String getJarBasicPath() {
-		String filePath = System.getProperty("java.class.path");
-		logger.debug("JarBasicPath :"+filePath);
-		URL url = UtilsPathFile.class.getProtectionDomain().getCodeSource().getLocation();
-		try {
-			filePath = URLDecoder.decode(url.getPath(), "utf-8");// 转化为utf-8编码，支持中文
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (filePath.endsWith(".jar")) filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
-		File file = new File(filePath);
-		filePath = file.getAbsolutePath();//得到windows下的正确路径
-		logger.debug("JarBasicPath:"+filePath);
-		return filePath;
-	}
-
-	/**
-	 * 得到某个目录里所有的文件 indexof()==0<br>
-	 * 按名称进行排序
-	 * @param list List &lt; String &gt;
-	 * @param leftkeyword String
-	 * @param path String
-	 */
-	public static final void getFilesNameList(List<String> list, String leftkeyword, String path) {
-		File or = new File(path);
-		File[] files = or.listFiles();
-		if (files == null) return;
-		Arrays.sort(files, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				if (o1.isDirectory() && o2.isFile()) return -1;
-				if (o1.isFile() && o2.isDirectory()) return 1;
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
-		for (File file : files) {
-			if (file.isFile() && file.getName().indexOf(leftkeyword) == 0) list.add(file.getAbsolutePath());
-			if (file.isDirectory()) getFilesNameList(list, leftkeyword, file.getAbsolutePath());
-		}
-	}
-
-	/**
-	 * 得到某个目录里所有的文件中的第N个 indexof()==0 如没找到，则返回null<br>
-	 * 按名称进行了排序
-	 * @param leftkeyword String
-	 * @param path String
-	 * @param index int
-	 * @return String
-	 */
-	public static final String getFilesName(String leftkeyword, String path, int index) {
-		List<String> fileslist = getFileslistSort(leftkeyword, path);
-		if (fileslist.size() == 0 || index < 0 || index >= fileslist.size()) return null;
-		return fileslist.get(index);
-	}
-
-	/**
-	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回null<br>
-	 * 按名称进行了排序
-	 * @param leftkeyword String
-	 * @param path String
-	 * @return String
-	 */
-	public static final String getFilesNameFirst(String leftkeyword, String path) {
-		List<String> fileslist = getFileslistSort(leftkeyword, path);
-		if (fileslist.size() == 0) return null;
-		return fileslist.get(0);
-	}
-
-	/**
-	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回空list<br>
-	 * 按名称进行了排序
-	 * @param leftkeyword String
-	 * @param path String
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getFileslistSort(String leftkeyword, String path) {
-		List<String> fileslist = new ArrayList<>();
-		getFilesNameList(fileslist, leftkeyword, path);
-		if (fileslist.size() == 0) return fileslist;
-		Collections.sort(fileslist, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o1.compareTo(o2);
-			}
-		});
-		return fileslist;
-	}
-
-	/**
-	 * 得到某个目录里所有的扩展名文件
-	 * @param jarList List &lt; String &gt;
-	 * @param path String
-	 * @param fileExt String
-	 */
-	public static final void getFileList(List<String> jarList, String path, String fileExt) {
-		File or = new File(path);
-		File[] files = or.listFiles();
-		if (files == null) return;
-		for (File file : files) {
-			if (file.isFile() && file.getName().endsWith("." + fileExt)) jarList.add(file.getAbsolutePath());
-			if (file.isDirectory()) getFileList(jarList, file.getAbsolutePath(), fileExt);
-		}
-	}
-	/**
-	 * 得到某个目录里所有的文件
-	 * @param list List &lt; String &gt;
-	 * @param path String
-	 */
-	public static final void getFileList(List<String> list, String path) {
-		File or = new File(path);
-		File[] files = or.listFiles();
-		if (files == null) return;
-		for (File file : files) {
-			if (file.isFile()) list.add(file.getAbsolutePath());
-			if (file.isDirectory()) getFileList(list, file.getAbsolutePath());
-		}
-	}
-
-	/**
-	 * 得到某个目录里所有的jar文件
-	 * @param jarList List &lt; String &gt;
-	 * @param path String
-	 */
-	public static final void getJarList(List<String> jarList, String path) {
-		File or = new File(path);
-		File[] files = or.listFiles();
-		if (files == null) return;
-		for (File file : files) {
-			if (file.isFile() && file.getName().endsWith(".jar")) jarList.add(file.getAbsolutePath());
-			if (file.isDirectory()) getJarList(jarList, file.getAbsolutePath());
-		}
-	}
 
 	/**
 	 * 从指定目录中查找出目录名左侧关键字的File 只返回一个File
@@ -221,19 +64,140 @@ public final class UtilsPathFile {
 	}
 
 	/**
-	 * 得到model绝对目录
-	 * @return String
+	 * 得到某个目录里所有的文件
+	 * @param list List &lt; String &gt;
+	 * @param path String
 	 */
-	public static final String getJarBasicPathmodel() {
-		return getJarBasicPathCatalog(DesktopConst.ACC_ModelCatalog, DesktopConst.DEVWorkSpaceModel);
+	public static final void getFileList(List<String> list, String path) {
+		File or = new File(path);
+		File[] files = or.listFiles();
+		if (files == null) return;
+		for (File file : files) {
+			if (file.isFile()) list.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFileList(list, file.getAbsolutePath());
+		}
 	}
 	/**
-	 * 得到config绝对目录
+	 * 得到某个目录里所有的jar文件
+	 * @param path String
+	 * @param fileExt String
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getFileList(String path, String fileExt) {
+		List<String> list = new ArrayList<String>();
+		getFileList(list, path,fileExt);
+		return list;
+	}
+	/**
+	 * 得到某个目录里所有的扩展名文件
+	 * @param jarList List &lt; String &gt;
+	 * @param path String
+	 * @param fileExt String
+	 */
+	public static final void getFileList(List<String> jarList, String path, String fileExt) {
+		if(path==null)return;
+		File file = new File(path);
+		if(!file.exists())return;
+		if(!file.isDirectory())return;
+		File[] files = file.listFiles();
+		if (files == null) return;
+		for (File f : files) {
+			if (f.isFile() && f.getName().endsWith("." + fileExt)) jarList.add(f.getAbsolutePath());
+			if (f.isDirectory()) getFileList(jarList, f.getAbsolutePath(), fileExt);
+		}
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回空list<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getFileslistSort(String leftkeyword, String path) {
+		List<String> fileslist = new ArrayList<>();
+		getFilesNameList(fileslist, leftkeyword, path);
+		if (fileslist.size() == 0) return fileslist;
+		Collections.sort(fileslist, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		return fileslist;
+	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第N个 indexof()==0 如没找到，则返回null<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @param index int
 	 * @return String
 	 */
-	public static final String getJarBasicPathconfig() {
-		return getJarBasicPathCatalog(DesktopConst.ACC_ConfigCatalog, DesktopConst.DEVWorkSpaceConfig);
+	public static final String getFilesName(String leftkeyword, String path, int index) {
+		List<String> fileslist = getFileslistSort(leftkeyword, path);
+		if (fileslist.size() == 0 || index < 0 || index >= fileslist.size()) return null;
+		return fileslist.get(index);
 	}
+
+	/**
+	 * 得到某个目录里所有的文件中的第一个 indexof()==0 如没找到，则返回null<br>
+	 * 按名称进行了排序
+	 * @param leftkeyword String
+	 * @param path String
+	 * @return String
+	 */
+	public static final String getFilesNameFirst(String leftkeyword, String path) {
+		List<String> fileslist = getFileslistSort(leftkeyword, path);
+		if (fileslist.size() == 0) return null;
+		return fileslist.get(0);
+	}
+	/**
+	 * 得到某个目录里所有的文件 indexof()==0<br>
+	 * 按名称进行排序
+	 * @param list List &lt; String &gt;
+	 * @param leftkeyword String
+	 * @param path String
+	 */
+	public static final void getFilesNameList(List<String> list, String leftkeyword, String path) {
+		File or = new File(path);
+		File[] files = or.listFiles();
+		if (files == null) return;
+		Arrays.sort(files, new Comparator<File>() {
+			@Override
+			public int compare(File o1, File o2) {
+				if (o1.isDirectory() && o2.isFile()) return -1;
+				if (o1.isFile() && o2.isDirectory()) return 1;
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		for (File file : files) {
+			if (file.isFile() && file.getName().indexOf(leftkeyword) == 0) list.add(file.getAbsolutePath());
+			if (file.isDirectory()) getFilesNameList(list, leftkeyword, file.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * 得到jar文件所在的目录
+	 * @return String
+	 */
+	public static final String getJarBasicPath() {
+		String filePath = System.getProperty("java.class.path");
+		logger.debug("JarBasicPath :"+filePath);
+		URL url = UtilsPathFile.class.getProtectionDomain().getCodeSource().getLocation();
+		try {
+			filePath = URLDecoder.decode(url.getPath(), "utf-8");// 转化为utf-8编码，支持中文
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (filePath.endsWith(".jar")) filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
+		File file = new File(filePath);
+		filePath = file.getAbsolutePath();//得到windows下的正确路径
+		logger.debug("JarBasicPath:"+filePath);
+		return filePath;
+	}
+
 	/**
 	 * 得到主项目目录中某个目录，如果是开发环境，则返回 devpath
 	 * @param Catalog String
@@ -246,7 +210,6 @@ public final class UtilsPathFile {
 		if (c == null) {
 			String path=UtilsPathFile.getJarBasicPath() + "/"+Catalog;
 			logger.debug(" UtilsPathFile.class.getClassLoader().getResource c.toURI().getPath():" + path);
-			
 			return path;
 		}
 		try {
@@ -257,5 +220,24 @@ public final class UtilsPathFile {
 		} catch (URISyntaxException e) {
 			return e.toString();
 		}
+	}
+
+	/**
+	 * 得到jar文件所在目录<br>
+	 * 如本地eclipse运行时class文件，则:{constants.DEVWorkSpaceMainProject}\build\classes\main<br>
+	 * 生成jar文件时，则显示所在目录
+	 * @return String
+	 */
+	public static String getProjectPath() {
+		java.net.URL url = UtilsPathFile.class.getProtectionDomain().getCodeSource().getLocation();
+		String filePath = null;
+		try {
+			filePath = java.net.URLDecoder.decode(url.getPath(), "utf-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (filePath.endsWith(".jar")) filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
+		java.io.File file = new java.io.File(filePath);
+		return file.getAbsolutePath();
 	}
 }

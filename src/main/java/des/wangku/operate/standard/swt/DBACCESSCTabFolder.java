@@ -4,9 +4,10 @@ import java.sql.Connection;
 import java.util.Properties;
 import org.slf4j.Logger;import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Composite;
+
+import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsDBSource;
-import des.wangku.operate.standard.utls.UtilsPathFile;
 import des.wangku.operate.standard.utls.UtilsProperties;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 
@@ -61,7 +62,7 @@ public class DBACCESSCTabFolder extends AbstractDBCTabFolder {
 	 */
 	public static final String getModelAccessPath(AbstractTask abstractTask) {
 		String filename = abstractTask.getNewModelFile("accdb");
-		String filepath = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
+		String filepath = DesktopUtils.getJarBasicPathmodel() + "/" + filename;
 		return filepath;
 	}
 

@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.asm.MQClassVisitor;
 import des.wangku.operate.standard.task.AbstractTask;
-import des.wangku.operate.standard.utls.UtilsPathFile;
+import des.wangku.operate.standard.utls.UtilsExtLibs;
 
 /**
  * 加载工程方法
@@ -88,27 +87,15 @@ public final class LoadTaskUtils {
 		}
 	}
 
-
-	/**
-	 * 得到某个目录里所有的jar文件
-	 * @param path String
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getJarList(String path) {
-		List<String> jarList = new ArrayList<String>();
-		UtilsPathFile.getJarList(jarList, path);
-		return jarList;
-	}
-
 	/**
 	 * 得到model目录中所有的jar包
 	 * @return List&lt;String&gt;
 	 */
 	public static final List<String> getModelJarList() {
-		String path = UtilsPathFile.getJarBasicPathmodel();
+		String path = DesktopUtils.getJarBasicPathmodel();
 		File file = new File(path);
 		if (!file.exists()) file.mkdirs();
-		List<String> jarList = getJarList(path);
+		List<String> jarList = UtilsExtLibs.getJarList(path);
 		for (int i = 0; i < jarList.size(); i++) {
 			String jarPath = jarList.get(i);
 			LoadTaskUtils.isSearchJar(jarPath);

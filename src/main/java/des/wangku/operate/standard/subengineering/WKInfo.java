@@ -8,11 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.swt.MultiTree.UnitClass;
 import des.wangku.operate.standard.utls.UtilsDate;
 import des.wangku.operate.standard.utls.UtilsFile;
-import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
  * 网库新闻数量
@@ -66,7 +65,7 @@ public class WKInfo {
 	 */
 	public static final Map<String,List<String>> getWK_IndustryGroup(){
 		Map<String,List<String>> map=new HashMap<>();
-		String filename = UtilsPathFile.getJarBasicPathconfig() + "/cyw_industrycategory14.txt";
+		String filename = DesktopUtils.getJarBasicPathconfig() + "/cyw_industrycategory14.txt";
 		String content = UtilsFile.readFile(filename, "\n").toString();
 		if(content.length()==0)return map;
 		String[] a1=content.split("\n");

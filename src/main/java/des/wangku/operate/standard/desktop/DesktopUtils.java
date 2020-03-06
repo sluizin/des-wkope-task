@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import des.wangku.operate.standard.task.AbstractTask;
+import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
  * 桌面调动时需要的一些方法
@@ -83,5 +84,27 @@ public final class DesktopUtils {
 	public static final Image getImagesIcon(String filename) {
 		if (filename == null) return null;
 		return SWTResourceManager.getImage(DesktopConst.classzz, DesktopConst.ACC_ImagesIcon + "/" + filename);
+	}
+
+	/**
+	 * 得到model绝对目录
+	 * @return String
+	 */
+	public static final String getJarBasicPathmodel() {
+		return UtilsPathFile.getJarBasicPathCatalog(DesktopConst.ACC_ModelCatalog, DesktopConst.DEVWorkSpaceModel);
+	}
+	/**
+	 * 得到config绝对目录
+	 * @return String
+	 */
+	public static final String getJarBasicPathconfig() {
+		return UtilsPathFile.getJarBasicPathCatalog(DesktopConst.ACC_ConfigCatalog, DesktopConst.DEVWorkSpaceConfig);
+	}
+	/**
+	 * 得到扩展库绝对目录
+	 * @return String
+	 */
+	public static final String getJarBasicPathExtLibs() {
+		return UtilsPathFile.getJarBasicPathCatalog(DesktopConst.ACC_ExtLibsCatalog, DesktopConst.DEVWorkSpaceExtLibs);
 	}
 }

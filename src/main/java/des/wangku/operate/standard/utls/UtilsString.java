@@ -1,6 +1,9 @@
 package des.wangku.operate.standard.utls;
 
 import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +24,26 @@ import org.slf4j.LoggerFactory;
 public final class UtilsString {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsString.class);
+
+	/**
+	 * 把字符串中，所有在字符串末尾的数组中含有的全部清除<br>
+	 * ("a.0bc.00.0.000.0.0.0.0",".0",".00",".000") 结果:a.0bc ,
+	 * @param source String
+	 * @param arrs String[]
+	 * @return String
+	 */
+	public static final String removeEndsStr(String source, String... arrs) {
+		if (source == null || source.length() == 0 || arrs.length == 0) return source;
+		String key = null;
+		for (String e : arrs)
+			if (source.endsWith(e)) {
+				key = e;
+				break;
+			}
+		if (key == null) return source;
+		int index = source.lastIndexOf(key);
+		return removeEndsStr(source.substring(0, index), arrs);
+	}
 	/**
 	 * 过滤字符串中的所有中括号
 	 * @param word String
@@ -57,10 +80,22 @@ public final class UtilsString {
 	 * @param arrs String[]
 	 * @return boolean
 	 */
+	public static final boolean isExistIndexOf(String key, String... arrs) {
+		if (key == null) return false;
+		for (String e:arrs)
+			if (e!=null && e.indexOf(key)>-1) return true;
+		return false;
+	}
+	/**
+	 * 判断关键字是否在数组中，区分大小写
+	 * @param key String
+	 * @param arrs String[]
+	 * @return boolean
+	 */
 	public static final boolean isExist(String key, String... arrs) {
 		if (key == null) return false;
-		for (int i = 0; i < arrs.length; i++)
-			if (key.equals(arrs[i])) return true;
+		for (String e:arrs)
+			if (key.equals(e)) return true;
 		return false;
 	}
 
@@ -296,17 +331,18 @@ public final class UtilsString {
 		if (index == -1) return str;
 		return str.substring(0, index);
 	}
-	private static final String ACC_ShowStringkeySplit="\t";
+	private static final char ACC_ShowStringkeySplit='\t';
 	/**
 	 * 多个对象整合成一个字符串，以\t以间隔，可以含有多个数组
-	 * @param arrs Object[]
+	 * @param arrs T[]
 	 * @return String
 	 */
-	public static final String showString(Object...arrs) {
+	@SuppressWarnings("unchecked")
+	public static final<T> String showString(T...arrs) {
 		StringBuilder sb=new StringBuilder();
-		for(Object e:arrs) {
+		for(T e:arrs) {
 			if(e==null) {
-				sb.append(ACC_ShowStringkeySplit);
+				if(sb.length()!=0)sb.append(ACC_ShowStringkeySplit);
 				sb.append("null");
 				continue;
 			}
@@ -314,16 +350,110 @@ public final class UtilsString {
 				Object[] arr=(Object[])e;
 				sb.append(showString(arr));
 			}else {
-				sb.append(ACC_ShowStringkeySplit);
+				if(sb.length()!=0)sb.append(ACC_ShowStringkeySplit);
 				sb.append(e.toString());
 			}
 		}
 		return sb.toString();
 	}
+	/**
+	 * 数组的转向
+	 * @param arrs T[]
+	 * @return T[]
+	 */
+	public static final<T> T[] reverseOrder(T[] arrs) {
+		int len=arrs.length;
+		if(len<2)return arrs;
+		for(int i=0,size=len/2;i<size;i++) {
+			T obj=arrs[i];
+			int to=len-1-i;
+			arrs[i]=arrs[to];
+			arrs[to]=obj;
+		}
+		return arrs;
+	}
+	/**
+	 * 数组按长度从大到小排序
+	 * @param arrs String[]
+	 * @return String[]
+	 */
+	public static final String[] sortStringArrayByLenReverse(String...arrs) {
+		String[] arr=sortStringArrayByLen(arrs);
+		return reverseOrder(arr);
+	}
+	/**
+	 * 数组按长度从大到小排序
+	 * @param arrs String[]
+	 * @return String[]
+	 */
+	public static final String[] sortStringArrayByLen(String...arrs) {
+		int len=arrs.length;
+		if(len<=1)return arrs;
+		for(int i=0,end=len-1;i<end;i++) {
+			String key=arrs[i];
+			int index=getIndexMaxLength(arrs,key==null?-1:key.length(),i+1);
+			if(index>-1) {
+				arrs[i]=arrs[index];
+				arrs[index]=key;
+			}			
+		}
+		return arrs;
+	}
+	/**
+	 * 得到数组中长度最长单元的下标
+	 * @param arr Object[]
+	 * @param maxLen int
+	 * @param start int
+	 * @return int
+	 */
+	public static final int getIndexMaxLength(Object[] arr,int maxLen,int start) {
+		return getIndexMaxLength(arr,maxLen,start,arr.length-1);	
+	}
+	/**
+	 * 得到数组中长度最长单元的下标
+	 * @param arr Object[]
+	 * @param maxLen int
+	 * @param start int
+	 * @param end int
+	 * @return int
+	 */
+	public static final int getIndexMaxLength(Object[] arr,int maxLen,int start,int end) {
+		int len=arr.length;
+		if(start<0 || start>=len)start=0;
+		if(end>=len)end=len-1;
+		int index=-1;
+		for(int i=start;i<=end;i++) {
+			Object v=arr[i];
+			if(v==null) continue;
+			if(v.toString().length()<=maxLen)continue;
+			index=i;
+			maxLen=v.toString().length();
+		}
+		return index;
+	}
 	public static void main(String[] args) {
 		Object[] ar= {"ee",null};
 		Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
-		String result=showString(arr);
-		logger.debug(":"+result);
+		System.out.println(showString(arr));
+		
+		String[] arrs= {null,"abc",null,"00",null,"1234","5566788","0","abcdef"};
+		System.out.println(showString(arrs));
+		String[] arrsa=sortStringArrayByLen(arrs);
+		System.out.println(showString(arrsa));
+		System.out.println();
+		String[] arrs2=sortStringArrayByLenReverse(arrs);
+		System.out.println(showString(arrs2));
+		String path = System.getProperty("java.library.path");
+		System.out.println(path);
+		Map<String,String> map=System.getenv();
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			  System.out.println("map:Key = " + entry.getKey() + ", Value = " + entry.getValue());
+			}
+		Properties properties=System.getProperties();
+        Set<Object> keys = properties.keySet();//返回属性key的集合
+        for (Object key : keys) {
+            System.out.println("properties:"+key.toString() + "=" + properties.get(key));
+        }
+
 	}
 }

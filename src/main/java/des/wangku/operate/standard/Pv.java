@@ -104,7 +104,8 @@ public class Pv {
 	 * @since jdk1.8
 	 */
 	public static enum Env {
-		DEV("dev"), ONLINE("online");
+		/** 开发环境 */
+		DEV("dev"), /** 线上环境 */ONLINE("online");
 		private String title;
 
 		/**

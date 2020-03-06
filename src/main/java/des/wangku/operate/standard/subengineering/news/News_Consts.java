@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
+import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.utls.UtilsFile;
-import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
  * @author Sunjian
@@ -78,7 +78,7 @@ public class News_Consts {
 	 */
 	public static final void mappingInit() {
 		MappingList.clear();
-		String filename = UtilsPathFile.getJarBasicPathmodel() + "/des-wkope-task-p01-readUrl-htmlmapping.json";
+		String filename = DesktopUtils.getJarBasicPathmodel() + "/des-wkope-task-p01-readUrl-htmlmapping.json";
 		String content = UtilsFile.readFile(filename, "").toString();
 		logger.debug("提取json文件:"+filename);
 		MappingList = JSON.parseArray(content, News_Mapping.class);

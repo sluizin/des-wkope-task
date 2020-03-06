@@ -42,6 +42,27 @@ public final class UtilsRnd {
 	public final static int getRndInt(final int min, final int max) {
 		return min + rd1.nextInt(max - min + 1);
 	}
+	/**
+	 * 得到min-max之间的随机数
+	 * @param min float
+	 * @param max float
+	 * @return float
+	 */
+	public final static float getRndFloat(final float min, final float max) {
+		return min +  rd1.nextFloat() * (max - min);
+	}
+	/**
+	 * 百分比，得到是否选中
+	 * @param v float
+	 * @return boolean
+	 */
+	public final static boolean getRndProbability100(float v) {
+		if(v<=0)return false;
+		if(v>=100)return true;
+		float val=getRndFloat(0,100f);
+		if(val<=v)return true;
+		return false;
+	}
 
 	/**
 	 * outType:<br>

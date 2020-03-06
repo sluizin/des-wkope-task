@@ -146,6 +146,24 @@ public final class UtilsFile {
 		return new StringBuilder();
 	}
 	/**
+	 * 写文件，以追加的方式
+	 * @param filename String
+	 * @param content String
+	 */
+	public static final void writeFile(String filename,String content) {
+		if(filename==null || content==null)return;
+		try {
+			File file=new File(filename);
+			if(!file.exists())file.createNewFile();
+			 FileWriter fileWritter = new FileWriter(file,true);
+		     fileWritter.write(content);
+		     fileWritter.close();
+
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	/**
 	 * 从InputStream中读出字符串以utf-8读
 	 * @param in InputStream
 	 * @return StringBuilder

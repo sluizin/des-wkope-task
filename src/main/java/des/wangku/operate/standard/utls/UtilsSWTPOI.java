@@ -14,7 +14,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -28,6 +27,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -114,48 +114,89 @@ public final class UtilsSWTPOI {
 	 * @param wb Workbook
 	 * @param sheetName String
 	 * @param list List&lt;List&lt;String&gt;&gt;
-	 * @return String
+	 * @return Sheet
 	 */
-	public static final String addSheet(Workbook wb, String sheetName, List<List<String>> list) {
+	public static final Sheet addSheet(Workbook wb, String sheetName, List<List<String>> list) {
+		return addSheet(wb, sheetName, list, null);
+	}
+
+	/**
+	 * 添加Sheet<br>
+	 * 如果发现有此名称的sheet，则添加数据<br>
+	 * 否则添加新的sheet<br>
+	 * 返回sheet名称<br>
+	 * @param wb Workbook
+	 * @param sheetName String
+	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @param regions CellRangeAddress[]
+	 * @return Sheet
+	 */
+	public static final Sheet addSheet(Workbook wb, String sheetName, List<List<String>> list, CellRangeAddress[] regions) {
 		if (wb == null || sheetName == null || sheetName.length() == 0) return null;
 		String newSheetName = getSheetNameFormat(sheetName);
 		Sheet sheet = wb.getSheet(newSheetName);
 		if (sheet != null) {
 			addSheet(sheet, list);
-			return newSheetName;
+			addCellRangeAddress(sheet, regions);
+			return sheet;
 		}
 		Sheet newsheet = wb.createSheet(newSheetName);
 		addSheet(newsheet, list);
-		return newSheetName;
+		addCellRangeAddress(newsheet, regions);
+		return newsheet;
+	}
+	/**
+	 * 添加合并单元格
+	 * @param sheet Sheet
+	 * @param regions CellRangeAddress[]
+	 */
+	public static final void addCellRangeAddress(Sheet sheet, CellRangeAddress... regions) {
+		if (sheet == null || regions == null || regions.length == 0) return;
+		CellStyle style = sheet.getWorkbook().createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);// 居中
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		for (CellRangeAddress e : regions) {
+			Cell cell=getCell(sheet,e.getFirstRow(),e.getFirstColumn());
+			if(cell!=null)cell.setCellStyle(style);/* 合并单元格后居中显示 */
+			sheet.addMergedRegion(e);
+		}
 	}
 
 	/**
 	 * 向sheet中添加数据
 	 * @param sheet Sheet
 	 * @param list List&lt;List&lt;String&gt;&gt;
+	 * @return  List&lt;Row&gt;
 	 */
-	public static final void addSheet(Sheet sheet, List<List<String>> list) {
-		if (sheet == null || list.size() == 0) return;
-		for (List<String> l : list)
-			addSheetRow(sheet, l);
+	public static final List<Row> addSheet(Sheet sheet, List<List<String>> list) {
+		List<Row> rowList = new ArrayList<>();
+		if (sheet == null || list.size() == 0) return rowList;
+		for (List<String> l : list) {
+			Row row = addSheetRow(sheet, l);
+			if (row != null) rowList.add(row);
+		}
+		return rowList;
 	}
 
 	/**
 	 * 添加数组为一行
 	 * @param sheet Sheet
 	 * @param list List&lt;String&gt;
+	 * @return Row
 	 */
-	public static final void addSheetRow(Sheet sheet, List<String> list) {
+	public static final Row addSheetRow(Sheet sheet, List<String> list) {
 		String[] arr = {};
-		addSheetRow(sheet, list.toArray(arr));
+		return addSheetRow(sheet, list.toArray(arr));
 	}
 
 	/**
 	 * 添加数组为一行
 	 * @param sheet Sheet
 	 * @param arrs String[]
+	 * @return Row
 	 */
-	public static final void addSheetRow(Sheet sheet, String... arrs) {
+	public static final Row addSheetRow(Sheet sheet, String... arrs) {
+		if (arrs == null || arrs.length == 0) return null;
 		int rows = sheet.getPhysicalNumberOfRows();
 		Row row = sheet.createRow(rows);
 		for (int i = 0; i < arrs.length; i++) {
@@ -163,6 +204,7 @@ public final class UtilsSWTPOI {
 			Cell cell = row.createCell(i);
 			cell.setCellValue(arrangementString(value));
 		}
+		return row;
 	}
 
 	/**
@@ -236,6 +278,8 @@ public final class UtilsSWTPOI {
 	 * @return Sheet
 	 */
 	public static final Sheet getSheet(String filename, String sheetName) {
+		if (filename == null || filename.length() == 0) return null;
+		if (sheetName == null || sheetName.length() == 0) return null;
 		try {
 			File file = new File(filename);
 			if (file == null || !file.isFile()) return null;
@@ -1510,6 +1554,7 @@ public final class UtilsSWTPOI {
 		}
 		return -1;
 	}
+
 	/**
 	 * 判断sheet是否是隐藏型
 	 * @param wb Workbook
@@ -1517,9 +1562,10 @@ public final class UtilsSWTPOI {
 	 * @return boolean
 	 */
 	public static final boolean isHiddenSheet(Workbook wb, int sheetIx) {
-		if (wb == null || sheetIx< 0) return false;
+		if (wb == null || sheetIx < 0) return false;
 		return isHiddenSheet(wb, wb.getSheetAt(sheetIx));
 	}
+
 	/**
 	 * 判断sheet是否是隐藏型
 	 * @param wb Workbook

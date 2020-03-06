@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -567,5 +568,50 @@ public final class UtilsJsoup {
 		Elements arrs=f.getElementsByTag(name);
 		list.addAll(arrs);
 		return list;
+	}
+	/**
+	 * 按照id中的单元移除
+	 * @param source Element
+	 * @param arrs String[]
+	 */
+	public static final void removeIDElement(Element source,String...arrs) {
+		if(source==null ||arrs.length==0)return;
+		for(String e:arrs) {
+			Element r=source.getElementById(e);
+			if(r!=null)r.remove();
+		}
+	}
+	/**
+	 * 按照class中的单元移除
+	 * @param source Element
+	 * @param arrs String[]
+	 */
+	public static final void removeClassElement(Element source,String...arrs) {
+		if(source==null ||arrs.length==0)return;
+		for(String e:arrs) {
+			Elements removes=source.getElementsByClass(e);
+			for(Element r:removes)r.remove();
+		}
+	}
+	/**
+	 * 按照class名称中含有关键字中的单元移除
+	 * @param source Element
+	 * @param keyArrs String[]
+	 */
+	public static final void removeClassElementIndexof(Element source,String...keyArrs) {
+		if(source==null ||keyArrs.length==0)return;
+		Elements arr=source.getAllElements();
+		loop:for(Element e:arr) {
+			Set<String> set=e.classNames();
+			String[] eleClassNames= {};
+			eleClassNames=set.toArray(eleClassNames);
+			if(eleClassNames.length==0)continue;
+			for(String f:keyArrs) {
+				if(UtilsString.isExistIndexOf(f, eleClassNames)) {
+					e.remove();
+					continue loop;
+				}
+			}
+		}
 	}
 }

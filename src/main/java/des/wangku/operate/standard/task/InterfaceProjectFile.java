@@ -6,13 +6,13 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
- * 
+ * 项目文件，包含扩展文件的信息
  * 
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
  */
-public interface InterfaceProjectFile {
+public interface InterfaceProjectFile extends InterfaceProjectTop {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(InterfaceProjectFile.class);
 	/**
@@ -21,9 +21,8 @@ public interface InterfaceProjectFile {
 	 * @return File
 	 */
 	public default File mkModelFile(String fileExt) {
-		Object obj = this;
-		if(!(obj instanceof AbstractTask)) return null;
-		AbstractTask t = (AbstractTask) obj;
+		AbstractTask t = this.getProejectBase();
+		if(t==null) return null;
 		String path = t.getBaseSourceFile(fileExt);
 		File p = new File(path);
 		if(!p.exists()) {
@@ -36,5 +35,8 @@ public interface InterfaceProjectFile {
 		}
 		if(p.isFile())return p;
 		return null;
+	}
+	public default String getProjectFileLeftHead() {
+		return "";
 	}
 }

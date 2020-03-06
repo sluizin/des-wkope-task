@@ -15,9 +15,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.widgets.Composite;
 
+import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsList;
-import des.wangku.operate.standard.utls.UtilsPathFile;
 import des.wangku.operate.standard.utls.UtilsSWTPOI;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
@@ -147,7 +147,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		String newString = filename;
 		switch (type) {
 		case 0:
-			newString = UtilsPathFile.getJarBasicPathmodel() + "/" + filename;
+			newString = DesktopUtils.getJarBasicPathmodel() + "/" + filename;
 		default:
 		}
 		this.filename = newString;
