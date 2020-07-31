@@ -12,7 +12,7 @@ import com.alibaba.fastjson.JSON;
 import des.wangku.operate.standard.utls.UtilsProperties;
 
 /**
- * 参数
+ * 重构Table参数
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8

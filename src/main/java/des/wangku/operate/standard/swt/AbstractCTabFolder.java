@@ -39,6 +39,7 @@ import des.wangku.operate.standard.dialog.SheetSummationDialog;
 import des.wangku.operate.standard.dialog.InputNewSheetDialog;
 import des.wangku.operate.standard.dialog.InputNewSheetDialog.NewSheetInfor;
 import des.wangku.operate.standard.utls.UtilsArrays;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsProperties;
 import des.wangku.operate.standard.utls.UtilsRnd;
 import des.wangku.operate.standard.utls.UtilsSWTPOI;
@@ -398,7 +399,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 					String sheetName = getSheetName(table, "信息" + i);
 					UtilsSWTPOI.addWorkbookSheet(workbook, sheetName, table);
 				}
-				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook, true, true);
+				File file = UtilsPOI.save(pc.saveFolder, shell, workbook, true, true);
 				if (file == null) return;
 				logger.debug("copyCTabFolderToexcel:" + file.getAbsolutePath());
 			}
@@ -423,7 +424,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 				if (tablesCheck.length==0) return;
 				Workbook workbook = new XSSFWorkbook();
 				UtilsSWTPOI.addWorkbookSheet(workbook, "综合", tablesCheck);
-				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook, true, true);
+				File file = UtilsPOI.save(pc.saveFolder, shell, workbook, true, true);
 				if (file == null) return;
 				logger.debug("copyCTabFolderMultiTableToexcelAccumulate:" + file.getAbsolutePath());
 			}
@@ -444,7 +445,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 				ResultTable table = (ResultTable) c;
 				Workbook workbook = new XSSFWorkbook();
 				UtilsSWTPOI.addWorkbookSheet(workbook, table);
-				File file = UtilsSWTPOI.save(pc.saveFolder, shell, workbook, true, true);
+				File file = UtilsPOI.save(pc.saveFolder, shell, workbook, true, true);
 				if (file == null) return;
 				logger.debug("copySelectSheetToexcel:" + file.getAbsolutePath());
 			}
@@ -475,7 +476,7 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	 */
 	public final String getNewTabItemName(final String key) {
 		if (key == null) return UtilsRnd.getNewFilenameNow(4, 4);
-		String newKey = UtilsSWTPOI.getSheetNameFormat(key);
+		String newKey = UtilsPOI.getSheetNameFormat(key);
 		if (!isExistTitle(newKey)) return newKey;
 		for (int i = 0; i <= 999; i++) {
 			String name = newKey + "(" + i + ")";

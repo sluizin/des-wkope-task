@@ -43,7 +43,7 @@ public class BaiduKeySearchPosid {
 			String urlString = "https://www.baidu.com/s?wd=" + key + "&pn=" + i;
 			try {
 				//URL u = new URL(urlString);
-				Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.header_a);
+				Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
 				Document document = connect.timeout(15000).maxBodySize(0).get();
 				if (document == null) return null;
 				if (document.html().indexOf(url) == -1) continue;
@@ -130,15 +130,20 @@ public class BaiduKeySearchPosid {
 			logger.debug("search:"+baiduUrlHref);
 			try {
 				if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime);
-				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.header_a);
+				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_m);
 				Document document = connect.timeout(timeout).maxBodySize(0).get();
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
-				if (document == null) continue;
+				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
+				if (document == null) {
+					logger.debug("document:null");
+					continue;
+				}
+				//logger.debug(document.html().toLowerCase());
 				if (!UtilsString.isContainSplit(document.html().toLowerCase(), newUrl, intervalkey)) {
+					//logger.debug("document:isContainSplit");
 					p += 10;
 					continue;
 				}
-				document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
 				//logger.debug("newUrl:"+document.html());
 				//logger.debug("newUrl:"+newUrl);
 				//String aa=UtilsReadURL.getReadUrlJsDefault(urlString);
@@ -146,6 +151,7 @@ public class BaiduKeySearchPosid {
 				//Elements es = document.getElementsByClass("result");
 				Elements es = document.select(".result");
 				String searchurl = "";
+				logger.debug(key+":::::::::::"+es.size());
 				for (int x = 0; x < es.size(); x++) {
 					Element e = es.get(x);
 					p++;
@@ -179,6 +185,78 @@ public class BaiduKeySearchPosid {
 		return -1;
 	}
 
+	public static final int getBaiduPosidMobile(boolean isgene,int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
+		int maxbaiduPage = (maxPage - 1) * 10;
+		if (key == null || key.length() == 0) return -1;
+		if (url == null || url.length() == 0) return -1;
+		String newUrl = url;
+		int p = -1;
+		StringBuilder sb = new StringBuilder(50);
+		String baiduUrlHref = null;
+		for (int i = 0; i <= maxbaiduPage; i += 10) {
+			sb.setLength(0);
+			sb.append("https://m.baidu.com/s?wd=");
+			sb.append(key);
+			sb.append("&pn=");
+			sb.append(i);
+			baiduUrlHref = sb.toString();
+			logger.debug("search:"+baiduUrlHref);
+			try {
+				if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime*10);
+				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_m);
+				Document document = connect.timeout(15000).maxBodySize(0).get();
+				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
+				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
+				if (document == null) {
+					logger.debug("document:null");
+					continue;
+				}
+				//logger.debug(document.html().toLowerCase());
+				if (!UtilsString.isContainSplit(document.html().toLowerCase(), newUrl, intervalkey)) {
+					logger.debug("document:isContainSplit");
+					p += 10;
+					continue;
+				}
+				//logger.debug("newUrl:"+document.html());
+				//logger.debug("newUrl:"+newUrl);
+				//String aa=UtilsReadURL.getReadUrlJsDefault(urlString);
+				//logger.debug("aaaaaaaaaaaaaaaa:"+aa);
+				//Elements es = document.getElementsByClass("result");
+				Elements es = document.select(".result");
+				String searchurl = "";
+				logger.debug(key+":::::::::::"+es.size());
+				for (int x = 0; x < es.size(); x++) {
+					Element e = es.get(x);
+					p++;
+					if (UtilsString.isContainSplit(e.html().toLowerCase(), newUrl, intervalkey)) {
+						//if (e.html().toLowerCase().indexOf(newUrl) > -1) {
+						if (cutUrl > 0) {
+							Elements showurl = e.getElementsByClass("c-showurl");
+							Elements as = showurl.select("a[href]");
+							for (Element t1 : as) {
+								String baiduUrl = t1.attr("abs:href");
+								searchurl = UtilsReadURL.getRealLocation(baiduUrl);
+								//logger.debug("searchurl:" + searchurl);
+								String newurl=searchurl.toLowerCase();
+								if(isgene) {
+									if(newurl.indexOf("www.99114.com")==-1 && newurl.indexOf(".99114.com")>-1) {
+										return p;
+									}
+								}else {
+									if (newurl.indexOf(url) > -1) { return p; }
+								}
+							}
+							continue;
+						}
+						return p;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return -1;
+	}
 	/**
 	 * 判断是否有结果
 	 * @param type String
@@ -284,7 +362,21 @@ public class BaiduKeySearchPosid {
 				else value = NoFindNull;
 				return;
 			}
-			int p = BaiduKeySearchPosid.getBaiduPosid(type, 10, keyword, url, "\\|", cutUrl);
+			int p = -1;
+			if("m".equals(type)) {
+				if(url.indexOf('|')>-1) {
+					String[] arrs=url.split("\\|");
+					for(String e:arrs) {
+						int t=BaiduKeySearchPosid.getBaiduPosidMobile(false, 10, keyword, e, "\\|", 2000,cutUrl);
+						 if(t>-1 && t<p)p=t;
+					}
+				}else {
+					p=BaiduKeySearchPosid.getBaiduPosidMobile(false, 10, keyword, url, "\\|", 2000,cutUrl);
+				}
+			}else {
+				url=url.split("\\|")[0];
+				p = BaiduKeySearchPosid.getBaiduPosid(type, 10, keyword, url, "\\|", cutUrl);
+			}
 			if (p == -1) value = NoFindNull;
 			else value = "" + (p + 1);
 			//value = BaiduSearch.getPosid(keyword, url);

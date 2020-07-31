@@ -16,6 +16,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
 import static des.wangku.operate.standard.utls.UtilsShiftCompare.isCompare;
@@ -117,7 +118,24 @@ public final class UtilsJsoup {
 		return es.get(0).text();
 
 	}
-
+	/**
+	 * 从网址中某个长度的局部返回对象
+	 * @param url String
+	 * @param start String
+	 * @param end String
+	 * @return Document
+	 */
+	public static final Document getDoc(String url,String start,String end) {
+		Document doc=getDoc(url);
+		if(doc==null)return null;
+		String result=doc.html();
+		int index1=result.indexOf(start);
+		if(index1==-1)return null;
+		int index2=result.indexOf(end,index1);
+		if(index2==-1)return null;
+		String cut=result.substring(index1+start.length(), index2);
+		return Jsoup.parse(cut);
+	}
 	/**
 	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
 	 * @param url String
@@ -128,7 +146,8 @@ public final class UtilsJsoup {
 			URL url1 = new URL(url);
 			return getDoc(url1);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("error:"+url);
+			//e.printStackTrace();
 		}
 		return null;
 	}
@@ -141,14 +160,15 @@ public final class UtilsJsoup {
 	public static final Document getDoc(URL url) {
 		String newCode = getCode(url);
 		try {
-			Connection conn = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
+			Connection conn = Jsoup.connect(url.toString()).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
 			if(conn==null)return null;
 			conn=conn.timeout(30000).maxBodySize(0);
 			if(conn==null)return null;
 			Document document =conn.get();
 			if (document != null) return document;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("error:"+url.toString());
+			//e.printStackTrace();
 		}
 		String content = UtilsReadURL.getSocketContent(url, newCode, 30000);
 		if (content != null && content.length() > 0) return Jsoup.parse(content);
@@ -171,7 +191,7 @@ public final class UtilsJsoup {
 	public static final Document getDoc(URL url, int mode) {
 		if (isCompare(mode, MODE_Jsoup)) {
 			try {
-				Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
+				Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
 				Document document = connect.timeout(20000).maxBodySize(0).get();
 				if (document != null) return document;
 			} catch (IOException e) {
@@ -288,6 +308,23 @@ public final class UtilsJsoup {
 		return e.text();
 	}
 
+	/**
+	 * 从网址中某个长度的局部返回对象
+	 * @param url String
+	 * @param start String
+	 * @param end String
+	 * @return Document
+	 */
+	public static final Element getElement(Element source,String start,String end) {
+		if(source==null)return null;
+		String result=source.html();
+		int index1=result.indexOf(start);
+		if(index1==-1)return null;
+		int index2=result.indexOf(end,index1);
+		if(index2==-1)return null;
+		String cut=result.substring(index1+start.length(), index2);
+		return Jsoup.parse(cut, "", Parser.xmlParser());
+	}
 	/**
 	 * 从es数组中提取含有某个classname为keyClassName，并且内容含有 keyword
 	 * @param es Elements
@@ -541,32 +578,50 @@ public final class UtilsJsoup {
 	
 	}
 	/**
-	 * 读取url得到 name 这个字符串，id class tag，所有单元
+	 * 读取url得到 arrs 这个多字符串，id class tag，所有单元
 	 * @param url String
-	 * @param name String
+	 * @param arr String[]
 	 * @return List&lt;Element&gt;
 	 */
-	public static final List<Element> getAllElements(String url,String name){
+	public static final List<Element> getAllElements(String url,String... arr){
 		Document doc=UtilsJsoup.getDoc(url);
-		List<Element> list=new ArrayList<>();
-		if(doc==null)return list;
-		return getAllElements(doc,name);
+		if(doc==null)return new ArrayList<>();
+		return getAllElements(doc,arr);
 	}
 	/**
 	 * 读取Element得到 name 这个字符串，id class tag，所有单元
 	 * @param f Element
-	 * @param name String
+	 * @param arr String[]
 	 * @return List&lt;Element&gt;
 	 */
-	public static final List<Element> getAllElements(Element f,String name){
+	public static final List<Element> getAllElements(Element f,String... arr){
 		List<Element> list=new ArrayList<>();
 		if(f==null)return list;
+		for(String name:arr) {		
 		Element e=f.getElementById(name);
 		if(e!=null)list.add(e);
-		Elements arr=f.getElementsByClass(name);
-		list.addAll(arr);
-		Elements arrs=f.getElementsByTag(name);
-		list.addAll(arrs);
+		list.addAll(f.getElementsByClass(name));
+		list.addAll(f.getElementsByTag(name));
+		}
+		return list;
+	}
+	public static final String getAllHref(Element f,int index,String... arrs){
+		List<String> list=getAllHrefs(f,arrs);
+		int size=list.size();
+		if(size==0)return null;
+		if(index>=0 && index <size)return list.get(index);
+		return null;
+	}
+	public static final List<String> getAllHrefs(Element f,String... arrs){
+		List<String> list= new ArrayList<>();
+		List<Element> li=getAllElements(f,arrs);
+		for(Element ee:li) {
+			Elements arr=ee.select("a");
+			for(int i=0;i<arr.size();i++) {
+				Element tt=arr.get(i);
+				list.add(tt.attr("abs:href"));
+			}
+		}
 		return list;
 	}
 	/**
@@ -574,7 +629,7 @@ public final class UtilsJsoup {
 	 * @param source Element
 	 * @param arrs String[]
 	 */
-	public static final void removeIDElement(Element source,String...arrs) {
+	public static final void removeID(Element source,String...arrs) {
 		if(source==null ||arrs.length==0)return;
 		for(String e:arrs) {
 			Element r=source.getElementById(e);
@@ -586,12 +641,33 @@ public final class UtilsJsoup {
 	 * @param source Element
 	 * @param arrs String[]
 	 */
-	public static final void removeClassElement(Element source,String...arrs) {
+	public static final void removeClass(Element source,String...arrs) {
 		if(source==null ||arrs.length==0)return;
 		for(String e:arrs) {
 			Elements removes=source.getElementsByClass(e);
 			for(Element r:removes)r.remove();
 		}
+	}
+	/**
+	 * 按照tag中的单元移除
+	 * @param source Element
+	 * @param arrs String[]
+	 */
+	public static final void removeTag(Element source,String...arrs) {
+		if(source==null ||arrs.length==0)return;
+		for(String e:arrs) {
+			Elements removes=source.getElementsByTag(e);
+			for(Element r:removes)r.remove();
+		}
+	}
+	/**
+	 * 按照id和class中的单元移除
+	 * @param source Element
+	 * @param arrs String[]
+	 */
+	public static final void removeByIdClass(Element source,String...arrs) {
+		removeID(source,arrs);
+		removeClass(source,arrs);
 	}
 	/**
 	 * 按照class名称中含有关键字中的单元移除

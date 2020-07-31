@@ -124,7 +124,7 @@ public class HelpDialog extends Dialog {
 	void initialization() {
 		shell.setText(DesktopConst.ACC_AuthorTitle);
 		shell.setSize(getWidth(), getHeight());
-		shell.setImage(DesktopConst.ACC_Shell);
+		//shell.setImage(DesktopConst.ACC_Shell);
 		text = new Text(shell, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text.setBounds(10, 10, getWidth() - 25, getHeight() - 40);
 		shell.addDisposeListener(new DisposeListener() {

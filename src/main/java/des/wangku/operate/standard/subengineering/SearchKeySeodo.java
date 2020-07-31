@@ -29,7 +29,7 @@ public class SearchKeySeodo {
 		if (key.length() == 0) return NoFindNull;
 		try {
 			String url = "http://www.seodo.cn/api/quote";
-			Connection connect = Jsoup.connect(url).headers(UtilsConsts.header_b).timeout(2000).ignoreContentType(true).data("id", key);
+			Connection connect = Jsoup.connect(url).headers(UtilsConsts.getRndHeadMap())/*UtilsConsts.header_b)*/.timeout(2000).ignoreContentType(true).data("id", key);
 			Response res = connect.execute();
 			String body = res.body();
 			Result result = JSON.parseObject(body, Result.class);

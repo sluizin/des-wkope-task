@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import des.wangku.operate.standard.swt.AbstractCTabFolder;
 import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.utls.UtilsDialogState;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsRnd;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
 
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Button;
@@ -138,7 +138,7 @@ public class SheetImportExcelDialog extends Dialog {
 	void readExcelFile() {
 		if (url == null) return;
 		combo.removeAll();
-		Sheet[] arr = UtilsSWTPOI.getSheets(url);
+		Sheet[] arr = UtilsPOI.getSheets(url);
 		if (arr == null) return;
 		if (arr.length == 0) return;
 		for (Sheet e : arr) {
@@ -197,7 +197,7 @@ public class SheetImportExcelDialog extends Dialog {
 					workbook.close();
 					return;
 				}
-				int cols=UtilsSWTPOI.getWidthMax(sheet);
+				int cols=UtilsPOI.getWidthMax(sheet);
 				for (int i = 0; i < cols; i++)
 					table.setTableColumn(SWT.LEFT,i + "", 180);
 				table.addData(sheet);

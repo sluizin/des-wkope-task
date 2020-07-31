@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsList;
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 
@@ -232,7 +232,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			for (int ii = 0; ii <= cellLen; ii++) {
 				if (!showHiddenColumn && sheet.isColumnHidden(ii)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
 				Cell cell = r.getCell(ii);
-				String value = UtilsSWTPOI.getCellValueByString(cell, true);
+				String value = UtilsPOI.getCellValueByString(cell, true);
 				if (t.getEctpara().isTrim) value = value.trim();
 				list.add(value);
 			}
@@ -258,7 +258,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		List<String> list = new ArrayList<>(cellLen);
 		for (int i = 0; i < cellLen; i++) {
 			if (!showHiddenColumn && sheet.isColumnHidden(i)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
-			if (!isBadSuffix) value = UtilsSWTPOI.getCellValueByString(first.getCell(i), true);
+			if (!isBadSuffix) value = UtilsPOI.getCellValueByString(first.getCell(i), true);
 			else value = "" + i;
 			list.add(value);
 		}

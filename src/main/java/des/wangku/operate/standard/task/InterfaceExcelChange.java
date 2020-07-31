@@ -1,18 +1,10 @@
 package des.wangku.operate.standard.task;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
-import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
-import org.apache.poi.ss.usermodel.BorderStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.util.CellRangeAddress;
-
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
 
 /**
  * 修改poi中某个表格的状态
@@ -59,50 +51,6 @@ public interface InterfaceExcelChange {
 			}
 	}
 
-	/**
-	 * 设置背景色
-	 * @param style CellStyle
-	 * @param ref HSSFColorPredefined
-	 */
-	public static void setStyleBGColor(CellStyle style, HSSFColorPredefined ref) {
-		if (style == null) return;
-		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-		style.setFillForegroundColor(ref.getIndex());
-	}
-
-	/**
-	 * 修改CellStyle 有四个方面的边框和居中与上下居中设置
-	 * @param style CellStyle
-	 */
-	public static void initExcelCellStyle(CellStyle style) {
-		style.setBorderBottom(BorderStyle.THIN); //下边框    
-		style.setBorderLeft(BorderStyle.THIN);//左边框    
-		style.setBorderTop(BorderStyle.THIN);//上边框    
-		style.setBorderRight(BorderStyle.THIN);//右边框   
-		style.setAlignment(HorizontalAlignment.CENTER);// 居中
-		style.setVerticalAlignment(VerticalAlignment.CENTER);
-	}
-
-	/**
-	 * 以某个单元格，同列，向下合并空格，直至非空数据
-	 * @param style CellStyle
-	 * @param cell Cell
-	 * @param x int
-	 * @param y int
-	 */
-	public static void CellRangeAddressRows(CellStyle style, Cell cell, int x, int y) {
-		Sheet sheet = cell.getSheet();
-		int downX = x;
-		for (int i = x + 1; i <= sheet.getLastRowNum(); i++) {
-			String value = UtilsSWTPOI.getCellValueByString(sheet.getRow(i).getCell(y),true);
-			if (value == null || value.length() == 0) downX = i;
-			else break;
-		}
-		if (downX == x) return;
-		/* 合并向下多行单元格 */
-		CellRangeAddress region1 = new CellRangeAddress(x, downX, y, y);
-		cell.getSheet().addMergedRegion(region1);
-	}
 
 	public static final int ExcelColWdith = 12;
 	public static final short ExcelRowHeight = 400;

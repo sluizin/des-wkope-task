@@ -559,7 +559,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * 后面不加扩展名
 	 * @return String
 	 */
-	String getModelProjectFileLeft() {
+	protected String getModelProjectFileLeft() {
 		return DesktopUtils.getJarBasicPathmodel() + "/" + getProNameHead();
 	}
 
@@ -585,15 +585,18 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	 * @return String
 	 */
 	public final String getBaseSourceFile(String fileExt) {
-		return getModelProjectFileLeft() + "." + fileExt;
+		return getBaseSourceFile(null,fileExt);
 	}
 	/**
-	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}p001_XXXX.YYYY
+	 * 得到与model同目录的资源文件d:/XXX/XXX/model/{des-wkope-task-}p001_XXXX.YYYY<br>
+	 * 如果ext=null，则返回d:/XXX/XXX/model/{des-wkope-task-}p001.YYYY
 	 * @param ext String
 	 * @param fileExt String
 	 * @return String
 	 */
 	public final String getBaseSourceFile(String ext,String fileExt) {
+		if(fileExt==null)return null;
+		if(ext==null)return getModelProjectFileLeft() + "." + fileExt;
 		return getModelProjectFileLeft()+"_"+ ext + "." + fileExt;
 	}
 	/**

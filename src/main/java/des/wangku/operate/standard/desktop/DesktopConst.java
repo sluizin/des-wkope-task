@@ -3,7 +3,6 @@ package des.wangku.operate.standard.desktop;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.eclipse.swt.graphics.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,27 +56,9 @@ public final class DesktopConst {
 	
 	/** 桌面程序的资源配置信息 */
 	public static final DesktopProperties DesktopPro = new DesktopProperties();
-	/** images目录 */
-	public static final String ACC_Images = "/images";
-	/** images/icon目录 */
-	public static final String ACC_ImagesIcon = ACC_Images+"/icon";
 
 	public static final Class<?> classzz = DesktopConst.class;
 
-	/** 主窗口的图标 */
-	public static final Image ACC_Shell = DesktopUtils.getImagesIcon("favicon.ico");
-	/** 任务菜单前的图标 */
-	public static final Image ACC_M0task_taskImage = DesktopUtils.getImagesIcon("star.gif");
-	/** 任务数组前的图标 */
-	public static final Image ACC_M0task_taskGroupImage = DesktopUtils.getImagesIcon("key_list.gif");
-	/** 主菜单中第一行中主任务 */
-	public static final Image ACC_M0task = DesktopUtils.getImagesIcon("task.gif");
-	/** 主菜单中第一行中设置 */
-	public static final Image ACC_M0set = DesktopUtils.getImagesIcon("set.gif");
-	/** 主菜单中第一行中版本 */
-	public static final Image ACC_M0ver = DesktopUtils.getImagesIcon("ver.gif");
-	/** 主菜单中第一行中退出 */
-	public static final Image ACC_M0exit = DesktopUtils.getImagesIcon("exist.gif");
 
 	
 	

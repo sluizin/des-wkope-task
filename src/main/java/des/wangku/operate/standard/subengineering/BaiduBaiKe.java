@@ -81,9 +81,9 @@ public class BaiduBaiKe {
 				"album-list","tashuo-bottom",
 				"lemma-reference","side-content","configModuleBanner"
 				};
-		UtilsJsoup.removeClassElement(maincontent, removeClass);
+		UtilsJsoup.removeClass(maincontent, removeClass);
 		String[] removeID= {"hotspotmining_s"};
-		UtilsJsoup.removeIDElement(maincontent, removeID);
+		UtilsJsoup.removeID(maincontent, removeID);
 		
 				
 		
@@ -91,7 +91,7 @@ public class BaiduBaiKe {
 		Elements level2s=maincontent.getElementsByClass("level-2");
 		for(Element level2:level2s) {
 			Element elsTitle=level2.getElementsByClass("title-text").first();
-			UtilsJsoup.removeClassElement(elsTitle, "title-prefix");
+			UtilsJsoup.removeClass(elsTitle, "title-prefix");
 			String key2=elsTitle.text();
 			
 			Element next=level2.nextElementSibling();
@@ -103,7 +103,7 @@ public class BaiduBaiKe {
 					if(next.hasClass("level-2"))break;
 					if(next.hasClass("level-3")) {
 						Element elselevel3=next.getElementsByClass("title-text").first();
-						UtilsJsoup.removeClassElement(elselevel3, "title-prefix");
+						UtilsJsoup.removeClass(elselevel3, "title-prefix");
 						String key3=elselevel3.text();
 						BakeClass level_3=new BakeClass(key3,"","");
 						

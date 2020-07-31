@@ -38,9 +38,9 @@ public final class UtilsWordsAnalysis {
 				list.add(new WordsPart(left,word,""));
 				before = lex;
 			}
-			int end = before.getEndPosition();
+			long end = before.getEndPosition();
 			if (end < content.length()) {
-				String left = appendWhiteSpace(content.substring(end));
+				String left = appendWhiteSpace(content.substring((int)end));
 				list.add(new WordsPart(left,"",""));
 			}
 		} catch (Exception ex) {

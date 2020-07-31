@@ -59,8 +59,18 @@ public final class UtilsList {
 	 * @return list&lt;T&gt;
 	 */
 	public static final <T> List<T> getOrderListByLenDESC(List<T> list) {
+		List<T> list2=getOrderListByLenASC(list);
+		Collections.reverse(list2);
+		return list2;
+	}
+	/**
+	 * 数组list按长度进行正序输出
+	 * @param list list&lt;T&gt;
+	 * @param <T> T
+	 * @return list&lt;T&gt;
+	 */
+	public static final <T> List<T> getOrderListByLenASC(List<T> list) {
 		Collections.sort(list, new SortByLengthComparator<T>());
-		Collections.reverse(list);
 		return list;
 	}
 

@@ -62,7 +62,7 @@ public final class UtilsExcel {
 		File file = new File(filename);
 		Workbook wb = new XSSFWorkbook();
 		for(SheetClass ff:arrs) {
-			UtilsSWTPOI.addSheet(wb, ff.sheetName, ff.list,ff.getRegionsArr());
+			UtilsPOI.addSheet(wb, ff.sheetName, ff.list,ff.getRegionsArr());
 		}
 		FileOutputStream fileoutputStream = new FileOutputStream(file);
 		wb.write(fileoutputStream);

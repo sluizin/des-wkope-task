@@ -7,7 +7,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.eclipse.swt.graphics.Point;
 
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
+import des.wangku.operate.standard.utls.UtilsArrays;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsString;
 
 /**
@@ -87,7 +88,7 @@ public class POISheetExt {
 				setCellValue(true, i, y, "");
 				break;
 			}
-			String value = UtilsSWTPOI.getCellValueByString(sheet, i + 1, y, false, "");
+			String value = UtilsPOI.getCellValueByString(sheet, i + 1, y, false, "");
 			if (value == null) value = "";
 			setCellValue(true, i, y, value);
 		}
@@ -101,7 +102,7 @@ public class POISheetExt {
 	 */
 	public final void removeCellDOWN(int x, int y, int endindex) {
 		if (sheet == null) return;
-		if (!UtilsSWTPOI.isExistValue(sheet, x, y)) return;
+		if (!UtilsPOI.isExistValue(sheet, x, y)) return;
 		int top = sheet.getFirstRowNum();
 		if (endindex > -1) top = endindex;
 		for (int i = x; i >= top; i--) {
@@ -109,7 +110,7 @@ public class POISheetExt {
 				setCellValue(true, i, y, "");
 				break;
 			}
-			String value = UtilsSWTPOI.getCellValueByString(sheet, i - 1, y, false, "");
+			String value = UtilsPOI.getCellValueByString(sheet, i - 1, y, false, "");
 			if (value == null) value = "";
 			setCellValue(true, i, y, value);
 		}
@@ -134,7 +135,7 @@ public class POISheetExt {
 				if (cell != null) continue;
 				Cell c = row.createCell(ii);
 				//c.setCellValue(value);
-				UtilsSWTPOI.setCellValue(c, value);
+				UtilsPOI.setCellValue(c, value);
 			}
 		}
 	}
@@ -175,16 +176,16 @@ public class POISheetExt {
 	 */
 	public final boolean move(int ax, int ay, int bx, int by) {
 		if (sheet == null) return false;
-		Cell fromCell = UtilsSWTPOI.getCell(sheet, ax, ay);
+		Cell fromCell = UtilsPOI.getCell(sheet, ax, ay);
 		if (fromCell == null) return false;
 		Row row = sheet.getRow(bx);
 		if (row == null) sheet.createRow(bx);
 		row = sheet.getRow(bx);
-		Cell tocell = UtilsSWTPOI.getCell(sheet, bx, by);
+		Cell tocell = UtilsPOI.getCell(sheet, bx, by);
 		if (tocell != null) row.removeCell(tocell);
 		row.createCell(by);
-		Cell toCell = UtilsSWTPOI.getCell(sheet, bx, by);
-		UtilsSWTPOI.getCellCopy(fromCell, toCell);
+		Cell toCell = UtilsPOI.getCell(sheet, bx, by);
+		UtilsPOI.getCellCopy(fromCell, toCell);
 		fromCell.getRow().removeCell(fromCell);
 		return true;
 	}
@@ -200,10 +201,10 @@ public class POISheetExt {
 	 */
 	public final boolean move(boolean isNullOver, int ax, int ay, int bx, int by) {
 		if (sheet == null) return false;
-		Cell fromCell = UtilsSWTPOI.getCell(sheet, ax, ay);
+		Cell fromCell = UtilsPOI.getCell(sheet, ax, ay);
 		if (fromCell == null) {
 			if (isNullOver) {
-				Cell toCell = UtilsSWTPOI.getCell(sheet, bx, by);
+				Cell toCell = UtilsPOI.getCell(sheet, bx, by);
 				if (toCell == null) {
 					return true;
 				} else {
@@ -214,7 +215,7 @@ public class POISheetExt {
 			}
 		} else {
 			Cell toCell = createCell(bx, by);
-			UtilsSWTPOI.getCellCopy(fromCell, toCell);
+			UtilsPOI.getCellCopy(fromCell, toCell);
 			delete(fromCell);
 			return true;
 		}
@@ -244,7 +245,7 @@ public class POISheetExt {
 	 */
 	public final boolean delete(int x, int y) {
 		if (sheet == null) return false;
-		Cell cell = UtilsSWTPOI.getCell(sheet, x, y);
+		Cell cell = UtilsPOI.getCell(sheet, x, y);
 		return delete(cell);
 	}
 
@@ -261,7 +262,7 @@ public class POISheetExt {
 	 */
 	public final boolean move(boolean isNullOver, int ax, int ay, int bx, int by, int tox, int toy) {
 		if (sheet == null) return false;
-		if (!UtilsSWTPOI.isSuffixValid(ax, ay, bx, by, tox, toy)) return false;
+		if (!UtilsArrays.isSuffixValid(ax, ay, bx, by, tox, toy)) return false;
 		for (int x = ax; x <= bx; x++) {
 			for (int y = ay; y <= by; y++) {
 				int nx = tox + (x - ax);
@@ -307,7 +308,7 @@ public class POISheetExt {
 		for (int i = sheet.getLastRowNum(); i > -1; i--) {
 			if (sheet.getRow(i) == null) continue;
 			if (sheet.getRow(i).getCell(y) == null) continue;
-			String value = UtilsSWTPOI.getCellValueByString(sheet, i, y, isTrim, "");
+			String value = UtilsPOI.getCellValueByString(sheet, i, y, isTrim, "");
 			if (value == null || value.length() == 0) continue;
 			if (isTrim && value.trim().length() == 0) continue;
 			return i;
@@ -373,7 +374,7 @@ public class POISheetExt {
 		if (sheet == null) return -1;
 		int rowsLen = sheet.getLastRowNum();
 		for (int i = start; i <= rowsLen; i++) {
-			String value = UtilsSWTPOI.getCellValueByString(sheet, i, y, false, "");
+			String value = UtilsPOI.getCellValueByString(sheet, i, y, false, "");
 			if (value == null) continue;
 			if (value.equals(key)) return i;
 		}

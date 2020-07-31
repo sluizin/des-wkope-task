@@ -21,9 +21,18 @@ public interface InterfaceProjectFile extends InterfaceProjectTop {
 	 * @return File
 	 */
 	public default File mkModelFile(String fileExt) {
+		return mkModelFile(null,fileExt);
+	}
+	/**
+	 * 在model目录建立d:/XXX/XXX/model/{des-wkope-task-}XXXX.xlsx
+	 * @param ext String
+	 * @param fileExt String
+	 * @return File
+	 */
+	public default File mkModelFile(String ext,String fileExt) {
 		AbstractTask t = this.getProejectBase();
 		if(t==null) return null;
-		String path = t.getBaseSourceFile(fileExt);
+		String path = t.getBaseSourceFile(ext,fileExt);
 		File p = new File(path);
 		if(!p.exists()) {
 			try {

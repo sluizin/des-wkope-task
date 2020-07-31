@@ -11,6 +11,7 @@ import des.wangku.operate.standard.utls.UtilsDialogState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
@@ -27,7 +28,27 @@ public class InputValueDialog extends Dialog {
 	String result = null;
 	String oldValue = "";
 	Text text = null;
-
+	/**
+	 * 构造函数 Composite.getShell()转成Shell
+	 * @param com Composite
+	 * @param style int
+	 * @param shellText  String
+	 * @param labelText String
+	 * @param oldValue String
+	 * @param readonly boolean
+	 */
+	public InputValueDialog(Composite com, int style, String shellText, String labelText, String oldValue, boolean readonly) {
+		this(com.getShell(), style,shellText,labelText,oldValue,readonly) ;
+	}
+	/**
+	 * 构造函数
+	 * @param parent Shell
+	 * @param style int
+	 * @param shellText  String
+	 * @param labelText String
+	 * @param oldValue String
+	 * @param readonly boolean
+	 */
 	public InputValueDialog(Shell parent, int style, String shellText, String labelText, String oldValue, boolean readonly) {
 		super(parent, style);
 		this.shell = new Shell(parent);

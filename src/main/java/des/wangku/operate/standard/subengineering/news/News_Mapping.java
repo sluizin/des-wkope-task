@@ -218,7 +218,7 @@ public final class News_Mapping {
 	 * @param obj Element
 	 * @return Element
 	 */
-	public Element getRemoveScript(Element obj) {
+	public static final Element getRemoveScript(Element obj) {
 		Elements elScripts = obj.getElementsByTag("script");
 		for (Element e : elScripts)
 			e.remove();
@@ -230,7 +230,7 @@ public final class News_Mapping {
 	 * @param obj Element
 	 * @return Element
 	 */
-	public Element getRemoveStyle(Element obj) {
+	public static final Element getRemoveStyle(Element obj) {
 		Elements elStyle = obj.getElementsByTag("style");
 		for (Element e : elStyle)
 			e.remove();
@@ -344,7 +344,7 @@ public final class News_Mapping {
 	public final Document getDoc(URL url) {
 		String newCode = getCode(url);
 		try {
-			Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.header_a);
+			Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a
 			Document document = connect.timeout(timeout).maxBodySize(0).get();
 			if (document != null) return document;
 		} catch (IOException e) {

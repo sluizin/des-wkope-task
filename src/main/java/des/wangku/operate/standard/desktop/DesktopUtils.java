@@ -2,10 +2,8 @@ package des.wangku.operate.standard.desktop;
 
 import static des.wangku.operate.standard.desktop.DesktopConst.ExtendTaskMap;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsPathFile;
@@ -67,24 +65,6 @@ public final class DesktopUtils {
 		System.exit(0);
 	}
 
-	/**
-	 * 得到桌面包中图片 /images/
-	 * @param filename String
-	 * @return Image
-	 */
-	public static final Image getImages(String filename) {
-		if (filename == null) return null;
-		return SWTResourceManager.getImage(DesktopConst.classzz, DesktopConst.ACC_Images + "/" + filename);
-	}
-	/**
-	 * 得到桌面包中图标图片 /images/icon/
-	 * @param filename String
-	 * @return Image
-	 */
-	public static final Image getImagesIcon(String filename) {
-		if (filename == null) return null;
-		return SWTResourceManager.getImage(DesktopConst.classzz, DesktopConst.ACC_ImagesIcon + "/" + filename);
-	}
 
 	/**
 	 * 得到model绝对目录

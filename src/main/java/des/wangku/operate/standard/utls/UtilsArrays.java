@@ -97,4 +97,14 @@ public class UtilsArrays {
 		}
 		return true;
 	}
+	/**
+	 * 判断下标有效，不区别行与列，判断大于0
+	 * @param arrs int[]
+	 * @return boolean
+	 */
+	public static final boolean isSuffixValid(int... arrs) {
+		for (int i : arrs)
+			if (i < 0) return false;
+		return true;
+	}
 }

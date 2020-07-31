@@ -12,8 +12,8 @@ import org.eclipse.swt.widgets.Shell;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsFileMethod;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
 
 /**
  * 对本地excel进行二次修改
@@ -81,7 +81,7 @@ public class CustomExcel {
 	public String getValue(int x, int y) {
 		Cell cell = getCell(x, y);
 		if (cell == null) return null;
-		String value = UtilsSWTPOI.getCellValueByString(cell,false);
+		String value = UtilsPOI.getCellValueByString(cell,false);
 		return "" + value;
 	}
 
@@ -128,7 +128,7 @@ public class CustomExcel {
 	private Cell getCellCreate(int x, int y) {
 		Cell cell = getCell(x, y);
 		if (cell != null) return cell;
-		return UtilsSWTPOI.createCell(sheet,x, y);
+		return UtilsPOI.createCell(sheet,x, y);
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class CustomExcel {
 		if (saveFolder == null) saveFolder = "";
 		File file = UtilsFile.mkOutputFile(saveFolder,filename, "xlsx");
 			
-		boolean t = UtilsSWTPOI.save(workbook, false, file);
+		boolean t = UtilsPOI.save(workbook, false, file);
 		String filename2 = UtilsFileMethod.getFileName(file);
 		if (t) {
 			logger.debug("文件生成成功");

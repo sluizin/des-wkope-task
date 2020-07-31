@@ -1,9 +1,6 @@
 package des.wangku.operate.standard.utls;
 
 import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -373,7 +370,7 @@ public final class UtilsString {
 		return arrs;
 	}
 	/**
-	 * 数组按长度从大到小排序
+	 * 数组按长度从小到大排序
 	 * @param arrs String[]
 	 * @return String[]
 	 */
@@ -432,6 +429,12 @@ public final class UtilsString {
 		return index;
 	}
 	public static void main(String[] args) {
+		String[] arrs=UtilsConstsRequestHeader.User_Agent;
+		String[] arr=sortStringArrayByLenReverse(arrs);
+		for(String e:arr) {
+			System.out.println("\t\t\""+e+"\",");
+		}
+		/*
 		Object[] ar= {"ee",null};
 		Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
 		System.out.println(showString(arr));
@@ -454,6 +457,6 @@ public final class UtilsString {
         for (Object key : keys) {
             System.out.println("properties:"+key.toString() + "=" + properties.get(key));
         }
-
+*/
 	}
 }

@@ -88,9 +88,9 @@ public class Reediting {
 			int end = before.getEndPosition();
 			String right = "";
 			if (end < content.length()) right = appendWhiteSpace(content.substring(end));
-			System.out.println("right:" + right);
+			//System.out.println("right:" + right);
 			sb.append(right);
-			System.out.println("sb2:" + sb2.toString());
+			//System.out.println("sb2:" + sb2.toString());
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}

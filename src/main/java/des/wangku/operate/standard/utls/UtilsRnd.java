@@ -2,8 +2,8 @@ package des.wangku.operate.standard.utls;
 
 import java.util.Random;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 随机数
@@ -42,6 +42,7 @@ public final class UtilsRnd {
 	public final static int getRndInt(final int min, final int max) {
 		return min + rd1.nextInt(max - min + 1);
 	}
+
 	/**
 	 * 得到min-max之间的随机数
 	 * @param min float
@@ -49,19 +50,53 @@ public final class UtilsRnd {
 	 * @return float
 	 */
 	public final static float getRndFloat(final float min, final float max) {
-		return min +  rd1.nextFloat() * (max - min);
+		return min + rd1.nextFloat() * (max - min);
 	}
+
 	/**
 	 * 百分比，得到是否选中
 	 * @param v float
 	 * @return boolean
 	 */
 	public final static boolean getRndProbability100(float v) {
-		if(v<=0)return false;
-		if(v>=100)return true;
-		float val=getRndFloat(0,100f);
-		if(val<=v)return true;
+		if (v <= 0) return false;
+		if (v >= 100) return true;
+		float val = getRndFloat(0, 100f);
+		if (val <= v) return true;
 		return false;
+	}
+
+	/**
+	 * 千分比，得到是否选中
+	 * @param v float
+	 * @return boolean
+	 */
+	public final static boolean getRndProbability1000(float v) {
+		if (v <= 0) return false;
+		if (v >= 1000) return true;
+		float val = getRndFloat(0, 1000f);
+		if (val <= v) return true;
+		return false;
+	}
+
+	/**
+	 * 通过输入多个数值，得到随机选中的下标
+	 * @param arrs float[]
+	 * @return int
+	 */
+	public final static int getRndProbability(float... arrs) {
+		if (arrs.length == 0) return -1;
+		float sort = 0f;
+		for (float e : arrs)
+			if (e > 0f) sort += e;
+		if (sort == 0f) return -1;
+		float val = getRndFloat(0, sort);
+		for (int i = 0; i < arrs.length; i++) {
+			float e = arrs[i];
+			if (e <= 0f) continue;
+			if ((val -= e) <= 0f) return i;
+		}
+		return -1;
 	}
 
 	/**
@@ -78,7 +113,7 @@ public final class UtilsRnd {
 	public final static char getRndCharacter(final int type) {
 		switch (type) {
 		case 1:// 随机一位数字 0 - 9
-			return (char) (getRndNum()+48);
+			return (char) (getRndNum() + 48);
 		case 2:// 随机一位小写字母 a - z
 			return (char) getRndInt(97, 122);
 		case 3:// 随机一位大写字母 A - Z
@@ -141,10 +176,10 @@ public final class UtilsRnd {
 	public final static String getRndString(final int len, final int type) {
 		return new String(getRndCharacters(len, type));
 	}
+
 	/**
 	 * 得到新文件名，以日期加N位其它符号组成<br>
 	 * 20180601092822 az42<br>
-	 * 
 	 * // 1:全是0-9<br>
 	 * // 2:全是a-z<br>
 	 * // 3:全是A-Z<br>
@@ -157,6 +192,6 @@ public final class UtilsRnd {
 	 * @return String
 	 */
 	public final static String getNewFilenameNow(final int len, final int type) {
-		return UtilsDate.getDateTimeNow("yyyyMMddHHmmss")+getRndString(len,type);
+		return UtilsDate.getDateTimeNow("yyyyMMddHHmmss") + getRndString(len, type);
 	}
 }

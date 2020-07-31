@@ -40,8 +40,8 @@ import des.wangku.operate.standard.dialog.TableOutputExcelParaDialog.ExcelParaCl
 import des.wangku.operate.standard.task.InterfaceExcelChange;
 import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
+import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsSQL;
-import des.wangku.operate.standard.utls.UtilsSWTPOI;
 import des.wangku.operate.standard.utls.UtilsSWTTable;
 import des.wangku.operate.standard.utls.UtilsSWTTableListener;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
@@ -117,17 +117,37 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		if (e == null) return null;
 		return e.getText(y);
 	}
+	/**
+	 * 得到某列的所有值，如果有行号，则按行提取，如果没有行号，则返回所有行的某列
+	 * @param col int
+	 * @param linearr int
+	 * @return List&lt;String&gt;
+	 */
+	public List<String> getStringColumn(int col,int...linearr){
+		List<String> list=new ArrayList<>();
+		if(linearr.length>0)
+		for(int e:linearr) {
+			String v=getString(e,col);
+			list.add(v);
+		}else {
+			for(int i=0,len=getItemCount();i<len;i++) {
+				String v=getString(i,col);
+				list.add(v);
+			}
+		}
+		return list;
+	}
 
 	/**
-	 * 设置某行某列中的字符串
+	 * 设置某行某列中的字符串 如果value为null，则添加空
 	 * @param x int
 	 * @param y int
-	 * @param value String
+	 * @param val String
 	 */
-	public synchronized void setString(int x, int y, String value) {
+	public synchronized void setString(int x, int y, String val) {
 		TableItem e = getItem(x);
-		if (e == null || value == null) return;
-		e.setText(y, value);
+		if (e == null) return;
+		e.setText(y, val==null?"":val);
 	}
 
 	/**
@@ -175,7 +195,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 					list.add("");
 					continue;
 				}
-				String value = UtilsSWTPOI.getCellValueByString(cell);
+				String value = UtilsPOI.getCellValueByString(cell);
 				if (value == null) value = "";
 				list.add(value);
 			}
@@ -429,8 +449,8 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 					if (loca == null || loca.x == -1 || loca.y == -1) return;
 					boolean readonly = ectpara.isReadonly(loca.y);
 					String oldValue = UtilsSWTTableSQL.get(base, loca.x, loca.y);
-					InputValueDialog inputNameDialog = new InputValueDialog(parent.getShell(), 0, "设置内容", "内容", oldValue, readonly);
-					Object obj = inputNameDialog.open();
+					InputValueDialog ind = new InputValueDialog(parent, 0, "设置内容", "内容", oldValue, readonly);
+					Object obj = ind.open();
 					inputValueDialogUpdate(loca.x, loca.y, obj);
 					return;
 				}
@@ -828,8 +848,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				addTableItem(-1, arrs);
 		}
 		//System.out.println("["+this.getItemCount()+","+this.getColumnCount()+"]->["+x+","+y+"]");
-		TableItem e = getItem(x);
-		e.setText(y, value);
+		setString(x,y,value);
 	}
 
 	@Override

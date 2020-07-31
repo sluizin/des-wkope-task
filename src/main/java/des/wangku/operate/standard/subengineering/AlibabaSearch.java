@@ -42,7 +42,7 @@ public class AlibabaSearch {
 			Map<String, String>  map=AlibabaSearch.get1688LoginCookies(para);
 			String urlString = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=1";
 			logger.debug("urlString:" + urlString);
-			Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.header_a);
+			Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
 			Document document = connect.timeout(10000).maxBodySize(0).cookies(map).followRedirects(false).get();//.post();
 			if (document == null) return 0;
 			//System.out.println(document.toString());
@@ -92,7 +92,7 @@ public class AlibabaSearch {
 			
 			//String urlString2 = "https://s.1688.com/company/company_search.htm?keywords=" + newKeyword + "&earseDirect=false&button_click=top&n=y&pageSize=30&offset=3&beginPage=1";
 			//logger.debug("urlString2:" + urlString2);
-			Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.header_a);
+			Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
 			Document document = connect.timeout(10000).maxBodySize(0).cookies(para.map).post();
 			
 			
@@ -175,7 +175,7 @@ public class AlibabaSearch {
 			 * 获取登陆提交的表单信息，及修改其提交data数据（login，password）
 			 */
 			Connection con = Jsoup.connect(LogAddress);  // 获取connection
-			con.headers(UtilsConsts.header_a);// 配置模拟浏览器
+			con.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
 			Response rs = con.execute();                // 获取响应
 			Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
 			/*
