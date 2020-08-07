@@ -1,6 +1,8 @@
 package des.wangku.operate.standard.utls;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -428,13 +430,126 @@ public final class UtilsString {
 		}
 		return index;
 	}
+	/**
+	 * 格式化正整数
+	 * @param val int
+	 * @param size int
+	 * @return String
+	 */
+	static final String formatNumber(int val,int size) {
+		if(val<0)return val+"";
+		String s = String.valueOf(val);
+		if(s.length()>=size)return s;
+		char[] arr=s.toCharArray();
+		char[] newarr=new char[size];
+		int start=size-s.length();
+		for(int i=0;i<start;i++)
+			newarr[i]='0';
+		System.arraycopy(arr, 0, newarr, start,s.length());;
+		return new String(newarr);
+	}
+	/**
+	 * 识别[]之间的数据，并得到数组
+	 * @param key String
+	 * @return String[]
+	 */
+	static final String[] keySplit(String key) {
+		List<String> list=new ArrayList<>();
+		String[] arr= {};
+		String val=key.substring(1,key.length()-1);
+		if(val.length()==0)return arr;
+		String[] keys=val.split(",");
+		for(String e:keys) {
+			int index=e.indexOf('-');
+			if(index==0) continue;
+			if(index==-1) {
+				list.add(e);
+				continue;
+			}
+			String[] cuts=e.split("-");
+			String c1=cuts[0];
+			String c2=cuts[1];
+			if(isNumber(c1)&&isNumber(c2)) {
+				int first=Integer.valueOf(c1);
+				int end=Integer.valueOf(c2);
+				boolean isFormat=false;/* 数字格式化 */
+				if(c1.length()==c2.length())isFormat=true;
+				if(first>end) {
+					for(int i=first;i>=end;i--)
+						list.add(isFormat?formatNumber(i,c1.length()):""+i);
+				}else{
+					for(int i=first;i<=end;i++)
+						list.add(isFormat?formatNumber(i,c1.length()):""+i);
+				}
+				continue;
+			}
+			if(c1.length()==1 && c2.length()==1) {
+				char first=c1.charAt(0);
+				char end=c2.charAt(0);
+				if(first>end) {
+					for(int i=first;i>=end;i--)
+						list.add(""+ (char)i);
+				}else {
+					for(int i=first;i<=end;i++)
+						list.add(""+ (char)i);
+				}				
+			}
+		}
+		UtilsList.distinct(list);/* 去重 */
+		return list.toArray(arr);
+	}
+	/**
+	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合
+	 * @param str String
+	 * @return String[]
+	 */
+	public static final String[] splitString(String str) {
+		String[] arr= {};
+		if(str==null||str.length()==0)return arr;
+		List<String> list=new ArrayList<>();
+		combinationString(list,str);
+		UtilsList.distinct(list);/* 去重 */
+		return list.toArray(arr);
+	}
+	/**
+	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合并放在List中
+	 * @param list List&lt;String&gt;
+	 * @param str String
+	 */
+	private static final void combinationString(List<String> list,String str) {
+		String c="\\[[^]]*\\]";
+		final Pattern r = Pattern.compile(c);
+		final Matcher m = r.matcher(str);
+		if(!m.find()) {
+			list.add(str);
+			return;
+		}
+		String key=m.group();
+		String [] arr=keySplit(key);
+		for(String e:arr) {
+			String newString=m.replaceFirst(e);
+			combinationString(list,newString);
+		}
+	}
 	public static void main(String[] args) {
+		String str="http://www.17books.net/fenlei/[a,009-100].html";
+		
+
+		String[] arrs=splitString(str);
+		for(int i=0;i<arrs.length;i++)
+			System.out.println(i+":"+arrs[i]);
+		/*
+		String[] ar=keySplit("[110,a-b,c,2-4,30-1,c-a]");
+		for(int i=0;i<ar.length;i++)
+			System.out.println(i+":"+ar[i]);
+		*/
+		
+		/*
 		String[] arrs=UtilsConstsRequestHeader.User_Agent;
 		String[] arr=sortStringArrayByLenReverse(arrs);
 		for(String e:arr) {
 			System.out.println("\t\t\""+e+"\",");
 		}
-		/*
 		Object[] ar= {"ee",null};
 		Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
 		System.out.println(showString(arr));

@@ -54,6 +54,15 @@ public final class UtilsRnd {
 	}
 
 	/**
+	 * 得到min-max之间的随机数
+	 * @param min long
+	 * @param max long
+	 * @return long
+	 */
+	public final static long getRndLong(final long min, final long max) {
+		return min + rd1.nextLong() * (max - min);
+	}
+	/**
 	 * 百分比，得到是否选中
 	 * @param v float
 	 * @return boolean

@@ -1,7 +1,7 @@
 package des.wangku.operate.standard.utls;
 
 import java.io.File;
-import java.net.URISyntaxException;
+//import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.Pv;
 import des.wangku.operate.standard.Pv.Env;
+import des.wangku.operate.standard.desktop.DesktopConst;
 
 /**
  * 关于路径与文件的工具
@@ -197,7 +198,14 @@ public final class UtilsPathFile {
 		logger.debug("JarBasicPath:"+filePath);
 		return filePath;
 	}
-
+	/**
+	 * 得到主程序 主进程 初始所在的目录
+	 * @return String
+	 */
+	public static final String getProjectBasicPath() {
+		if (Pv.ACC_ENV == Env.DEV) return DesktopConst.DEVWorkSpaceLib;
+		return System.getProperty("user.dir");
+	}
 	/**
 	 * 得到主项目目录中某个目录，如果是开发环境，则返回 devpath
 	 * @param Catalog String
@@ -206,6 +214,8 @@ public final class UtilsPathFile {
 	 */
 	public static final String getJarBasicPathCatalog(String Catalog,String devpath) {
 		if (Pv.ACC_ENV == Env.DEV) return devpath;
+		return getProjectBasicPath()+"/"+Catalog;
+		/*
 		URL c = UtilsPathFile.class.getClassLoader().getResource("");
 		if (c == null) {
 			String path=UtilsPathFile.getJarBasicPath() + "/"+Catalog;
@@ -219,7 +229,7 @@ public final class UtilsPathFile {
 			return filePath + "/"+Catalog;
 		} catch (URISyntaxException e) {
 			return e.toString();
-		}
+		}*/
 	}
 
 	/**

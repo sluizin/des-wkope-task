@@ -36,6 +36,14 @@ public class Books17 {
 		if(Books17Utils.isexist(filename))return;
 		
 		Elements lis=ullist.get(0).select("li");
+		make(url,filename,lis);
+		
+		
+	}
+	static final void make(String url,String filename,Elements lis) {
+		if(Books17Utils.isexist(filename))return;
+		String pathfile=ACC_Path+filename+".txt";
+		File file=new File(pathfile);
 		for(int i=1,len=lis.size();i<len;i++) {
 			try{
 				Thread.sleep(5000);
@@ -78,21 +86,22 @@ public class Books17 {
 			System.out.println(url+" -> "+filename+" -> "+newname);
 		}
 		long length = file.length();
-
-		for(StyleClass e:Books17Utils.sclist) {
-			if((e.max==-1 && length>e.min) ||(e.max>-1 && length>e.min && length<=e.max)) {
-				String key=e.key;
-				String to=ACC_Path+key+"/"+filename+".txt";
-				File endFile=new File(to);
-				file.renameTo(endFile);
-				System.out.println("移动到 -> "+to);
-				return;
-			}
-		}
+		StyleClass sc=Books17Utils.getSC(length);
+		String to=ACC_Path+sc.key+"/"+filename+".txt";
+		File endFile=new File(to);
+		file.renameTo(endFile);
+		System.out.println("移动到 -> "+to);
 	}
 	public static void main2(String[] args) 
 	{
 		String[] arr= {
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
 				"",
 				"",
 				"",
@@ -118,18 +127,22 @@ public class Books17 {
 
 	public static void main(String[] args) {
 		String sortfile=ACC_Path+"sortall.txt";
-		int min=18,max=20;
+		int min=131,max=135;
 		for(int i=min;i<=max;i++) {
 			String url="http://www.17books.net/fenlei/7_"+i+".html";
-			System.out.println(i+":->"+url);
+			System.out.println(i+":->"+url+"\t=============================================================");
 			List<Element> listfirst=UtilsJsoup.getAllElements(url, "alist");
+			if(listfirst.size()==0) {
+				System.out.println("未查到列表=============================");
+				continue;
+			}
 			Element lidiv=listfirst.get(0);
 			//List<Element> list=UtilsJsoup.getAllElements(url, "alistbox");
 			Elements list=lidiv.select("div[id=alistbox]");
-			//System.out.println(url+"\t数量:"+list.size());
+			System.out.println(url+"\t数量:"+list.size());
 			for(Element li:list) {
 				String line="";
-				String name="";
+				String filename="";
 				int count=0;
 				Elements titles=li.getElementsByClass("title");
 				if(titles.size()==0) {
@@ -143,22 +156,26 @@ public class Books17 {
 					continue;
 				}
 				Element href=hrefarrs.first();
-				name=Books17Utils.filter(href.text());
+				filename=Books17Utils.filter(href.text());
 
-				if(Books17Utils.isexist(name)) {
-					System.out.println("发现文件\t"+name+"\t"+url);
+				if(Books17Utils.isexist(filename)) {
+					System.out.println("发现文件\t"+filename+"\t"+url);
 					continue;
 				}
 				
 				String ahref=href.attr("abs:href");
 				String listhrefReal=Books17Utils.getReadurl(ahref);
+
 				List<Element> ullist=UtilsJsoup.getAllElements(listhrefReal, "liebiao");
-				if(ullist.size()>0) {
-					Elements lis=ullist.get(0).select("li");
-					count=lis.size();
+				if(ullist.size()==0) {
+					System.out.println(url+"\t没查到列表0");
+					continue;
 				}
+				Elements lis=ullist.get(0).select("li");
+				count=lis.size();
+				System.out.println(i+"\t"+url+"\t章节"+count);
 				
-				if(name.length()==0) {
+				if(filename.length()==0) {
 					System.out.println(url+"\t标题长度为0");
 					continue;
 				}
@@ -167,11 +184,17 @@ public class Books17 {
 					Elements intros=li.getElementsByClass("intro");
 					if(titles.size()>0) intro=intros.first().text();
 					
-					line=name+"\t"+count+"\t"+listhrefReal+"\t"+intro+Books17Utils.enter;
+					line=filename+"\t"+count+"\t"+listhrefReal+"\t"+intro+Books17Utils.enter;
 					UtilsFile.writeFile(sortfile, line);
 					continue;
 				}
-				if(listhrefReal.length()>0)	makefile(listhrefReal);
+				if(listhrefReal.length()>0) {
+					System.out.println("make:"+url);
+					make(url,filename,lis);
+					
+					//makefile(listhrefReal);
+				}
+				System.out.println("------------------------------------------------");
 			}
 			
 		}

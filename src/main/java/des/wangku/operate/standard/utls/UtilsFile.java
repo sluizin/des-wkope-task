@@ -332,4 +332,43 @@ public final class UtilsFile {
 			return false;
 		}
 	}
+	/**
+	 * 从目录中判断是否有此文件
+	 * @param path String
+	 * @param filename String
+	 * @return String
+	 */
+	public static final boolean isExist(String path,String filename) {
+		return isExistFile(path,filename)!=null;
+	}
+	/**
+	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
+	 * @param path String
+	 * @param filename String
+	 * @return String
+	 */
+	public static final String isExistFile(String path,String filename) {
+		if(path==null || path.length()==0)return null;
+		return isExistFile(new File(path),filename);
+	}
+	/**
+	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
+	 * @param file File
+	 * @param filename String
+	 * @return String
+	 */
+	public static final String isExistFile(File file,String filename) {
+		if(file.getName().equalsIgnoreCase(filename))return file.getAbsolutePath();
+		File[] list=file.listFiles();
+		for(File e:list) {
+			if(e.isFile()) {
+				if(e.getName().equalsIgnoreCase(filename))return e.getAbsolutePath();
+			}
+			if(e.isDirectory()) {
+				String result=isExistFile(e,filename);
+				if(result!=null)return result;
+			}
+		}
+		return null;
+	}
 }

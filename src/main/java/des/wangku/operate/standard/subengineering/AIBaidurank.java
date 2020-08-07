@@ -56,7 +56,8 @@ public class AIBaidurank {
 			URL url = new URL(aizhan);
 			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
 			if (doc == null) return aiInfor;
-			String[] arrs = UtilsJsoup.getHrefArrayByClass(doc, "baidurank-pager");
+			String[] removeclass= {};
+			String[] arrs = UtilsJsoup.getHrefTagArrayByClass(doc,true,removeclass, "baidurank-pager");
 			if (arrs.length <= 1) {
 				aiInfor.list.addAll(getInforList(aizhan, urlPath, type));
 			}

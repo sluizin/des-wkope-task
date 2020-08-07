@@ -638,7 +638,8 @@ public final class UtilsReadURL {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				sb.append(line);
-				if (line.contains("</html>")) break;
+				//if (line.contains("</html>")) break;
+				//if (line.indexOf("</html>")>-1) break;
 			}
 			br.close();
 			bw.close();
@@ -646,6 +647,7 @@ public final class UtilsReadURL {
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			return null;
 		}
 		return sb.toString();
 	}
@@ -831,12 +833,34 @@ public final class UtilsReadURL {
 	 * @return boolean
 	 */
 	public static boolean isConnection(String urlString) {
+		if (urlString.indexOf("http://") != 0 && urlString.indexOf("https://") != 0) return false;
 		try {
-			if (urlString.indexOf("http://") != 0 && urlString.indexOf("https://") != 0) return false;
 			URL url = new URL(urlString);
+			return isConnection(url);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	/**
+	 * 判断链接是否是死链
+	 * @param url URL
+	 * @return boolean
+	 */
+	public static boolean isConnection(URL url) {
+		return isConnection(url,10000);
+	}
+	/**
+	 * 判断链接是否是死链
+	 * @param url URL
+	 * @param timeout int
+	 * @return boolean
+	 */
+	public static boolean isConnection(URL url,int timeout) {
+		try {
 			HttpURLConnection http = (HttpURLConnection) url.openConnection();
-			http.setConnectTimeout(10000);
-			http.setReadTimeout(10000);
+			http.setConnectTimeout(timeout);
+			http.setReadTimeout(timeout);
 			int result = http.getResponseCode();
 			return result >= 200 && result < 300;
 		} catch (IOException e) {

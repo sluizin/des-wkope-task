@@ -1,8 +1,8 @@
 package des.wangku.operate.standard;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+//import java.net.URISyntaxException;
+//import java.net.URL;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -131,6 +131,9 @@ public class Pv {
 	 */
 	public static final String getJarBasicPath() {
 		if (Pv.ACC_ENV == Env.DEV) return DesktopConst.DEVWorkSpaceLib;
+
+		return UtilsPathFile.getProjectBasicPath();
+		/*
 		URL c = Pv.class.getClassLoader().getResource("");
 		logger.debug(" Config.class.getClassLoader().getResource:" + c);
 		if (c == null) {
@@ -144,7 +147,7 @@ public class Pv {
 			return filePath;
 		} catch (URISyntaxException e) {
 			return "";
-		}
+		}*/
 	}
 
 	/**

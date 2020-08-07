@@ -72,6 +72,7 @@ public class InputValueDialog extends Dialog {
 		}
 		text = new Text(shell, textstype);
 		text.setBounds(45, 21, 222, height);
+		text.setFocus();
 		if (oldValue != null) text.setText(oldValue);
 
 		Label label = new Label(shell, SWT.NONE);

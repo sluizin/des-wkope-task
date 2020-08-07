@@ -18,6 +18,7 @@ public final class UtilsConstsRequestHeader {
 	private static final String[] Accept = {
 			"text/plain,text/html",
 			"text/html,application/xhtml+xml,*/*",
+			"text/html,application/xhtml+xml,application/xml;q=0.9,**",
 			"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 			"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -143,22 +144,35 @@ public final class UtilsConstsRequestHeader {
 	 * @param key String
 	 */
 	private static final void setRndVal(Map<String, String> map,String[] arr,String key) {
-		int len=arr.length;
-		if(len==0)return;
-		if(len==1) {
+		int len = arr.length;
+		if(len == 0)return;
+		if(len == 1) {
 			map.put(key, arr[0]);
 			return;
 		}
-		int v=UtilsRnd.getRndInt(1, len);
+		int v = UtilsRnd.getRndInt(1, len);
 		map.put(key, arr[v-1]);
+	}
+	static final Map<String,String> StaticBasicMap = new HashMap<>(10);
+	static {
+		StaticBasicMap.put("Connection", "keep-alive");
+		StaticBasicMap.put("Cache-Control", "max-age=0");
+		
+		StaticBasicMap.put("Sec-Fetch-Dest", "document");
+		StaticBasicMap.put("Sec-Fetch-Mode", "navigate");
+		StaticBasicMap.put("Sec-Fetch-Site", "cross-site");
+		StaticBasicMap.put("Sec-Fetch-User", "?1");
+		
+		StaticBasicMap.put("Upgrade-Insecure-Requests", "1");
+		StaticBasicMap.put("DNT", "1");
 	}
 	/**
 	 * 得到随机头部文件
 	 * @return Map&lt;String, String&gt;
 	 */
 	public static final Map<String, String> getRndHeadMap(){
-		Map<String, String> map=new HashMap<>();
-		
+		Map<String, String> map=new HashMap<>(20);
+		map.putAll(StaticBasicMap);
 		setRndVal(map,Accept,"Accept");
 		setRndVal(map,Accept_Charset,"Accept-Charset");
 		setRndVal(map,Accept_Encoding,"Accept-Encoding");
@@ -166,20 +180,14 @@ public final class UtilsConstsRequestHeader {
 		setRndVal(map,Cookie,"Cookie");
 		setRndVal(map,Content_Type,"Content-Type");
 		setRndVal(map,User_Agent,"User-Agent");
-		
-		map.put("Connection", "keep-alive");
-		map.put("Cache-Control", "max-age=0");
-		
-		map.put("Sec-Fetch-Dest", "document");
-		map.put("Sec-Fetch-Mode", "navigate");
-		map.put("Sec-Fetch-Site", "cross-site");
-		map.put("Sec-Fetch-User", "?1");
-		
-		map.put("Upgrade-Insecure-Requests", "1");
-		map.put("DNT", "1");
-		
+
 		return map;
 	}
+	/**
+	 * 得到随机头部文件
+	 * @param host String
+	 * @return Map&lt;String, String&gt
+	 */
 	public static final Map<String, String> getRndHeadMap(String host){
 		Map<String, String> map=getRndHeadMap();
 		if(host==null || host.length()==0)return map;

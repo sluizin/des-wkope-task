@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 对list进行分割，或线程池的分配
@@ -110,6 +111,14 @@ public final class UtilsList {
 			if (e != null && e.length() > 0) return false;
 		}
 		return true;
+	}
+	/**
+	 * 去重
+	 * @param list List&lt;T&gt;
+	 */
+	public static final<T> void distinct(List<T> list) {
+		if(list==null || list.size()<2)return;
+		list=list.stream().distinct().collect(Collectors.toList());
 	}
 
 	/**
