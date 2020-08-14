@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsStringFilter;
 
 public class Books17Utils {
 
@@ -54,19 +55,6 @@ public class Books17Utils {
 		return href;
 	}
 
-	static final String filtertitle(String content) {
-		content = content.toLowerCase();
-		content = content.replace("\\", "");
-		content = content.replace("/", "");
-		content = content.replace("|", "");
-		content = content.replace(":", "");
-		content = content.replace("<", "");
-		content = content.replace(">", "");
-		content = content.replace("*", "");
-		content = content.replace("?", "");
-		content = content.replace("\"", "");
-		return content;
-	}
 
 	static final String filter(String content) {
 		content = content.replace('〇', 'o');
@@ -83,7 +71,7 @@ public class Books17Utils {
 		if (ullist2.size() == 0) return null;
 		filename = ullist2.get(0).text();
 		filename = filter(filename);
-		filename = filtertitle(filename);
+		filename = UtilsStringFilter.filterName(filename);
 		return filename;
 	}
 

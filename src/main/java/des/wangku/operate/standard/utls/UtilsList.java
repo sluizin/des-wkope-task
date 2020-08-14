@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -113,12 +114,12 @@ public final class UtilsList {
 		return true;
 	}
 	/**
-	 * 去重
+	 * 去重，不允许null
 	 * @param list List&lt;T&gt;
 	 */
 	public static final<T> void distinct(List<T> list) {
 		if(list==null || list.size()<2)return;
-		list=list.stream().distinct().collect(Collectors.toList());
+		list=list.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
 	}
 
 	/**

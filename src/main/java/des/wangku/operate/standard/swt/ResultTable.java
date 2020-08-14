@@ -118,20 +118,39 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		return e.getText(y);
 	}
 	/**
+	 * 得到某一行数据，输出为数组，如为null，则返回空字符串<br>
+	 * 如果没有找到指定行，则返回空数组
+	 * @param x int
+	 * @return String[]
+	 */
+	public String[] getLine(int x) {
+		if(x < 0)return new String[0];
+		TableItem e = getItem(x);
+		if (e == null) return new String[0];;
+		int len = getColumnCount();
+		String[] arr = new String[len];
+		for (int i = 0; i < len; i++) {
+			String val = e.getText(i);
+			arr[i] = (val == null ? "" : val);
+		}
+		return arr;
+	}
+
+	/**
 	 * 得到某列的所有值，如果有行号，则按行提取，如果没有行号，则返回所有行的某列
 	 * @param col int
 	 * @param linearr int
 	 * @return List&lt;String&gt;
 	 */
-	public List<String> getStringColumn(int col,int...linearr){
-		List<String> list=new ArrayList<>();
-		if(linearr.length>0)
-		for(int e:linearr) {
-			String v=getString(e,col);
+	public List<String> getStringColumn(int col, int... linearr) {
+		List<String> list = new ArrayList<>();
+		if (linearr.length > 0) for (int e : linearr) {
+			String v = getString(e, col);
 			list.add(v);
-		}else {
-			for(int i=0,len=getItemCount();i<len;i++) {
-				String v=getString(i,col);
+		}
+		else {
+			for (int i = 0, len = getItemCount(); i < len; i++) {
+				String v = getString(i, col);
 				list.add(v);
 			}
 		}
@@ -147,7 +166,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	public synchronized void setString(int x, int y, String val) {
 		TableItem e = getItem(x);
 		if (e == null) return;
-		e.setText(y, val==null?"":val);
+		e.setText(y, val == null ? "" : val);
 	}
 
 	/**
@@ -210,6 +229,24 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 */
 	public void addData(String... arr) {
 		UtilsSWTTableSQL.add(this, arr);
+	}
+	/**
+	 * 插入数据，如果发现有相同数组的行，则返回false
+	 * @param arrs String[]
+	 */
+	public boolean addDataDistinct(String...arrs) {
+		String[] newArr = UtilsSWTTableSQL.getFormatArray(this, arrs);
+		if(UtilsSWTTableSQL.isExist(this, newArr)) return false;
+		UtilsSWTTableSQL.add(this, newArr);
+		return true;
+	}
+	/**
+	 * 判断字符串是否存在此表中
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public boolean isExist(String...arrs) {
+		return UtilsSWTTableSQL.isExist(this, arrs);
 	}
 
 	/**
@@ -299,7 +336,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	public boolean addColumnAuto(int size) {
 		for (int i = 0; i < size; i++) {
 			String columnName = getAutoTitle();
-			if(columnName==null)return false;
+			if (columnName == null) return false;
 			addColumn(columnName, 150);
 		}
 		return true;
@@ -837,7 +874,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		if (y >= colcount) {
 			int size = y - colcount + 1;
 			/* 添加列时失败，不能添加某列，可能会已经添加了几列 */
-			if(!addColumnAuto(size))return;
+			if (!addColumnAuto(size)) return;
 		}
 		int rowcount = getItemCount();
 		if (x >= rowcount) {
@@ -848,7 +885,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 				addTableItem(-1, arrs);
 		}
 		//System.out.println("["+this.getItemCount()+","+this.getColumnCount()+"]->["+x+","+y+"]");
-		setString(x,y,value);
+		setString(x, y, value);
 	}
 
 	@Override

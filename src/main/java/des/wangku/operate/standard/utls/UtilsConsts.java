@@ -10,7 +10,7 @@ import java.util.Map;
  * @since jdk1.8
  */
 public final class UtilsConsts {
-
+	public static final String ACC_ENTER = System.getProperty("line.separator");
 	private static final Map<String, String> header = new HashMap<>();
 
 	private static final Map<String, String> header_a = new HashMap<>();

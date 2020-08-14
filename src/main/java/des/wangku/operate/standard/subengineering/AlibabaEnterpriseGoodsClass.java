@@ -389,7 +389,7 @@ public class AlibabaEnterpriseGoodsClass {
 		 * @return String
 		 */
 		public static final String getBargainnumber(Document doc) {
-			return UtilsJsoup.getElementsClassFirst(doc,"bargain-number");
+			return UtilsJsoup.getTextFirstByClass(doc,"bargain-number");
 		}
 		/**
 		 * 数值型转成星级
@@ -446,7 +446,7 @@ public class AlibabaEnterpriseGoodsClass {
 		 * @return String
 		 */
 		public static final String getDeliveryaddr(Document doc) {
-			return UtilsJsoup.getElementsClassFirst(doc,"delivery-addr");
+			return UtilsJsoup.getTextFirstByClass(doc,"delivery-addr");
 		}
 
 		/**

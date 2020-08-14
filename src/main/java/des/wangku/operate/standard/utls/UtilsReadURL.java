@@ -283,7 +283,7 @@ public final class UtilsReadURL {
 	 */
 	public static final Document getReadUrlDisJsDoc(String url) {
 		String pageXml2 = UtilsReadURL.getReadUrlDisJs(url);
-		String baseuri = UtilsString.getUrlDomain(url);
+		String baseuri = UtilsReadURL.getUrlDomain(url);
 		return Jsoup.parse(pageXml2, baseuri);
 	}
 
@@ -414,7 +414,7 @@ public final class UtilsReadURL {
 	 */
 	public static final Document getReadUrlJsDocument(String url) {
 		String pageXml2 = UtilsReadURL.getReadUrlJs(url, true, true, 20000, 20000);
-		String baseuri = UtilsString.getUrlDomain(url);
+		String baseuri = UtilsReadURL.getUrlDomain(url);
 		return Jsoup.parse(pageXml2, baseuri);
 	}
 
@@ -873,7 +873,7 @@ public final class UtilsReadURL {
 	 * @param host String
 	 * @return String
 	 */
-	public static String getHost(String host) {
+	public static String getUrlHost(String host) {
 		if(host.indexOf("://")>0) {
 			try {
 				URL url = new URL(host);
@@ -888,6 +888,30 @@ public final class UtilsReadURL {
 		return host;
 	}
 
+	/**
+	 * 从地址中提取 http://www.sohu.com
+	 * @param url String
+	 * @return String
+	 */
+	public static final String getUrlDomain(String url) {
+		if (url == null || url.trim().length() == 0) return null;
+		try {
+			String newUrl = url.trim().replaceAll("\\\\", "/");
+			return getUrlDomain(new URL(newUrl));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * 得到 http://www.99114.com
+	 * @param url URL
+	 * @return String
+	 */
+	public static final String getUrlDomain(URL url) {
+		if(url==null)return null;
+		return url.getProtocol()+"://"+url.getHost();
+	}
 	/**
 	 * 从url中判断是否含有关键字数组，在html之间<br>
 	 * 只支持http与https协议

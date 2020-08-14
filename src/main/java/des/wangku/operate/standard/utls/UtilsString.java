@@ -1,8 +1,8 @@
 package des.wangku.operate.standard.utls;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,15 +43,17 @@ public final class UtilsString {
 		int index = source.lastIndexOf(key);
 		return removeEndsStr(source.substring(0, index), arrs);
 	}
+
 	/**
 	 * 过滤字符串中的所有中括号
 	 * @param word String
 	 * @return String
 	 */
 	public static final String splitWordMiddleBrackets(String word) {
-		if(word==null|| word.length()==0)return word;
+		if (word == null || word.length() == 0) return word;
 		return word.replaceAll("\\[[^]]*\\]", "");
 	}
+
 	/**
 	 * 得到字符串的宽度
 	 * @param string String
@@ -74,17 +76,31 @@ public final class UtilsString {
 	}
 
 	/**
-	 * 判断关键字是否在数组中，区分大小写
+	 * 判断关键字是否含有在数组中，区分大小写
 	 * @param key String
 	 * @param arrs String[]
 	 * @return boolean
 	 */
 	public static final boolean isExistIndexOf(String key, String... arrs) {
 		if (key == null) return false;
-		for (String e:arrs)
-			if (e!=null && e.indexOf(key)>-1) return true;
+		for (String e : arrs)
+			if (e != null && e.indexOf(key) > -1) return true;
 		return false;
 	}
+
+	/**
+	 * 判断关键字是否含有Set数组中，区分大小写
+	 * @param key String
+	 * @param set Set&lt;String&gt;
+	 * @return boolean
+	 */
+	public static final boolean isExistIndexOf(String key, Set<String> set) {
+		if (key == null) return false;
+		for (String e : set)
+			if (e != null && e.indexOf(key) > -1) return true;
+		return false;
+	}
+
 	/**
 	 * 判断关键字是否在数组中，区分大小写
 	 * @param key String
@@ -93,13 +109,13 @@ public final class UtilsString {
 	 */
 	public static final boolean isExist(String key, String... arrs) {
 		if (key == null) return false;
-		for (String e:arrs)
+		for (String e : arrs)
 			if (key.equals(e)) return true;
 		return false;
 	}
 
 	/**
-	 * 判断关键字是否在数组中
+	 * 判断 数值 是否在数组中
 	 * @param key int
 	 * @param arrs int[]
 	 * @return boolean
@@ -168,9 +184,9 @@ public final class UtilsString {
 		System.out.println("======" + UtilsString.getNumbersInt(title, "\\(", "\\)"));
 		String url = "http://www.sohu.com/abc/def";
 		String url2 = "https://www.sohu.com\\abc\\def";
-		System.out.println("======" + UtilsString.getUrlDomain(url));
-		System.out.println("======" + UtilsString.getUrlDomain(url2));
-		System.out.println("======" + UtilsString.getUrlDomain("   "));
+		System.out.println("======" + UtilsReadURL.getUrlDomain(url));
+		System.out.println("======" + UtilsReadURL.getUrlDomain(url2));
+		System.out.println("======" + UtilsReadURL.getUrlDomain("   "));
 		String shortstr = "abcdefghijklmnopqrestuvwxyz123456789";
 		String result = getShortenedString(shortstr, 19);
 		System.out.println("result:" + result);
@@ -229,38 +245,6 @@ public final class UtilsString {
 		int page = getNumbersInt(content, "第\\d+页");
 		int p = getNumbersInt(content, "第\\d+位");
 		return (page - 1) * 10 + p;
-	}
-
-
-
-	static final Pattern pattern = Pattern.compile("^[0-9]*$");
-
-	/**
-	 * 判断value是否可以转成数值型
-	 * @param value String
-	 * @return boolean
-	 */
-	public static final boolean isNumber(String value) {
-		if (value == null || value.length() == 0) return false;
-		Matcher matcher = pattern.matcher(value);
-		return matcher.matches();
-	}
-
-	/**
-	 * 从地址中提取 http://www.sohu.com
-	 * @param url String
-	 * @return String
-	 */
-	public static final String getUrlDomain(String url) {
-		if (url == null || url.trim().length() == 0) return "";
-		try {
-			String newUrl = url.trim().replaceAll("\\\\", "/");
-			URL urln = new URL(newUrl);
-			return urln.getProtocol() + "://" + urln.getHost();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return "";
 	}
 
 	/**
@@ -330,74 +314,80 @@ public final class UtilsString {
 		if (index == -1) return str;
 		return str.substring(0, index);
 	}
-	private static final char ACC_ShowStringkeySplit='\t';
+
+	private static final char ACC_ShowStringkeySplit = '\t';
+
 	/**
 	 * 多个对象整合成一个字符串，以\t以间隔，可以含有多个数组
 	 * @param arrs T[]
 	 * @return String
 	 */
 	@SuppressWarnings("unchecked")
-	public static final<T> String showString(T...arrs) {
-		StringBuilder sb=new StringBuilder();
-		for(T e:arrs) {
-			if(e==null) {
-				if(sb.length()!=0)sb.append(ACC_ShowStringkeySplit);
+	public static final <T> String showString(T... arrs) {
+		StringBuilder sb = new StringBuilder();
+		for (T e : arrs) {
+			if (e == null) {
+				if (sb.length() != 0) sb.append(ACC_ShowStringkeySplit);
 				sb.append("null");
 				continue;
 			}
-			if(e.getClass().isArray()) {
-				Object[] arr=(Object[])e;
+			if (e.getClass().isArray()) {
+				Object[] arr = (Object[]) e;
 				sb.append(showString(arr));
-			}else {
-				if(sb.length()!=0)sb.append(ACC_ShowStringkeySplit);
+			} else {
+				if (sb.length() != 0) sb.append(ACC_ShowStringkeySplit);
 				sb.append(e.toString());
 			}
 		}
 		return sb.toString();
 	}
+
 	/**
 	 * 数组的转向
 	 * @param arrs T[]
 	 * @return T[]
 	 */
-	public static final<T> T[] reverseOrder(T[] arrs) {
-		int len=arrs.length;
-		if(len<2)return arrs;
-		for(int i=0,size=len/2;i<size;i++) {
-			T obj=arrs[i];
-			int to=len-1-i;
-			arrs[i]=arrs[to];
-			arrs[to]=obj;
+	public static final <T> T[] reverseOrder(T[] arrs) {
+		int len = arrs.length;
+		if (len < 2) return arrs;
+		for (int i = 0, size = len / 2; i < size; i++) {
+			T obj = arrs[i];
+			int to = len - 1 - i;
+			arrs[i] = arrs[to];
+			arrs[to] = obj;
 		}
 		return arrs;
 	}
+
 	/**
 	 * 数组按长度从小到大排序
 	 * @param arrs String[]
 	 * @return String[]
 	 */
-	public static final String[] sortStringArrayByLenReverse(String...arrs) {
-		String[] arr=sortStringArrayByLen(arrs);
+	public static final String[] sortStringArrayByLenReverse(String... arrs) {
+		String[] arr = sortStringArrayByLen(arrs);
 		return reverseOrder(arr);
 	}
+
 	/**
 	 * 数组按长度从大到小排序
 	 * @param arrs String[]
 	 * @return String[]
 	 */
-	public static final String[] sortStringArrayByLen(String...arrs) {
-		int len=arrs.length;
-		if(len<=1)return arrs;
-		for(int i=0,end=len-1;i<end;i++) {
-			String key=arrs[i];
-			int index=getIndexMaxLength(arrs,key==null?-1:key.length(),i+1);
-			if(index>-1) {
-				arrs[i]=arrs[index];
-				arrs[index]=key;
-			}			
+	public static final String[] sortStringArrayByLen(String... arrs) {
+		int len = arrs.length;
+		if (len <= 1) return arrs;
+		for (int i = 0, end = len - 1; i < end; i++) {
+			String key = arrs[i];
+			int index = getIndexMaxLength(arrs, key == null ? -1 : key.length(), i + 1);
+			if (index > -1) {
+				arrs[i] = arrs[index];
+				arrs[index] = key;
+			}
 		}
 		return arrs;
 	}
+
 	/**
 	 * 得到数组中长度最长单元的下标
 	 * @param arr Object[]
@@ -405,9 +395,10 @@ public final class UtilsString {
 	 * @param start int
 	 * @return int
 	 */
-	public static final int getIndexMaxLength(Object[] arr,int maxLen,int start) {
-		return getIndexMaxLength(arr,maxLen,start,arr.length-1);	
+	public static final int getIndexMaxLength(Object[] arr, int maxLen, int start) {
+		return getIndexMaxLength(arr, maxLen, start, arr.length - 1);
 	}
+
 	/**
 	 * 得到数组中长度最长单元的下标
 	 * @param arr Object[]
@@ -416,162 +407,170 @@ public final class UtilsString {
 	 * @param end int
 	 * @return int
 	 */
-	public static final int getIndexMaxLength(Object[] arr,int maxLen,int start,int end) {
-		int len=arr.length;
-		if(start<0 || start>=len)start=0;
-		if(end>=len)end=len-1;
-		int index=-1;
-		for(int i=start;i<=end;i++) {
-			Object v=arr[i];
-			if(v==null) continue;
-			if(v.toString().length()<=maxLen)continue;
-			index=i;
-			maxLen=v.toString().length();
+	public static final int getIndexMaxLength(Object[] arr, int maxLen, int start, int end) {
+		int len = arr.length;
+		if (start < 0 || start >= len) start = 0;
+		if (end >= len) end = len - 1;
+		int index = -1;
+		for (int i = start; i <= end; i++) {
+			Object v = arr[i];
+			if (v == null) continue;
+			if (v.toString().length() <= maxLen) continue;
+			index = i;
+			maxLen = v.toString().length();
 		}
 		return index;
 	}
+
 	/**
 	 * 格式化正整数
 	 * @param val int
 	 * @param size int
 	 * @return String
 	 */
-	static final String formatNumber(int val,int size) {
-		if(val<0)return val+"";
+	static final String formatNumber(int val, int size) {
+		if (val < 0) return val + "";
 		String s = String.valueOf(val);
-		if(s.length()>=size)return s;
-		char[] arr=s.toCharArray();
-		char[] newarr=new char[size];
-		int start=size-s.length();
-		for(int i=0;i<start;i++)
-			newarr[i]='0';
-		System.arraycopy(arr, 0, newarr, start,s.length());;
+		if (s.length() >= size) return s;
+		char[] arr = s.toCharArray();
+		char[] newarr = new char[size];
+		int start = size - s.length();
+		for (int i = 0; i < start; i++)
+			newarr[i] = '0';
+		System.arraycopy(arr, 0, newarr, start, s.length());
+		;
 		return new String(newarr);
 	}
+
 	/**
 	 * 识别[]之间的数据，并得到数组
 	 * @param key String
 	 * @return String[]
 	 */
 	static final String[] keySplit(String key) {
-		List<String> list=new ArrayList<>();
-		String[] arr= {};
-		String val=key.substring(1,key.length()-1);
-		if(val.length()==0)return arr;
-		String[] keys=val.split(",");
-		for(String e:keys) {
-			int index=e.indexOf('-');
-			if(index==0) continue;
-			if(index==-1) {
+		List<String> list = new ArrayList<>();
+		String[] arr = {};
+		String val = key.substring(1, key.length() - 1);
+		if (val.length() == 0) return arr;
+		String[] keys = val.split(",");
+		for (String e : keys) {
+			int index = e.indexOf('-');
+			if (index == 0) continue;
+			if (index == -1) {
 				list.add(e);
 				continue;
 			}
-			String[] cuts=e.split("-");
-			String c1=cuts[0];
-			String c2=cuts[1];
-			if(isNumber(c1)&&isNumber(c2)) {
-				int first=Integer.valueOf(c1);
-				int end=Integer.valueOf(c2);
-				boolean isFormat=false;/* 数字格式化 */
-				if(c1.length()==c2.length())isFormat=true;
-				if(first>end) {
-					for(int i=first;i>=end;i--)
-						list.add(isFormat?formatNumber(i,c1.length()):""+i);
-				}else{
-					for(int i=first;i<=end;i++)
-						list.add(isFormat?formatNumber(i,c1.length()):""+i);
+			String[] cuts = e.split("-");
+			String c1 = cuts[0];
+			String c2 = cuts[1];
+			/* 数字之间进行泛型组合 */
+			if (UtilsVerification.isNumeric(c1) && UtilsVerification.isNumeric(c2)) {
+				int first = Integer.valueOf(c1);
+				int end = Integer.valueOf(c2);
+				boolean isFormat = false;/* 数字格式化 */
+				if (c1.length() == c2.length()) isFormat = true;
+				if (first > end) {
+					for (int i = first; i >= end; i--)
+						list.add(isFormat ? formatNumber(i, c1.length()) : "" + i);
+				} else {
+					for (int i = first; i <= end; i++)
+						list.add(isFormat ? formatNumber(i, c1.length()) : "" + i);
 				}
 				continue;
 			}
-			if(c1.length()==1 && c2.length()==1) {
-				char first=c1.charAt(0);
-				char end=c2.charAt(0);
-				if(first>end) {
-					for(int i=first;i>=end;i--)
-						list.add(""+ (char)i);
-				}else {
-					for(int i=first;i<=end;i++)
-						list.add(""+ (char)i);
-				}				
+			/* 字符之间进行泛型组合 */
+			if (c1.length() == 1 && c2.length() == 1) {
+				char first = c1.charAt(0);
+				char end = c2.charAt(0);
+				if (first > end) {
+					for (int i = first; i >= end; i--)
+						list.add("" + (char) i);
+				} else {
+					for (int i = first; i <= end; i++)
+						list.add("" + (char) i);
+				}
 			}
 		}
 		UtilsList.distinct(list);/* 去重 */
 		return list.toArray(arr);
 	}
+
 	/**
 	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合
 	 * @param str String
 	 * @return String[]
 	 */
 	public static final String[] splitString(String str) {
-		String[] arr= {};
-		if(str==null||str.length()==0)return arr;
-		List<String> list=new ArrayList<>();
-		combinationString(list,str);
+		String[] arr = {};
+		if (str == null || str.trim().length() == 0) return arr;
+		String newstr = str.trim();
+		List<String> list = new ArrayList<>();
+		combinationString(list, newstr);
 		UtilsList.distinct(list);/* 去重 */
 		return list.toArray(arr);
 	}
+	/** 正则 间括号  */
+	static final String ACC_Combination = "\\[[^]]*\\]";
 	/**
-	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合并放在List中
+	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合并放在List中<br>
+	 * 使用递归调用<br>
 	 * @param list List&lt;String&gt;
 	 * @param str String
 	 */
-	private static final void combinationString(List<String> list,String str) {
-		String c="\\[[^]]*\\]";
-		final Pattern r = Pattern.compile(c);
+	private static final void combinationString(List<String> list, String str) {
+		final Pattern r = Pattern.compile(ACC_Combination);
 		final Matcher m = r.matcher(str);
-		if(!m.find()) {
+		if (!m.find()) {
 			list.add(str);
 			return;
 		}
-		String key=m.group();
-		String [] arr=keySplit(key);
-		for(String e:arr) {
-			String newString=m.replaceFirst(e);
-			combinationString(list,newString);
+		String key = m.group();
+		String[] arr = keySplit(key);
+		for (String e : arr) {
+			String newString = m.replaceFirst(e);
+			combinationString(list, newString);
 		}
 	}
-	public static void main(String[] args) {
-		String str="http://www.17books.net/fenlei/[a,009-100].html";
-		
 
-		String[] arrs=splitString(str);
-		for(int i=0;i<arrs.length;i++)
-			System.out.println(i+":"+arrs[i]);
+	public static void main(String[] args) {
+		String str = "http://www.17books.net/fenlei/[a,009-100].html";
+
+		String[] arrs = splitString(str);
+		for (int i = 0; i < arrs.length; i++)
+			System.out.println(i + ":" + arrs[i]);
 		/*
-		String[] ar=keySplit("[110,a-b,c,2-4,30-1,c-a]");
-		for(int i=0;i<ar.length;i++)
-			System.out.println(i+":"+ar[i]);
-		*/
-		
+		 * String[] ar=keySplit("[110,a-b,c,2-4,30-1,c-a]");
+		 * for(int i=0;i<ar.length;i++)
+		 * System.out.println(i+":"+ar[i]);
+		 */
+
 		/*
-		String[] arrs=UtilsConstsRequestHeader.User_Agent;
-		String[] arr=sortStringArrayByLenReverse(arrs);
-		for(String e:arr) {
-			System.out.println("\t\t\""+e+"\",");
-		}
-		Object[] ar= {"ee",null};
-		Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
-		System.out.println(showString(arr));
-		
-		String[] arrs= {null,"abc",null,"00",null,"1234","5566788","0","abcdef"};
-		System.out.println(showString(arrs));
-		String[] arrsa=sortStringArrayByLen(arrs);
-		System.out.println(showString(arrsa));
-		System.out.println();
-		String[] arrs2=sortStringArrayByLenReverse(arrs);
-		System.out.println(showString(arrs2));
-		String path = System.getProperty("java.library.path");
-		System.out.println(path);
-		Map<String,String> map=System.getenv();
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			  System.out.println("map:Key = " + entry.getKey() + ", Value = " + entry.getValue());
-			}
-		Properties properties=System.getProperties();
-        Set<Object> keys = properties.keySet();//返回属性key的集合
-        for (Object key : keys) {
-            System.out.println("properties:"+key.toString() + "=" + properties.get(key));
-        }
-*/
+		 * String[] arrs=UtilsConstsRequestHeader.User_Agent;
+		 * String[] arr=sortStringArrayByLenReverse(arrs);
+		 * for(String e:arr) {
+		 * System.out.println("\t\t\""+e+"\",");
+		 * }
+		 * Object[] ar= {"ee",null};
+		 * Object[] arr= {5,"abc",ar,'c',"txt",null,15.2,10};
+		 * System.out.println(showString(arr));
+		 * String[] arrs= {null,"abc",null,"00",null,"1234","5566788","0","abcdef"};
+		 * System.out.println(showString(arrs));
+		 * String[] arrsa=sortStringArrayByLen(arrs);
+		 * System.out.println(showString(arrsa));
+		 * System.out.println();
+		 * String[] arrs2=sortStringArrayByLenReverse(arrs);
+		 * System.out.println(showString(arrs2));
+		 * String path = System.getProperty("java.library.path");
+		 * System.out.println(path);
+		 * Map<String,String> map=System.getenv();
+		 * for (Map.Entry<String, String> entry : map.entrySet()) {
+		 * System.out.println("map:Key = " + entry.getKey() + ", Value = " + entry.getValue());
+		 * }
+		 * Properties properties=System.getProperties();
+		 * Set<Object> keys = properties.keySet();//返回属性key的集合
+		 * for (Object key : keys) {
+		 * System.out.println("properties:"+key.toString() + "=" + properties.get(key));
+		 * }
+		 */
 	}
 }

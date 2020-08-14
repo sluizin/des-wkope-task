@@ -56,9 +56,9 @@ public class AIBaidurank {
 			URL url = new URL(aizhan);
 			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
 			if (doc == null) return aiInfor;
-			String[] removeclass= {};
-			String[] arrs = UtilsJsoup.getHrefTagArrayByClass(doc,true,removeclass, "baidurank-pager");
-			if (arrs.length <= 1) {
+			List<String> resultlist=UtilsJsoup.getHrefTagBy(doc, 0, "baidurank-pager");
+			//String[] arrs = UtilsJsoup.getAHrefTagArrayByClass(doc,true,removeclass, "baidurank-pager");
+			if (resultlist.size() <= 1) {
 				aiInfor.list.addAll(getInforList(aizhan, urlPath, type));
 			}
 			try {
@@ -66,7 +66,7 @@ public class AIBaidurank {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			for (int i = 1; i <= arrs.length; i++) {
+			for (int i = 1; i <= resultlist.size(); i++) {
 				String aizhan2 = "https://baidurank.aizhan.com/" + type + "/" + urlPath + "/-1/0/" + i + "/position/1/";
 				aiInfor.list.addAll(getInforList(aizhan2, urlPath, type));
 			}

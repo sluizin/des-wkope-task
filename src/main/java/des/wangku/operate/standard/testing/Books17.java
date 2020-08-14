@@ -10,18 +10,29 @@ import des.wangku.operate.standard.subengineering.reediting.Filter;
 import des.wangku.operate.standard.testing.Books17Utils.StyleClass;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsStringFilter;
 
 public class Books17 {
 	static final String ACC_Path="G:/Download/";
+
+	static final void makefile_akxs5(String url,String filename) {
+		int[]arr= {};
+		makefile(url,filename,"readnew","content",arr);
+	}
 	
-	static final void makefile(String url) {
+	static final void makefilebooks17(String url) {
+		int[]arr= {};
+		String filename=Books17Utils.getfilename(url);
+		makefile(url,filename,"liebiao","content",arr);
+	}
+	static final void makefile(String url,String filename,String tagli,String tagcontent,int[] removep) {
 		if(url==null || url.trim().length()==0)return;
-		List<Element> ullist=UtilsJsoup.getAllElements(url, "liebiao");
+		List<Element> ullist=UtilsJsoup.getAllElements(url, tagli);
 		if(ullist.size()==0) {
 			System.out.println(url+"\t没发现具体内容章节！");
 			return;
 		}
-		String filename=Books17Utils.getfilename(url);
+		//String filename=Books17Utils.getfilename(url);
 		if(filename==null) {
 			System.out.println(url+"\t没发现名称！");
 			return;
@@ -36,11 +47,11 @@ public class Books17 {
 		if(Books17Utils.isexist(filename))return;
 		
 		Elements lis=ullist.get(0).select("li");
-		make(url,filename,lis);
+		make(url,filename,lis,tagcontent,removep);
 		
 		
 	}
-	static final void make(String url,String filename,Elements lis) {
+	static final void make(String url,String filename,Elements lis,String tagcontent,int[] removep) {
 		if(Books17Utils.isexist(filename))return;
 		String pathfile=ACC_Path+filename+".txt";
 		File file=new File(pathfile);
@@ -55,17 +66,23 @@ public class Books17 {
 			String content="";
 			name=li.text();
 			name=Books17Utils.filter(name);
+			System.out.println("name:"+name);
 			Elements hrefarr=li.select("a");
 			if(hrefarr.size()==0)continue;
 			String href=hrefarr.get(0).attr("abs:href");
-			List<Element> contentlist=UtilsJsoup.getAllElements(href, "content");
+			List<Element> contentlist=UtilsJsoup.getAllElements(href,tagcontent);
 			if(contentlist.size()==0)continue;
 			Element condiv=contentlist.get(0);
+
 			Elements pp=condiv.select("p");
-			if(pp.size()>0) {
-			Element first=pp.get(0);
-			first.remove();
+			for(int tt:removep) {
+				if(pp.size()>0 && tt<pp.size() && tt>0) {
+				Element first=pp.get(tt);
+				first.remove();
+				}
 			}
+			
+			
 			content=condiv.html();
 			content=Filter.filterscript(content);
 			content=Filter.filterscriptvar(content);
@@ -80,6 +97,10 @@ public class Books17 {
 			
 			
 			content=Filter.filterHtmlSymbol(content);
+
+			System.out.println("content:"+content);
+			
+			
 			String newname="第"+i+"章 "+name;
 			UtilsFile.writeFile(pathfile, Books17Utils.enter+Books17Utils.enter+Books17Utils.enter+newname+Books17Utils.enter+Books17Utils.enter+Books17Utils.enter);
 			UtilsFile.writeFile(pathfile, content);
@@ -92,13 +113,14 @@ public class Books17 {
 		file.renameTo(endFile);
 		System.out.println("移动到 -> "+to);
 	}
-	public static void main2(String[] args) 
+
+	
+	
+	
+	
+	public static void main3(String[] args) 
 	{
 		String[] arr= {
-				"",
-				"",
-				"",
-				"",
 				"",
 				"",
 				"",
@@ -115,19 +137,17 @@ public class Books17 {
 			String url=Books17Utils.getReadurl(e);
 			if(url==null ||url.length()==0)continue;
 			System.out.println("URL:"+url);
-			makefile(url);
+			makefilebooks17(url);
 		}
-		
-		
 	}
 	//http://www.17books.net/book/113480.html
 	//http://www.17books.net/113/113480/
 	//"http://www.17books.net/2/2589/",
 	//"http://www.17books.net/0/879/",
 
-	public static void main(String[] args) {
+	public static void main2(String[] args) {
 		String sortfile=ACC_Path+"sortall.txt";
-		int min=131,max=135;
+		int min=151,max=160;
 		for(int i=min;i<=max;i++) {
 			String url="http://www.17books.net/fenlei/7_"+i+".html";
 			System.out.println(i+":->"+url+"\t=============================================================");
@@ -157,7 +177,7 @@ public class Books17 {
 				}
 				Element href=hrefarrs.first();
 				filename=Books17Utils.filter(href.text());
-
+				filename =UtilsStringFilter.filterName(filename);
 				if(Books17Utils.isexist(filename)) {
 					System.out.println("发现文件\t"+filename+"\t"+url);
 					continue;
@@ -190,7 +210,8 @@ public class Books17 {
 				}
 				if(listhrefReal.length()>0) {
 					System.out.println("make:"+url);
-					make(url,filename,lis);
+					int[] arr= {};
+					make(url,filename,lis,"content",arr);
 					
 					//makefile(listhrefReal);
 				}

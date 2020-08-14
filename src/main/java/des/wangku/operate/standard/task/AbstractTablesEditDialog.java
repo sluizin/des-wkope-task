@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.task;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;

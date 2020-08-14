@@ -1,7 +1,8 @@
 package des.wangku.operate.standard.utls;
 
 import java.util.List;
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import des.wangku.operate.standard.swt.ResultTable;
@@ -163,6 +164,28 @@ public final class UtilsSWTTableSQL {
 		table.addTableItem(-1, newArr);
 		//setText(item, arrs);
 	}
+	/**
+	 * 判断字符串数组是否在table中出现，如果数组中出现null，则转换成空字符串
+	 * @param table ResultTable
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public static synchronized boolean isExist(ResultTable table, String... arrs) {
+		if (arrs.length == 0) return true;
+		String[] newArr = getFormatArray(table, arrs);
+		int rows = table.getItemCount();
+		int len = table.getColumnCount();
+		loop: for (int x = 0; x < rows; x++) {
+			TableItem e = table.getItem(x);
+			for (int y = 0; y < len; y++) {
+				String val = e.getText(y);
+				String v = newArr[y];
+				if (!v.equals(val)) continue loop;
+			}
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * 添加字符串数组进入TableItem中。如果出现null为填充为""
@@ -185,7 +208,7 @@ public final class UtilsSWTTableSQL {
 	 * @param arrs String[]
 	 * @return String[]
 	 */
-	private static final String[] getFormatArray(ResultTable table, String... arrs) {
+	public static final String[] getFormatArray(ResultTable table, String... arrs) {
 		String[] arr = new String[table.getColumnCount()];
 		for (int i = 0; i < arr.length; i++)
 			arr[i] = (i < arrs.length && arrs[i] != null) ? arrs[i] : "";
@@ -224,7 +247,7 @@ public final class UtilsSWTTableSQL {
 		for (int i = 0, len = rt.getItemCount(); i < len; i++) {
 			if (UtilsString.isExist(i, filterLine)) continue;
 			String value = get(rt, i, y);
-			if (!UtilsString.isNumber(value)) continue;
+			if (!UtilsVerification.isNumeric(value)) continue;
 			int v = Integer.parseInt(value);
 			sort += v;
 		}

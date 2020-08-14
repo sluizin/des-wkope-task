@@ -45,7 +45,6 @@ import des.wangku.operate.standard.utls.UtilsClipboard;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 import des.wangku.operate.standard.utls.UtilsSWTTree;
-import des.wangku.operate.standard.utls.UtilsString;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
@@ -2113,7 +2112,7 @@ public class MultiTree extends Tree {
 	 * @return String
 	 */
 	static final String format(String id, int maxlen) {
-		if (UtilsString.isNumber(id)) return String.format("%0" + maxlen + "d", Integer.parseInt(id));
+		if (UtilsVerification.isNumeric(id)) return String.format("%0" + maxlen + "d", Integer.parseInt(id));
 		return String.format("%1$-" + maxlen + "s", id);
 	}
 

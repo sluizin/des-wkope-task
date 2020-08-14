@@ -84,6 +84,25 @@ public class UtilsStringFilter {
 		content = content.replaceAll("\\<p\\>[\\s|\\t]*\\</p\\>", "").trim();/* 过滤掉<p></p>之间含有多个空格 */
 		return content;
 	}
+	/**
+	 * 过滤名称中的非法特殊字符
+	 * @param name String
+	 * @return String
+	 */
+	public static final String filterName(String name) {
+		if(name==null || name.length()==0)return name;
+		name = name.toLowerCase();
+		name = name.replace("\\", "");
+		name = name.replace("/", "");
+		name = name.replace("|", "");
+		name = name.replace(":", "");
+		name = name.replace("<", "");
+		name = name.replace(">", "");
+		name = name.replace("*", "");
+		name = name.replace("?", "");
+		name = name.replace("\"", "");
+		return name;
+	}
 
 	public static void main(String[] args) {
 		System.out.println("Hello World!");

@@ -15,6 +15,7 @@ import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsString;
+import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
  * 百度关键字搜索排名
@@ -416,7 +417,7 @@ public class BaiduKeySearchPosid {
 		for (int i = x1; i <= x2; i++) {
 			String value = UtilsSWTTableSQL.get(table, i, y);
 			if (value == null || value.length() == 0) continue;
-			if (UtilsString.isNumber(value)) {
+			if (UtilsVerification.isNumeric(value)) {
 				well++;
 				count++;
 				continue;
