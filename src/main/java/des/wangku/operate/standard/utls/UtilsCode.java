@@ -15,6 +15,15 @@ public final class UtilsCode {
 	 * @return String
 	 */
 	public static final String changedLine(final String line) {
+		return changedLine(line,"UTF-8");
+	}
+	/**
+	 * RandomAccessFile RandomAccessFile读出时，转换编码
+	 * @param line String
+	 * @param code String
+	 * @return String
+	 */
+	public static final String changedLine(final String line,String code) {
 		if (line == null) return null;
 		try {
 			byte buf[] = new byte[1];
@@ -24,7 +33,7 @@ public final class UtilsCode {
 			int i = 0;
 			while ((character = aStringReader.read()) != -1)
 				byteArray[i++] = buf[0] = (byte) character;
-			return new String(byteArray, "UTF-8");
+			return new String(byteArray, code);
 		} catch (Exception e) {
 		}
 		return null;

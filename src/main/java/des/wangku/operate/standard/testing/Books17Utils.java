@@ -45,7 +45,7 @@ public class Books17Utils {
 	static final String getReadurl(String url) {
 		if (url == null || url.length() == 0) return url;
 		if (url.indexOf("/book/") < 0) return url;
-		List<Element> list = UtilsJsoup.getAllElements(url, "btopt");
+		List<Element> list = UtilsJsoup.getElementAll(url, "btopt");
 		if (list.size() == 0) return "";
 		Element f = list.get(0);
 		Elements as = f.select("a[href]");
@@ -67,7 +67,7 @@ public class Books17Utils {
 
 	static final String getfilename(String url) {
 		String filename;
-		List<Element> ullist2 = UtilsJsoup.getAllElements(url, "infot");
+		List<Element> ullist2 = UtilsJsoup.getElementAll(url, "infot");
 		if (ullist2.size() == 0) return null;
 		filename = ullist2.get(0).text();
 		filename = filter(filename);
@@ -76,7 +76,7 @@ public class Books17Utils {
 	}
 
 	static final boolean isexist(String filename) {
-		String file = UtilsFile.isExistFile(Books17.ACC_Path, filename + ".txt");
+		String file = UtilsFile.getFilePath(Books17.ACC_Path, filename + ".txt");
 		if (file != null) System.out.println("发现同名文件\t" + file);
 		return file != null;
 		/*

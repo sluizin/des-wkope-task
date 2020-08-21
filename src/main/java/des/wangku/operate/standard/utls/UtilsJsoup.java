@@ -1,11 +1,8 @@
 package des.wangku.operate.standard.utls;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -37,51 +34,6 @@ import org.slf4j.LoggerFactory;
  * @since jdk1.8
  */
 public final class UtilsJsoup {
-
-	/**
-	 * 通过正则得到的对象
-	 * @author Sunjian
-	 * @version 1.0
-	 * @since jdk1.8
-	 */
-	public static final class RegularElement implements Comparable<RegularElement> {
-		String classname = "";
-		Element e = null;
-
-		@Override
-		public int compareTo(RegularElement arg0) {
-			if (arg0.classname.compareTo(this.classname) > 0) {
-				return -1;
-			} else if (arg0.classname.compareTo(this.classname) < 0) {
-				return 1;
-			} else {
-				return 0;
-			}
-		}
-
-		public final String getClassname() {
-			return classname;
-		}
-
-		public final Element getE() {
-			return e;
-		}
-
-		public final void setClassname(String classname) {
-			this.classname = classname;
-		}
-
-		public final void setE(Element e) {
-			this.e = e;
-		}
-
-		@Override
-		public String toString() {
-			return "RegularElement [" + (classname != null ? "classname=" + classname + ", " : "") + (e != null ? "e=" + e.html() : "") + "]";
-		}
-
-	}
-
 	public static final class STC {
 		char c = ' ';
 		int style = -1;
@@ -93,9 +45,7 @@ public final class UtilsJsoup {
 
 	}
 
-	public static final int ACC_DefaultTimeout = 30000;
-
-	public static final String ACC_LI = "|li";
+	public static int ACC_DefaultTimeout = 30000;
 
 	private static final String ACC_SearchTypePattern = "^\\{[^}]*\\}";
 
@@ -103,11 +53,12 @@ public final class UtilsJsoup {
 
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsJsoup.class);
-
 	public static final int MODE_Jsoup = 1;
+
 	public static final int MODE_Socket = 2;
 
 	public static final int MODE_URL = 4;
+
 
 	static {
 		ACC_STCList.add(new STC(0, 'I'));// style:0 Id
@@ -116,59 +67,6 @@ public final class UtilsJsoup {
 		ACC_STCList.add(new STC(3, 'A'));// style:3 AttribKey
 		ACC_STCList.add(new STC(4, 'E'));// style:4 Text
 	}
-
-	/**
-	 * 把字符串转成Jsoup对象再得到text()内容，
-	 * @param content String
-	 * @return String
-	 */
-	public static final String cleanHtml(String content) {
-		return cleanHtml(content, null);
-	}
-
-	/**
-	 * 把字符串转成Jsoup对象再得到text()内容
-	 * @param content String
-	 * @param urldomain String
-	 * @return String
-	 */
-	public static final String cleanHtml(String content, String urldomain) {
-		if (content == null) return null;
-		Element e = urldomain == null ? Jsoup.parse(content) : Jsoup.parse(content, urldomain);
-		if (e == null) return null;
-		return e.text();
-	}
-
-	/**
-	 * 读取Element得到 name 这个字符串，id class tag，所有单元 过滤掉重复项
-	 * @param f Element
-	 * @param arr String[]
-	 * @return List&lt;Element&gt;
-	 */
-	public static final List<Element> getAllElements(Element f, String... arr) {
-		if (f == null) return new ArrayList<>(0);
-		List<Element> list = new ArrayList<>();
-		for (String name : arr) {
-			list.addAll(getElementByID(f, name));
-			list.addAll(getElementsByClass(f, name));
-			list.addAll(getElementsByTag(f, name));
-		}
-		if (list.size() > 1) UtilsList.distinct(list);
-		return list;
-	}
-
-	/**
-	 * 读取url得到 arrs 这个多字符串，id class tag，所有单元 过滤掉重复项
-	 * @param url String
-	 * @param arr String[]
-	 * @return List&lt;Element&gt;
-	 */
-	public static final List<Element> getAllElements(String url, String... arr) {
-		Document doc = UtilsJsoup.getDoc(url);
-		if (doc == null) return new ArrayList<>();
-		return getAllElements(doc, arr);
-	}
-
 	/**
 	 * 读取url，得到节点列表<br>
 	 * key:&lt;!--文章内容--&gt;|&lt;!--文章内容end--&gt;则读取url某2个字段之间的节点<br>
@@ -176,130 +74,29 @@ public final class UtilsJsoup {
 	 * key:id1;id2;id3或id1,id2,id3，以分号或逗号分隔，则按照多个关键字进行提取
 	 * @param url String
 	 * @param key String
-	 * @return List&lt;Element&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getAllElementsByKey(String url, String key) {
-		List<Element> list = new ArrayList<>();
-		if (url == null || url.length() == 0 || key == null || key.length() == 0) return list;
+	public static final Elements getAllElementsByKey(String url, String key) {
+		Elements es = new Elements();
+		if (url == null || url.length() == 0 || key == null || key.length() == 0) return es;
 		if (key.indexOf('|') > -1) {
 			String[] arrs = key.split("\\|");
 			Document doc = UtilsJsoup.getDoc(url, arrs[0], arrs[1]);
-			if (doc == null) return list;
-			list.add(doc.body());
-			return list;
+			if (doc == null) return es;
+			es.add(doc.body());
+			return es;
 		}
-		if (key.indexOf(';') > -1) return UtilsJsoup.getAllElements(url, key.split(";"));
-		if (key.indexOf(',') > -1) return UtilsJsoup.getAllElements(url, key.split(","));
-		return UtilsJsoup.getAllElements(url, key);
+		if (key.indexOf(';') > -1) return UtilsJsoup.getElementAll(url, key.split(";"));
+		if (key.indexOf(',') > -1) return UtilsJsoup.getElementAll(url, key.split(","));
+		return UtilsJsoup.getElementAll(url, key);
 	}
-
-	/**
-	 * 从element中提取指定下标的链接
-	 * @param f Element
-	 * @param index int
-	 * @param arrs String[]
-	 * @return String
-	 */
-	public static final String getAllHref(Element f, int index, String... arrs) {
-		List<String> list = getAllHrefs(f, arrs);
-		int size = list.size();
-		if (size == 0) return null;
-		if (index >= 0 && index < size) return list.get(index);
-		return null;
-	}
-
-	/**
-	 * 从element中提取指定下标的链接
-	 * @param f Element
-	 * @param index int
-	 * @param arrs String[]
-	 * @return String
-	 */
-	public static final String getAllHref(Element f, String... arrs) {
-		return getAllHref(f, 0, arrs);
-	}
-
-	/**
-	 * 从element中提取所有的链接
-	 * @param f Element
-	 * @param arrs String[]
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getAllHrefs(Element f, String... arrs) {
-		if (f == null || arrs.length == 0) return new ArrayList<>(0);
-		List<String> list = new ArrayList<>(1);
-		List<Element> li = getAllElements(f, arrs);
-		for (Element e : li) {
-			Elements arr = e.select("a");
-			for (int i = 0; i < arr.size(); i++) {
-				Element tt = arr.get(i);
-				list.add(tt.attr("abs:href"));
-			}
-		}
-		UtilsList.distinct(list);
-		return list;
-	}
-
-	/**
-	 * 得到编码。 自检索 &gt; 默认[utf-8]
-	 * @param url URL
-	 * @return String
-	 */
-	public final static String getCode(URL url) {
-		String cpcode = UtilsCpdetector.getUrlEncode(url);
-		if (cpcode != null) return cpcode;
-		return "utf-8";
-	}
-
-	/**
-	 * 通用提取，从doc提取指定字符串的节点，并过滤重复节点<br>
-	 * "id,class,na|li"<br>
-	 * 以|li为标记，则从na中提取li标签<br>
-	 * @param doc Document
-	 * @param tagli String
-	 * @return List&lt;Element&gt;
-	 */
-	public static final List<Element> getCommonList(Document doc, String tagli) {
-		if (doc == null || tagli == null || tagli.length() == 0) return new ArrayList<>(0);
-		List<Element> list = new ArrayList<>();
-		String[] arrs = tagli.split(",");
-		for (String e : arrs) {
-			if (e.indexOf(ACC_LI) <= 0) {
-				list.addAll(UtilsJsoup.getAllElements(doc, e));
-				continue;
-			}
-			String key = tagli.substring(0, tagli.indexOf(ACC_LI)).trim();
-			if (key.length() == 0) continue;
-			List<Element> list3 = UtilsJsoup.getAllElements(doc, key);
-			for (Element t : list3) {
-				list.addAll(t.select("li"));
-			}
-		}
-		if (list.size() > 1) UtilsList.distinct(list);
-		return list;
-	}
-
-	/**
-	 * 通用提取，从url提取指定字符串的节点，并过滤重复节点<br>
-	 * "id,class,na|li"<br>
-	 * 以|li为标记，则从na中提取li标签<br>
-	 * @param url String
-	 * @param tagli String
-	 * @return List&lt;Element&gt;
-	 */
-	public static final List<Element> getCommonList(String url, String tagli) {
-		if (url == null || url.length() == 0) return new ArrayList<>(0);
-		Document doc = UtilsJsoup.getDoc(url);
-		return getCommonList(doc, tagli);
-	}
-
-	/**
-	 * 页面含有css数量
-	 * @param doc Document
-	 * @return int
-	 */
-	public static final int getCssCount(Document doc) {
-		return getTagList(doc, "link", "type", "text/css").size();
+	public static final Element getElementsCutByKey(Document e, String key) {
+		if (key == null || key.length() == 0) return null;
+		if (key.indexOf('|') == -1) return null;
+		String[] arrs = key.split("\\|");
+		Document doc=UtilsJsoup.getDoc(e.baseUri(), e, arrs[0], arrs[1]);
+		if(doc==null)return null;
+		return doc.body();
 	}
 
 	/**
@@ -317,6 +114,7 @@ public final class UtilsJsoup {
 		}
 		return null;
 	}
+
 
 	/**
 	 * 提取jsoup [1(MODE_Jsoup)] &gt; Document socket[2(MODE_Socket)] &gt; URL[4(MODE_URL)] 全部信息
@@ -344,17 +142,26 @@ public final class UtilsJsoup {
 	 */
 	public static final Document getDoc(String url, String start, String end) {
 		Document doc = getDoc(url);
-		if (doc == null) return null;
-		String result = doc.html();
-
-		int index1 = result.indexOf(start);
-		if (index1 == -1) return null;
-		int index2 = result.indexOf(end, index1);
-		if (index2 == -1) return null;
-		String cut = result.substring(index1 + start.length(), index2);
-		return Jsoup.parse(cut);
+		String head = UtilsReadURL.getUrlDomain(url);
+		return getDoc(head,doc,start,end);
 	}
 
+	/**
+	 * 从网址中某个长度的局部返回对象
+	 * @param head String
+	 * @param doc Document
+	 * @param start String
+	 * @param end String
+	 * @return Document
+	 */
+	public static final Document getDoc(String head,Document doc, String start, String end) {
+		if (doc == null) return null;
+		String result = doc.html();
+		String cut = UtilsString.cutString(result, start, end);
+		if(cut==null)return null;
+		if (head == null) return Jsoup.parse(cut);
+		return Jsoup.parse(cut, head);
+	}
 	/**
 	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
 	 * @param url URL
@@ -405,7 +212,7 @@ public final class UtilsJsoup {
 				e.printStackTrace();
 			}
 		}
-		String newCode = getCode(url);
+		String newCode = UtilsJsoupCase.getCode(url);
 		String domain = UtilsReadURL.getUrlDomain(url);
 		if (UtilsShiftCompare.isCompare(mode, MODE_Socket)) {
 			logger.debug(getMessage(url, "socket", timeout));
@@ -436,6 +243,7 @@ public final class UtilsJsoup {
 		return null;
 	}
 
+
 	/**
 	 * 提取全部信息 运行JS
 	 * @param url URL
@@ -446,7 +254,6 @@ public final class UtilsJsoup {
 		String domain = UtilsReadURL.getUrlDomain(url);
 		return domain == null ? Jsoup.parse(content) : Jsoup.parse(content, domain);
 	}
-
 	/**
 	 * 从网址中某个长度的局部返回对象
 	 * @param url String
@@ -457,53 +264,103 @@ public final class UtilsJsoup {
 	public static final Element getElement(Element source, String start, String end) {
 		if (source == null) return null;
 		String result = source.html();
-		int index1 = result.indexOf(start);
-		if (index1 == -1) return null;
-		int index2 = result.indexOf(end, index1);
-		if (index2 == -1) return null;
-		String cut = result.substring(index1 + start.length(), index2);
+		String cut = UtilsString.cutString(result, start, end);
+		if(cut==null)return null;
 		return Jsoup.parse(cut, "", Parser.xmlParser());
 	}
 
 	/**
-	 * 通过id查找节点
-	 * @param source Element
-	 * @param arrs String[]
-	 * @return List&lt;Element&gt;
+	 * 读取Element得到 name 这个字符串，id class tag attribname,text，所有单元 过滤掉重复项
+	 * @param f Element
+	 * @param arr String[]
+	 * @return Elements
 	 */
-	public static final List<Element> getElementByID(Element source, String... arrs) {
-		if (source == null || arrs.length == 0) return new ArrayList<>();
-		List<Element> list = new ArrayList<>();
-		for (String e : arrs) {
-			if (e == null || e.length() == 0) continue;
-			Element r = source.getElementById(e);
-			if (r != null) list.add(r);//r.remove();
-			Elements elements = Collector.collect(new Evaluator.Id(e), source);/* 提取同名id */
-			list.addAll(elements);
+	public static final Elements getElementAll(Element f, String... arr) {
+		if (f == null) return new Elements();
+		Elements es = new Elements();
+		for (String name : arr) {
+			if (name.indexOf('|') == -1) {
+				es.addAll(getElementsByID(f, name));
+				es.addAll(getElementsByClass(f, name));
+				es.addAll(getElementsByTag(f, name));
+				//es.addAll(getElementsByAttribute(f, name));
+				//es.addAll(UtilsJsoup.getElementsByText(f, name));
+				
+			}else {
+				Element cut=getElementsCutByKey(f.ownerDocument(),name);
+				if(cut!=null) {
+					es.add(cut);
+					continue;
+				}
+				
+			}
 		}
-		if (list.size() > 1) UtilsList.distinct(list);/* 去重 */
-		return list;
+		if (es.size() > 1) UtilsList.distinct(es);
+		return es;
 	}
 
 	/**
-	 * 从es数组中提取含有某个classname为keyClassName，并且内容含有 keyword
-	 * @param es Elements
-	 * @param keyClassName String
-	 * @param keyword String
+	 * 读取url得到 arrs 这个多字符串，id class tag attribname,text，所有单元 过滤掉重复项
+	 * @param url String
+	 * @param arr String[]
+	 * @return Elements
+	 */
+	public static final Elements getElementAll(String url, String... arr) {
+		Document doc = UtilsJsoup.getDoc(url);
+		if (doc == null) return new Elements();
+		return getElementAll(doc, arr);
+	}
+	/**
+	 * 读取Element得到 name 这个字符串，id class tag attribname,text，第一个节点<br>
+	 * 如果没有找到，则返回null
+	 * @param f Element
+	 * @param arr String[]
 	 * @return Element
 	 */
-	public static final Element getElementClassKeyword(Elements es, String keyClassName, String keyword) {
-		for (int i = 0; i < es.size(); i++) {
-			Element e = es.get(i);
-			List<Element> list = getElementsByClass(e, keyClassName);
-			for (Element ee : list)
-				if (ee.html().indexOf(keyword) > -1) return e;
-		}
-		return null;
+	public static final Element getElementAllFirst(Element f, String... arr) {
+		Elements es=getElementAll(f,arr);
+		if(es==null || es.size()==0)return null;
+		return es.first();
 	}
 
 	/**
-	 * 通过 不同的关键字 查找节点，并去重<br>
+	 * 读取url得到 arrs 这个多字符串，id class tag attribname,text，第一个节点<br>
+	 * 如果没有找到，则返回null
+	 * @param url String
+	 * @param arr String[]
+	 * @return Element
+	 */
+	public static final Element getElementAllFirst(String url, String... arr) {
+		Elements es= getElementAll(url, arr);
+		if(es.size()==0)return null;
+		return es.first();
+	}
+	/**
+	 * 获取第一个节点的text内容<br>
+	 * 如果没有找到，则返回null
+	 * @param f Element
+	 * @param arr String[]
+	 * @return String
+	 */
+	public static final String getElementAllFirstText(Element f, String... arr) {
+		Element e=getElementAllFirst(f,arr);
+		if(e==null)return null;
+		return e.text();
+	}
+	/**
+	 * 获取第一个节点的text内容<br>
+	 * 如果没有找到，则返回null
+	 * @param url String
+	 * @param arr String[]
+	 * @return String
+	 */
+	public static final String getElementAllFirstText(String url,String...arr) {
+		Element e=getElementAllFirst(url,arr);
+		if(e==null)return null;
+		return e.text();
+	}
+	/**
+	 * 通过 不同的关键字 查找节点["","abc","{I}def,{C}abc"]，并去重<br>
 	 * style:0 id<br>
 	 * style:1 class<br>
 	 * style:2 tag<br>
@@ -512,27 +369,34 @@ public final class UtilsJsoup {
 	 * @param source Element
 	 * @param style int
 	 * @param arrs String[]
-	 * @return List&lt;Element&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getElementsBy(Element source, int style, String... arrs) {
-		if (source == null || arrs.length == 0) return new ArrayList<>();
-		List<Element> list = new ArrayList<>();
+	public static final Elements getElementsBy(Element source, int style, String... arrs) {
+		if (source == null || arrs.length == 0) return new Elements();
+		Elements es = new Elements();
 		for (String e : arrs) {
 			if (e == null || e.trim().length() == 0) continue;
-			Elements els = getElementsPrivate(source, e, style);
-			if (els != null && els.size() > 0) list.addAll(els);
+			e=e.trim();
+			String[] arr=e.split(",");
+			for(String f:arr) {
+				if(!isGenericKeyType(f,style))continue;
+				String g=UtilsJsoup.getGenericKeyVal(f);
+				Elements els = getElementsPrivate(source, g, style);
+				if (els != null && els.size() > 0) es.addAll(els);				
+			}
 		}
-		if (list.size() > 1) UtilsList.distinct(list);/* 去重 */
-		return list;
+		if (es.size() > 1) UtilsList.distinct(es);/* 去重 */
+		return es;
 	}
 
 	/**
 	 * 通过attribute属性名称查找节点
 	 * @param source Element
 	 * @param arrs String[]
-	 * @return List&lt;Element&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getElementsByAttribute(Element source, String... arrs) {
+	@Deprecated
+	public static final Elements getElementsByAttribute(Element source, String... arrs) {
 		return getElementsBy(source, 3, arrs);
 	}
 
@@ -540,9 +404,9 @@ public final class UtilsJsoup {
 	 * 通过class查找节点
 	 * @param source Element
 	 * @param arrs String[]
-	 * @return List&lt;Element&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getElementsByClass(Element source, String... arrs) {
+	public static final Elements getElementsByClass(Element source, String... arrs) {
 		return getElementsBy(source, 1, arrs);
 	}
 
@@ -550,9 +414,9 @@ public final class UtilsJsoup {
 	 * 得到多个id的节点，允许同名id的节点
 	 * @param source Element
 	 * @param arrs String[]
-	 * @return List&lt;Elmenet&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getElementsByID(Element source, String... arrs) {
+	public static final Elements getElementsByID(Element source, String... arrs) {
 		return getElementsBy(source, 0, arrs);
 	}
 
@@ -560,10 +424,21 @@ public final class UtilsJsoup {
 	 * 通过Tag查找节点
 	 * @param source Element
 	 * @param arrs String[]
-	 * @return List&lt;Element&gt;
+	 * @return Elements
 	 */
-	public static final List<Element> getElementsByTag(Element source, String... arrs) {
+	public static final Elements getElementsByTag(Element source, String... arrs) {
 		return getElementsBy(source, 2, arrs);
+	}
+
+	/**
+	 * 通过text内容查找节点
+	 * @param source Element
+	 * @param arrs String[]
+	 * @return Elements
+	 */
+	@Deprecated
+	public static final Elements getElementsByText(Element source, String... arrs) {
+		return getElementsBy(source, 4, arrs);
 	}
 
 	/**
@@ -579,189 +454,31 @@ public final class UtilsJsoup {
 	 * @return Elements
 	 */
 	private static final Elements getElementsPrivate(Element source, String e, int style) {
-		if (source == null || e == null) return new Elements();
+		Elements es=new Elements();
+		if (source == null || e == null) return es;
 		e = e.trim();
-		if (e.length() == 0) return new Elements();
+		if (e.length() == 0) return es;
 		switch (style) {
-		case 1:
-			return source.getElementsByClass(e);
-		case 2:
-			return source.getElementsByTag(e);
-		case 3:
-			return source.getElementsByAttribute(e);
-		case 4:
-			return source.getElementsContainingText(e);
-		default:
-			return Collector.collect(new Evaluator.Id(e), source);
+		case 1:/* 1 */
+			es = source.getElementsByClass(e);
+			break;
+		case 2:/* 2 */
+			es = source.getElementsByTag(e);
+			break;
+		case 3:/* 3 */
+			es = source.getElementsByAttribute(e);
+			break;
+		case 4:/* 4 */
+			es = source.getElementsContainingText(e);
+			break;
+		default:/* 0 */
+			Element r = source.getElementById(e);
+			if (r != null) es.add(r);
+			es.addAll(Collector.collect(new Evaluator.Id(e), source));
+			break;
 		}
-	}
-
-	/**
-	 * 从doc中提取所有链接，并提取第一个链接地址
-	 * @param doc Element
-	 * @return String
-	 */
-	public static final String getHrefFirstHref(Element doc) {
-		List<String> list = getHrefTagAll(doc, 0);
-		if (list.size() == 0) return null;
-		return list.get(0);
-	}
-
-	/**
-	 * 从doc中提取所有链接，并提取第一个链接文本
-	 * @param doc Element doc
-	 * @return String
-	 */
-	public static final String getHrefFirstText(Element doc) {
-		List<String> list = getHrefTagAll(doc, 1);
-		if (list.size() == 0) return null;
-		return list.get(0);
-	}
-
-	/**
-	 * 从doc中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param doc Element
-	 * @param style int
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getHrefTagAll(Element doc, int style) {
-		if (doc == null) return new ArrayList<>();
-		List<String> list = new ArrayList<>();
-		Elements as = doc.select("a[href]");
-		for (Element t1 : as) {
-			String val = null;
-			if (style <= 0) {
-				val = t1.attr("abs:href");
-			} else {
-				val = t1.text();
-			}
-			if (val != null) list.add(val);
-		}
-		return list;
-	}
-
-	/**
-	 * 从es列表中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param es List&lt;String&gt;
-	 * @param style int
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getHrefTagAll(List<Element> es, int style) {
-		if (es == null || es.size() == 0) return new ArrayList<>();
-		List<String> list = new ArrayList<>(es.size());
-		for (Element e : es)
-			list.addAll(getHrefTagAll(e, style));
-		return list;
-	}
-
-	/**
-	 * 从doc中提取所有 id class tag 节点并从中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param doc Element
-	 * @param style int
-	 * @param arr String[]
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getHrefTagBy(Element doc, int style, String... arr) {
-		if (doc == null) return new ArrayList<>();
-		return getHrefTagAll(getAllElements(doc, arr), style);
-	}
-
-	/**
-	 * 页面含有img标签中含有alt值的数量
-	 * @param doc Document
-	 * @return int
-	 */
-	public static final int getImgAltCount(Document doc) {
-		return getTagList(doc, "img", "alt", "*").size();
-	}
-
-	/**
-	 * 页面含有js数量
-	 * @param doc Document
-	 * @return int
-	 */
-	public static final int getJsCount(Document doc) {
-		return getElementsByTag(doc, "script").size();
-	}
-
-	/**
-	 * 通过Indexof判断classname是否含有
-	 * @param doc Element
-	 * @param keyword String
-	 * @return List&lt;Element&gt;
-	 */
-	public static final List<Element> getKeywordClassIndexof(Element doc, String keyword) {
-		List<Element> list = new ArrayList<>();
-		Elements all = doc.getAllElements();
-		loop: for (Element e : all) {
-			String classname = e.attr("class");
-			String[] arr = classname.split(" ");
-			for (String name : arr) {
-				name = name.trim();
-				if (name.indexOf(keyword) > -1) {
-					list.add(e);
-					continue loop;
-				}
-			}
-		}
-		return list;
-	}
-
-	/**
-	 * 通过正则判断classname是否含有
-	 * @param doc Element
-	 * @param keyword String
-	 * @return List&lt;RegularElement&gt;
-	 */
-	public static final List<RegularElement> getKeywordClassRegular(Element doc, String keyword) {
-		List<RegularElement> list = new ArrayList<>();
-		if (doc == null) return list;
-		Elements all = doc.getAllElements();
-		Pattern p = Pattern.compile(keyword);
-		loop: for (Element e : all) {
-			String classname = e.attr("class");
-			String[] arr = classname.split(" ");
-			for (String name : arr) {
-				name = name.trim();
-				Matcher m = p.matcher(name);
-				if (m.find()) {
-					RegularElement f = new RegularElement();
-					f.classname = name;
-					f.e = e;
-					list.add(f);
-					continue loop;
-				}
-			}
-		}
-		Collections.sort(list);
-		return list;
-	}
-
-	/**
-	 * 重组日志内容
-	 * @param url URL
-	 * @param type String
-	 * @param timeout int
-	 * @return String
-	 */
-	private static final String getMessage(URL url, String type, int timeout) {
-		return "[" + timeout + "]读取网址方式: " + type + "!\t" + url.toString();
-	}
-
-	/**
-	 * 得到meta中的值
-	 * @param doc Document
-	 * @param key String
-	 * @return String
-	 */
-	public static final String getMetaContent(Document doc, String key) {
-		Elements elements = doc.select("meta[name=" + key + "]");
-		if (elements.size() == 0) return "";
-		String value = elements.get(0).attr("content");
-		return value == null ? "" : value;
+		if (es.size() > 1) UtilsList.distinct(es);/* 去重 */
+		return es;
 	}
 
 	/**
@@ -771,7 +488,7 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return String
 	 */
-	static final String getSearchKeyMatcherVal(String key) {
+	static final String getGenericKeyMatcherVal(String key) {
 		if (key == null) return null;
 		String newkey = key.trim();
 		if (newkey.length() == 0) return null;
@@ -788,8 +505,8 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return String
 	 */
-	public static final String getSearchKeyType(String key) {
-		String limitword = getSearchKeyMatcherVal(key);
+	public static final String getGenericKeyType(String key) {
+		String limitword = getGenericKeyMatcherVal(key);
 		if (limitword == null) return null;
 		return limitword.substring(1, limitword.length() - 1).trim();
 	}
@@ -802,128 +519,21 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return String
 	 */
-	public static final String getSerachKeyVal(String key) {
-		String limitword = getSearchKeyMatcherVal(key);
+	public static final String getGenericKeyVal(String key) {
+		String limitword = getGenericKeyMatcherVal(key);
 		if (limitword == null) return key;
 		return key.substring(limitword.length(), key.length()).trim();
 	}
 
 	/**
-	 * 得到所有某个标签的属性值。允许使用"*"代表所有数值
-	 * @param doc Document
-	 * @param tag String
-	 * @param alt String
-	 * @param value String
-	 * @return List&lt;element&gt;
-	 */
-	public static final List<Element> getTagList(Document doc, String tag, String alt, String value) {
-		List<Element> list = new ArrayList<>();
-		if (tag == null || tag.length() == 0) return list;
-		if (alt == null || alt.length() == 0) return list;
-		List<Element> sList = getElementsByTag(doc, tag);
-		for (Element e : sList) {
-			String v = e.attr(alt);
-			if (v == null) continue;
-			if ("*".equals(value) || v.equals(value)) list.add(e);
-		}
-		return list;
-	}
-
-	/**
-	 * 得到所有某个标签中含有的地址的绝对地址，如a-href img-src等
-	 * @param body Element
-	 * @param tag String
-	 * @param url String
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getTagUrlList(Element body, String tag, String url) {
-		List<String> list = new ArrayList<String>();
-		Elements as = body.select(tag + "[" + url + "]");
-		for (Element t1 : as)
-			list.add(t1.attr("abs:" + url));
-		return list;
-	}
-
-	/**
-	 * 从数组中提取第一个text()值，如为空,则返回def
-	 * @param es Elements
+	 * 重组日志内容
+	 * @param url URL
+	 * @param type String
+	 * @param timeout int
 	 * @return String
 	 */
-	public static final String getTextFirst(Elements es) {
-		return getTextFirst(es, "");
-	}
-
-	/**
-	 * 从数组中提取第一个text()值，如为空,则返回def
-	 * @param es Elements
-	 * @param def String
-	 * @return String
-	 */
-	public static final String getTextFirst(Elements es, String def) {
-		if (es == null || es.size() == 0) return def;
-		Element e = es.first();
-		if (e == null) return def;
-		return e.text();
-	}
-
-	/**
-	 * 从数组中提取第一个text()值，如为空,则返回空串
-	 * @param es List&lt;Element&gt;
-	 * @return String
-	 */
-	public static final String getTextFirst(List<Element> es) {
-		return getTextFirst(es, "");
-	}
-
-	/**
-	 * 从数组中提取第一个text()值，如为空,则返回def
-	 * @param list List&lt;Element&gt;
-	 * @param def String
-	 * @return String
-	 */
-	public static final String getTextFirst(List<Element> list, String def) {
-		if (list == null || list.size() == 0) return def;
-		Element e = list.get(0);
-		if (e == null) return def;
-		return e.text();
-	}
-
-	/**
-	 * 按classname提取第一个text()值，如为空,则返回空串
-	 * @param doc Element
-	 * @param classname String
-	 * @return String
-	 */
-	public static final String getTextFirstByClass(Element doc, String classname) {
-		return getTextFirstByClass(doc, classname, "");
-	}
-
-	/**
-	 * 从数组中提取第一个text()值，如为空,则返回def
-	 * @param doc Element
-	 * @param classname String
-	 * @param def String
-	 * @return String
-	 */
-	public static final String getTextFirstByClass(Element doc, String classname, String def) {
-		List<Element> list = getElementsByClass(doc, classname);
-		if (list.size() == 0) return def;
-		return getTextFirst(list, def);
-	}
-
-	/**
-	 * 得到url的title值，如果没有找，则返回null
-	 * @param url String
-	 * @return String
-	 */
-	public static final String getURLTitle(String url) {
-		if (url == null || url.trim().length() == 0) return null;
-		if (!UtilsVerification.isConnect(url)) return null;
-		Document doc = getDoc(url);
-		if (doc == null) return null;
-		List<Element> list = getElementsByTag(doc, "title");
-		return getTextFirst(list, null);
-
+	private static final String getMessage(URL url, String type, int timeout) {
+		return "[" + timeout + "]读取网址方式: " + type + "!\t" + url.toString();
 	}
 
 	/**
@@ -933,89 +543,27 @@ public final class UtilsJsoup {
 	 * @param style int
 	 * @return boolean
 	 */
-	public static final boolean isSearchKeyType(String key, int style) {
-		String result = getSearchKeyType(key);
+	public static final boolean isGenericKeyType(String key, int style) {
+		String result = getGenericKeyType(key);
 		if (result == null || result.length() == 0) return true;
 		result = result.toUpperCase();
-		char c = 'I';
 		for (STC e : ACC_STCList) {
 			if (e.style == style) return result.indexOf(e.c) > -1;
 		}
-		return result.indexOf(c) > -1;
+		return result.indexOf('I') > -1;
 	}
 
 	public static void main(String[] args) {
 		String[] arr = { null, "abcc", "{ICE}", "", "{    }   ", "{aa", "eee}", "}dd{", "{}", "a{}def", "{abc}aa", "def{123}", "a{XY}z", "{ICAT}classname" };
 		for (String e : arr) {
-			String val = getSearchKeyType(e);
-			String va = getSerachKeyVal(e);
+			String val = getGenericKeyType(e);
+			String va = getGenericKeyVal(e);
 			System.out.print(":" + e + ": \t :");
 			System.out.print(val == null ? "null" : val);
 			System.out.print(": \t :");
 			System.out.print(va == null ? "null" : va);
 			System.out.println(":");
 		}
-	}
-
-	public static void main2(String[] args) {
-		String ACC_Path = "G:/下载文档夹/m.99114.com/";
-		String url = "http://m.99114.com/category/find";
-		List<Element> list = UtilsJsoup.getAllElements(url, "section");
-		int bigmin = 0, bigmax = 0;
-		try {
-			for (int i = bigmin; i <= bigmax; i++) {
-				Element main = list.get(i);
-				String bigcategory = UtilsJsoup.getTextFirstByClass(main, "classifyTitle");
-				String bigcategorypath = ACC_Path + bigcategory + "/";
-				File filebig = new File(bigcategorypath);
-				if (!filebig.exists()) filebig.mkdir();
-				Elements es = main.select("li");
-				for (int ii = 0; ii < es.size(); ii++) {
-					Element e = es.get(ii);
-					String smallcategory = e.text();
-					System.out.println("[" + i + "]:" + bigcategory + "\t" + smallcategory);
-					String smallcategorypath = bigcategorypath + "/" + smallcategory + ".txt";
-					File filesmall = new File(smallcategorypath);
-					if (filesmall.exists()) continue;
-					String encode = URLEncoder.encode(smallcategory + "", "UTF-8");
-					int p = 0;
-					while (p < 100) {
-						url = "http://m.99114.com/gongying/" + encode + "_-_-_" + p + "_-_-.html";
-						System.out.println(url);
-						Document doc = UtilsJsoup.getDoc(url);//,UtilsJsoup.MODE_URL);
-						if (doc.text().length() < 100) break;
-						System.out.println(smallcategory + ":" + p);
-						Elements gs = doc.getElementsByClass("firstLine");
-						for (Element gse : gs) {
-							String line = "";
-							String name = UtilsJsoup.getHrefFirstText(gse);
-							String href = UtilsJsoup.getHrefFirstHref(gse);
-							line = UtilsConsts.ACC_ENTER + "" + name + "\t" + href;
-							UtilsFile.writeFile(smallcategorypath, line);
-						}
-
-						p++;
-					}
-
-				}
-
-			}
-		} catch (Exception e) {
-			System.out.println("error:" + url);
-			e.printStackTrace();
-			System.out.println("error:" + e.toString());
-		}
-
-		/*
-		 * String[] arr = { "ab|2", "|2", "|", "div|7" };
-		 * for (String e : arr) {
-		 * int index = e.indexOf('|');
-		 * System.out.println(e + ":" + index);
-		 * String v = e.substring(0, index);
-		 * String val = e.substring(index + 1, e.length());
-		 * System.out.println(e + "=" + v + ":\t:" + val);
-		 * }
-		 */
 	}
 
 	/**
@@ -1034,6 +582,7 @@ public final class UtilsJsoup {
 	 * @param source Element
 	 * @param arrs String[]
 	 */
+	@Deprecated
 	public static final void remove_ClassIndexof(Element source, String... arrs) {
 		if (source == null || arrs.length == 0) return;
 		Elements es = source.getAllElements();
@@ -1058,15 +607,15 @@ public final class UtilsJsoup {
 	 * style:4 textkey<br>
 	 * @param source Element
 	 * @param style int
-	 * @param arrs String[]
-	 * @param arr int[]
+	 * @param keyarrs String[]
+	 * @param removearr int[]
 	 */
-	public static final void remove_Element(Element source, int style, String[] arrs, int... arr) {
-		if (source == null || arrs.length == 0 || arr.length == 0) return;
-		List<Element> list = getElementsBy(source, style, arrs);
-		for (int i = list.size() - 1; i >= 0; i--) {
-			if (UtilsString.isExist(i, arr)) {
-				list.get(i).remove();
+	public static final void remove_Element(Element source, int style, String[] keyarrs, int... removearr) {
+		if (source == null || keyarrs.length == 0 || removearr.length == 0) return;
+		Elements es = UtilsJsoup.getElementsBy(source, style, keyarrs);
+		for (int i = es.size() - 1; i >= 0; i--) {
+			if (UtilsString.isExist(i, removearr)) {
+				es.get(i).remove();
 			}
 		}
 	}
@@ -1089,26 +638,24 @@ public final class UtilsJsoup {
 	 */
 	public static final void remove_ElementRev(Element source, int style, int size, String[] arrs, int... arr) {
 		if (source == null || size < 0 || arrs.length == 0) return;
-		List<Element> list = getElementsBy(source, style, arrs);
-		;
-		int len = list.size();
+		Elements es = UtilsJsoup.getElementsBy(source, style, arrs);
+		int len = es.size();
 		if (len == 0) return;
 		int index = (len - 1) - size;
-		if (index >= 0 && index < list.size()) list.get(index).remove();
-
+		if (index >= 0 && index < es.size()) es.get(index).remove();
 	}
 
 	/**
 	 * 移除所有指定标签下标的节点
 	 * @param source Element
 	 * @param p String
-	 * @param arrs int[]
+	 * @param keyarrs int[]
 	 */
-	public static final void remove_Tag(Element source, String p, int... arrs) {
-		if (source == null || p == null || p.trim().length() == 0 || arrs.length == 0) return;
-		List<Element> es = getElementsByTag(source, p.trim());
+	public static final void remove_Tag(Element source, String p, int... keyarrs) {
+		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
+		Elements es = UtilsJsoup.getElementsByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
-			if (UtilsString.isExist(i, arrs)) es.get(i).remove();
+			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
 	}
 
 	/**
@@ -1116,13 +663,13 @@ public final class UtilsJsoup {
 	 * {0,1}:指从后向前，第1个与第2个进行移除
 	 * @param source Element
 	 * @param p String
-	 * @param arrs int[]
+	 * @param keyarrs int[]
 	 */
-	public static final void remove_TagEnd(Element source, String p, int... arrs) {
-		if (source == null || p == null || p.trim().length() == 0 || arrs.length == 0) return;
-		List<Element> es = getElementsByTag(source, p.trim());
+	public static final void remove_TagEnd(Element source, String p, int... keyarrs) {
+		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
+		Elements es = UtilsJsoup.getElementsByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
-			if (UtilsString.isExist(i, arrs)) es.get(i).remove();
+			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
 	}
 
 	/**
@@ -1150,35 +697,13 @@ public final class UtilsJsoup {
 	/**
 	 * 按照class中的单元移除
 	 * @param source Element
-	 * @param arrs String[]
+	 * @param keyarrs String[]
 	 */
-	public static final void removeClass(Element source, String... arrs) {
-		if (source == null || arrs.length == 0) return;
-		List<Element> list = getElementsByClass(source, arrs);
+	public static final void removeClass(Element source, String... keyarrs) {
+		if (source == null || keyarrs.length == 0) return;
+		Elements list = UtilsJsoup.getElementsByClass(source, keyarrs);
 		for (Element e : list)
 			e.remove();
-	}
-
-	@Deprecated
-	public static final void removeCommonIdClassTag(Element source, String... arrs) {
-		if (source == null || arrs.length == 0) return;
-		for (String e : arrs) {
-			int index = e.indexOf('|');
-			if (index > -1) {/* 含有定位数值 */
-				String key = e.substring(0, index).trim();
-				if (key.length() == 0) continue;
-				String num = e.substring(index + 1, e.length());
-				if (UtilsVerification.isNumeric(num)) {
-					int n = Integer.valueOf(num);
-
-				}
-
-			} else {
-				List<Element> list = getAllElements(source, e);
-				for (Element f : list)
-					f.remove();
-			}
-		}
 	}
 
 	/**
@@ -1188,8 +713,8 @@ public final class UtilsJsoup {
 	 */
 	public static final void removeID(Element source, String... arrs) {
 		if (source == null || arrs.length == 0) return;
-		List<Element> list = getElementByID(source, arrs);
-		for (Element e : list)
+		Elements es = UtilsJsoup.getElementsByID(source, arrs);
+		for (Element e : es)
 			e.remove();
 	}
 
@@ -1200,8 +725,8 @@ public final class UtilsJsoup {
 	 */
 	public static final void removeTag(Element source, String... arrs) {
 		if (source == null || arrs.length == 0) return;
-		List<Element> list = getElementsByTag(source, arrs);
-		for (Element e : list)
+		Elements es = UtilsJsoup.getElementsByTag(source, arrs);
+		for (Element e : es)
 			e.remove();
 	}
 
@@ -1227,4 +752,5 @@ public final class UtilsJsoup {
 	public static final void removeTagReverse(Element source, int size, String... arrs) {
 		remove_ElementRev(source, 2, size, arrs);
 	}
+
 }

@@ -12,8 +12,8 @@ import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsFile;
-import des.wangku.operate.standard.utls.UtilsJsoup;
-import des.wangku.operate.standard.utls.UtilsJsoup.RegularElement;
+import des.wangku.operate.standard.utls.UtilsJsoupCase;
+import des.wangku.operate.standard.utls.UtilsJsoupCase.RegularElement;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsString;
 
@@ -262,7 +262,7 @@ public class AlibabaEnterpriseGoodsClass {
 			Element categoryDiv = document.getElementsByClass("wp-category").first();
 			if (categoryDiv == null) return list;
 			Elements ees = categoryDiv.getElementsByClass("wp-category-nav");
-			Element categoryDiv0 = UtilsJsoup.getElementClassKeyword(ees, "wp-category-nav-title", "分类：");
+			Element categoryDiv0 = UtilsJsoupCase.getElementClassKeyword(ees, "wp-category-nav-title", "分类：");
 			if (categoryDiv0 == null) return list;
 			Element categorynavlist = categoryDiv0.getElementsByClass("wp-category-nav-list").first();
 			if (categorynavlist == null) return list;
@@ -389,7 +389,7 @@ public class AlibabaEnterpriseGoodsClass {
 		 * @return String
 		 */
 		public static final String getBargainnumber(Document doc) {
-			return UtilsJsoup.getTextFirstByClass(doc,"bargain-number");
+			return UtilsJsoupCase.getTextFirstByClass(doc,"bargain-number");
 		}
 		/**
 		 * 数值型转成星级
@@ -446,7 +446,7 @@ public class AlibabaEnterpriseGoodsClass {
 		 * @return String
 		 */
 		public static final String getDeliveryaddr(Document doc) {
-			return UtilsJsoup.getTextFirstByClass(doc,"delivery-addr");
+			return UtilsJsoupCase.getTextFirstByClass(doc,"delivery-addr");
 		}
 
 		/**
@@ -517,10 +517,10 @@ public class AlibabaEnterpriseGoodsClass {
 				Element price1 = tab.getElementsByClass("price-extend").first();
 				Element price2 = tab.getElementsByClass("original-price").first();
 				Element price3 = tab.getElementsByClass("amount").first();
-				List<RegularElement> rlist0 = UtilsJsoup.getKeywordClassRegular(price0, "ladder-\\d+-\\d+");
-				List<RegularElement> rlist1 = UtilsJsoup.getKeywordClassRegular(price1, "ladder-\\d+-\\d+");
-				List<RegularElement> rlist2 = UtilsJsoup.getKeywordClassRegular(price2, "ladder-\\d+-\\d+");
-				List<RegularElement> rlist3 = UtilsJsoup.getKeywordClassRegular(price3, "ladder-\\d+-\\d+");
+				List<RegularElement> rlist0 = UtilsJsoupCase.getKeywordClassRegular(price0, "ladder-\\d+-\\d+");
+				List<RegularElement> rlist1 = UtilsJsoupCase.getKeywordClassRegular(price1, "ladder-\\d+-\\d+");
+				List<RegularElement> rlist2 = UtilsJsoupCase.getKeywordClassRegular(price2, "ladder-\\d+-\\d+");
+				List<RegularElement> rlist3 = UtilsJsoupCase.getKeywordClassRegular(price3, "ladder-\\d+-\\d+");
 
 				StringBuilder sb = new StringBuilder();
 				if (rlist0.size() > 0) {

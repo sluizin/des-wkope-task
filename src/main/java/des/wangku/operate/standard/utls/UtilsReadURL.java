@@ -1,5 +1,6 @@
 package des.wangku.operate.standard.utls;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -55,7 +56,6 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
  * @version 1.0
  * @since jdk1.8
  */
-@SuppressWarnings("deprecation")
 public final class UtilsReadURL {
 	/**
 	 * 参数 - 会员登陆时需要使用的变量，如是否使用会员登陆、登陆界面的一些信息参数
@@ -109,8 +109,10 @@ public final class UtilsReadURL {
 	}
 
 	static final NicelyResynchronizingAjaxController nicelyAjax = new NicelyResynchronizingAjaxController();
-
-	static final WebClient webClient = new WebClient(BrowserVersion.FIREFOX_52);
+	
+	static final BrowserVersion BrowserVer = BrowserVersion.BEST_SUPPORTED;
+	
+	static final WebClient webClient = new WebClient(BrowserVer);
 
 	static {
 		webClient.getOptions().setJavaScriptEnabled(true); //启用JS解释器，默认为true  
@@ -247,6 +249,7 @@ public final class UtilsReadURL {
 			return url;
 		}
 	}
+
 	/**
 	 * 调用url，并不进行js运行，得到html
 	 * @param url String
@@ -254,7 +257,7 @@ public final class UtilsReadURL {
 	 */
 	public static final String getReadUrlDisJs(String url) {
 		/** HtmlUnit请求web页面 */
-		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);
+		WebClient wc = new WebClient(BrowserVer);
 		wc.getOptions().setJavaScriptEnabled(false); //启用JS解释器，默认为true  
 		wc.getOptions().setCssEnabled(false); //禁用css支持  
 		wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
@@ -325,7 +328,7 @@ public final class UtilsReadURL {
 	 * @return String
 	 */
 	public static final String getReadUrlJs(String url, boolean jsEnable, boolean cssEnable, int timeout, long jsTime) {
-		WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);/* HtmlUnit请求web页面 */
+		WebClient wc = new WebClient(BrowserVer);/* HtmlUnit请求web页面 */
 		wc.getOptions().setJavaScriptEnabled(jsEnable); //启用JS解释器，默认为true  
 		wc.getOptions().setCssEnabled(cssEnable); //禁用css支持  
 		wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
@@ -363,7 +366,7 @@ public final class UtilsReadURL {
 			////设置请求报文头里的User-Agent字段  
 			request.setAdditionalHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:6.0.2) Gecko/20100101 Firefox/6.0.2");
 			/** HtmlUnit请求web页面 */
-			WebClient wc = new WebClient(BrowserVersion.FIREFOX_52);
+			WebClient wc = new WebClient(BrowserVer);
 			wc.getOptions().setJavaScriptEnabled(true); //启用JS解释器，默认为true  
 			wc.getOptions().setCssEnabled(false); //禁用css支持  
 			wc.getOptions().setThrowExceptionOnScriptError(false); //js运行错误时，是否抛出异常  
@@ -504,6 +507,7 @@ public final class UtilsReadURL {
 		Document doc = Jsoup.parse(content);
 		return doc;
 	}
+
 	/**
 	 * 得到实际地址
 	 * @param url String
@@ -531,6 +535,7 @@ public final class UtilsReadURL {
 		}
 		return "";
 	}
+
 	/**
 	 * 得到实际地址<br>
 	 * 域名中含有关键字，并排队数组中的含有的关键，如过滤数组中含有关键，则返回
@@ -610,8 +615,8 @@ public final class UtilsReadURL {
 		}
 		String host = url.getHost();
 		if (host == null) return "";
-		try {
-			Socket socket = null;
+		Socket socket = null;
+		try  {
 			if ("http".equals(http)) {
 				socket = new Socket(InetAddress.getByName(host), port);
 			} else {
@@ -620,30 +625,49 @@ public final class UtilsReadURL {
 			//socket.setKeepAlive(true);
 			socket.setSoTimeout(timeout);
 			//socket.setSendBufferSize(200);
+			if (!socket.isConnected()) {
+				logger.debug("Socket连接失败:"+url.toString());
+				return null;
+			}
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			bw.write("GET /" + url.getPath() + " HTTP/1.1\r\n");
-			/*
-			bw.write("Host:" + host + "\r\n");
-			bw.write("Content-Type: text/html\r\n");
-			bw.write("User-Agent:Mozila/4.0(compatible;MSIE5.01;Window NT5.0)\r\n");
-			bw.write("Accept:image/gif.image/jpeg.* /* \r\n");
-			bw.write("Accept-Language:zh-cn\r\n");
-			*/
 			bw.write(UtilsConstsRequestHeader.getRndHeadMapString(host));
-			
-			
+			/*
+			 * bw.write("Host:" + host + "\r\n");
+			 * bw.write("Content-Type: text/html\r\n");
+			 * bw.write("User-Agent:Mozila/4.0(compatible;MSIE5.01;Window NT5.0)\r\n");
+			 * bw.write("Accept:image/gif.image/jpeg.* /* \r\n");
+			 * bw.write("Accept-Language:zh-cn\r\n");
+			 */
 			bw.write("\r\n");
 			bw.flush();
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), code));
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-				//if (line.contains("</html>")) break;
-				//if (line.indexOf("</html>")>-1) break;
+			
+			if(UtilsRnd.getRndBoolean())
+			try (InputStream is=socket.getInputStream();BufferedInputStream bis = new BufferedInputStream(is);){
+				byte[] buffer = new byte[1024];
+				int count = 0;
+				while (true) {
+					count = bis.read(buffer);
+					if (count == -1) break;	
+					String line=new String(buffer, 0, count, code);
+					sb.append(line);
+				}
+			}catch (Exception e1) {
+				e1.printStackTrace();
 			}
-			br.close();
-			bw.close();
+			else
+			try(InputStream is=socket.getInputStream();InputStreamReader isr=new InputStreamReader(is);BufferedReader br = new BufferedReader(isr);) {
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					sb.append(line);
+				}				
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			if (bw != null) bw.close();	
 			if (socket != null && !socket.isClosed()) socket.close();
+
+
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -842,21 +866,23 @@ public final class UtilsReadURL {
 		}
 		return false;
 	}
+
 	/**
 	 * 判断链接是否是死链
 	 * @param url URL
 	 * @return boolean
 	 */
 	public static boolean isConnection(URL url) {
-		return isConnection(url,10000);
+		return isConnection(url, 10000);
 	}
+
 	/**
 	 * 判断链接是否是死链
 	 * @param url URL
 	 * @param timeout int
 	 * @return boolean
 	 */
-	public static boolean isConnection(URL url,int timeout) {
+	public static boolean isConnection(URL url, int timeout) {
 		try {
 			HttpURLConnection http = (HttpURLConnection) url.openConnection();
 			http.setConnectTimeout(timeout);
@@ -868,22 +894,23 @@ public final class UtilsReadURL {
 			return false;
 		}
 	}
+
 	/**
 	 * 得到字符串中的域名Host
 	 * @param host String
 	 * @return String
 	 */
 	public static String getUrlHost(String host) {
-		if(host.indexOf("://")>0) {
+		if (host.indexOf("://") > 0) {
 			try {
 				URL url = new URL(host);
 				return url.getHost();// 获取主机名 
 			} catch (MalformedURLException e) {
 				return host;
 			}
-		}else {
-			int index=host.indexOf('/');
-			if(index>0)return host.substring(0,index);
+		} else {
+			int index = host.indexOf('/');
+			if (index > 0) return host.substring(0, index);
 		}
 		return host;
 	}
@@ -903,15 +930,17 @@ public final class UtilsReadURL {
 		}
 		return null;
 	}
+
 	/**
 	 * 得到 http://www.99114.com
 	 * @param url URL
 	 * @return String
 	 */
 	public static final String getUrlDomain(URL url) {
-		if(url==null)return null;
-		return url.getProtocol()+"://"+url.getHost();
+		if (url == null) return null;
+		return url.getProtocol() + "://" + url.getHost();
 	}
+
 	/**
 	 * 从url中判断是否含有关键字数组，在html之间<br>
 	 * 只支持http与https协议
@@ -981,9 +1010,19 @@ public final class UtilsReadURL {
 		}
 		return false;
 	}
+	public static void main(String[] args) {
+		String href = "http://www.gazww.com/166/zhangjie124040.shtml";
+		try {
+			URL url = new URL(href);
+			System.out.println("result:" + getSocketContent(url, "utf-8",5000));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@SuppressWarnings("unused")
-	public static void main(String[] args) {
+	public static void main2(String[] args) {
 		String href = "https://fanyi.baidu.com/#en/zh/success";
 		try {
 			URL url = new URL(href);

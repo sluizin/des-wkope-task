@@ -27,7 +27,7 @@ public class Books17 {
 	}
 	static final void makefile(String url,String filename,String tagli,String tagcontent,int[] removep) {
 		if(url==null || url.trim().length()==0)return;
-		List<Element> ullist=UtilsJsoup.getAllElements(url, tagli);
+		List<Element> ullist=UtilsJsoup.getElementAll(url, tagli);
 		if(ullist.size()==0) {
 			System.out.println(url+"\t没发现具体内容章节！");
 			return;
@@ -66,11 +66,11 @@ public class Books17 {
 			String content="";
 			name=li.text();
 			name=Books17Utils.filter(name);
-			System.out.println("name:"+name);
+			//System.out.println("name:"+name);
 			Elements hrefarr=li.select("a");
 			if(hrefarr.size()==0)continue;
 			String href=hrefarr.get(0).attr("abs:href");
-			List<Element> contentlist=UtilsJsoup.getAllElements(href,tagcontent);
+			List<Element> contentlist=UtilsJsoup.getElementAll(href,tagcontent);
 			if(contentlist.size()==0)continue;
 			Element condiv=contentlist.get(0);
 
@@ -98,13 +98,13 @@ public class Books17 {
 			
 			content=Filter.filterHtmlSymbol(content);
 
-			System.out.println("content:"+content);
+			//System.out.println("content:"+content);
 			
 			
 			String newname="第"+i+"章 "+name;
 			UtilsFile.writeFile(pathfile, Books17Utils.enter+Books17Utils.enter+Books17Utils.enter+newname+Books17Utils.enter+Books17Utils.enter+Books17Utils.enter);
 			UtilsFile.writeFile(pathfile, content);
-			System.out.println(url+" -> "+filename+" -> "+newname);
+			System.out.println(url+" -> "+filename+"["+i+"/"+len+"] -> "+newname);
 		}
 		long length = file.length();
 		StyleClass sc=Books17Utils.getSC(length);
@@ -118,9 +118,17 @@ public class Books17 {
 	
 	
 	
-	public static void main3(String[] args) 
+	public static void main(String[] args) 
 	{
 		String[] arr= {
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"http://www.17books.net/3/3266/",
+				"",
 				"",
 				"",
 				"",
@@ -145,13 +153,13 @@ public class Books17 {
 	//"http://www.17books.net/2/2589/",
 	//"http://www.17books.net/0/879/",
 
-	public static void main2(String[] args) {
+	public static void main3(String[] args) {
 		String sortfile=ACC_Path+"sortall.txt";
-		int min=151,max=160;
+		int min=5,max=10;
 		for(int i=min;i<=max;i++) {
 			String url="http://www.17books.net/fenlei/7_"+i+".html";
 			System.out.println(i+":->"+url+"\t=============================================================");
-			List<Element> listfirst=UtilsJsoup.getAllElements(url, "alist");
+			List<Element> listfirst=UtilsJsoup.getElementAll(url, "alist");
 			if(listfirst.size()==0) {
 				System.out.println("未查到列表=============================");
 				continue;
@@ -186,7 +194,7 @@ public class Books17 {
 				String ahref=href.attr("abs:href");
 				String listhrefReal=Books17Utils.getReadurl(ahref);
 
-				List<Element> ullist=UtilsJsoup.getAllElements(listhrefReal, "liebiao");
+				List<Element> ullist=UtilsJsoup.getElementAll(listhrefReal, "liebiao");
 				if(ullist.size()==0) {
 					System.out.println(url+"\t没查到列表0");
 					continue;

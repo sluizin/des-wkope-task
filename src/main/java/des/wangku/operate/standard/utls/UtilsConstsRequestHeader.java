@@ -196,6 +196,11 @@ public final class UtilsConstsRequestHeader {
 		map.put("Host", value);
 		return map;
 	}
+	/**
+	 * 输出一个完整的头部串，以\r\n为行结尾
+	 * @param host String
+	 * @return String
+	 */
 	public static final String getRndHeadMapString(String host){
 		Map<String, String> map=getRndHeadMap(host);
 		StringBuilder sb=new StringBuilder(100);

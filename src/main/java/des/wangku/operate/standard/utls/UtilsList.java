@@ -1,6 +1,7 @@
 package des.wangku.operate.standard.utls;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,7 +41,20 @@ public final class UtilsList {
 		}
 		return result;
 	}
-	
+
+	/**
+	 * 将一个数组均分成n个list,主要通过偏移量来实现的
+	 * @param arrs T[];
+	 * @param n int
+	 * @param <T> T
+	 * @return List&lt;List&lt;T&gt;&gt;
+	 */
+	public static <T> List<List<T>> averageAssign(T[] arrs, int n) {
+		if (arrs.length == 0) return new ArrayList<List<T>>();
+		List<T> list = Arrays.asList(arrs);
+		return averageAssign(list, n);
+	}
+
 	/**
 	 * 通过list的大小决定使用池的大小
 	 * @param listLen int
@@ -61,10 +75,11 @@ public final class UtilsList {
 	 * @return list&lt;T&gt;
 	 */
 	public static final <T> List<T> getOrderListByLenDESC(List<T> list) {
-		List<T> list2=getOrderListByLenASC(list);
+		List<T> list2 = getOrderListByLenASC(list);
 		Collections.reverse(list2);
 		return list2;
 	}
+
 	/**
 	 * 数组list按长度进行正序输出
 	 * @param list list&lt;T&gt;
@@ -113,13 +128,14 @@ public final class UtilsList {
 		}
 		return true;
 	}
+
 	/**
 	 * 去重，不允许null
 	 * @param list List&lt;T&gt;
 	 */
-	public static final<T> void distinct(List<T> list) {
-		if(list==null || list.size()<2)return;
-		list=list.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+	public static final <T> void distinct(List<T> list) {
+		if (list == null || list.size() < 2) return;
+		list = list.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
 	}
 
 	/**
@@ -268,9 +284,10 @@ public final class UtilsList {
 		}
 		System.out.println("==================================================");
 	}
+
 	/**
 	 * 对二维list进行判断，是否出现不行列的行,如果所有行同样数量的列，则返回True
-	 * @param list  List&lt;List&lt;String&gt;&gt;
+	 * @param list List&lt;List&lt;String&gt;&gt;
 	 * @return boolean
 	 */
 	public static final boolean testing(List<List<String>> list) {

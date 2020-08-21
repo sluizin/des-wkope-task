@@ -79,7 +79,7 @@ public class UtilsStringFilter {
 		String content = contentHtml;
 		content = UtilsStringFilter.getFileterBrackets(contentHtml, "", UtilsStringFilter.BRACKETS_SMALL);
 		content = UtilsStringFilter.getReplaceHTML(content);
-		content = UtilsJsoup.cleanHtml(content);
+		content = UtilsJsoupCase.cleanHtml(content);
 		content = UtilsStringFilter.getReplaceHTMLReversal(content);
 		content = content.replaceAll("\\<p\\>[\\s|\\t]*\\</p\\>", "").trim();/* 过滤掉<p></p>之间含有多个空格 */
 		return content;

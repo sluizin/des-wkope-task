@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.utls.UtilsConsts;
-import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupCase;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsRnd;
 
@@ -154,7 +154,7 @@ public class AlibabaEnterpriseClass {
 		try {
 			Document document = connect.timeout(10000).maxBodySize(0).get();
 			if (document == null) return;
-			this.content = UtilsJsoup.getTextFirstByClass(document, "detail-info");
+			this.content = UtilsJsoupCase.getTextFirstByClass(document, "detail-info");
 			Elements ess = document.getElementsByClass("info-right");
 			Element es = ess.first();
 			if (es == null) return;
@@ -207,7 +207,7 @@ public class AlibabaEnterpriseClass {
 			Elements ess = document.getElementsByClass("props-part");
 			Element es = ess.first();
 			if (es == null) return;
-			this.linkman = UtilsJsoup.getTextFirstByClass(es, "membername");
+			this.linkman = UtilsJsoupCase.getTextFirstByClass(es, "membername");
 			Element info = es.getElementsByClass("contact-info").first();
 			if (info != null) {
 				Element dl = info.select("dl").select("dd").first();

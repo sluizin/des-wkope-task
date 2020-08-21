@@ -38,35 +38,60 @@ public class Filter {
 		if (content == null || content.length() == 0 || tag == null || tag.length() == 0) return content;
 		return Pattern.compile("(<" + tag + "\\b.*?(?:\\>|\\/>))", Pattern.CASE_INSENSITIVE).matcher(content).replaceAll("");
 	}
+
+	/**
+	 * 过滤掉空格与间括号换行符,制表符
+	 * @param content String
+	 * @return String
+	 */
 	public static final String filterHtmlSymbol(String content) {
-		content=content.replaceAll("&nbsp;","");
-		content=content.replaceAll("<([^>]*)>","");
-		content=content.replaceAll(" ","");
+		content = content.replaceAll("&nbsp;", "");
+		content = content.replaceAll("<([^>]*)>", "");
+		content = content.replaceAll(" ", "");
+		content = content.replaceAll("\\s*|\t|\r|\n","");//去除字符串中的空格,回车,换行符,制表符
 		return content;
 	}
+
+	/**
+	 * 把内容字符串过滤掉特殊的字符如script,img标签
+	 * @param content String
+	 * @return String
+	 */
+	public static final String filter(String content) {
+		if (content == null) return "";
+		content = Filter.filterscript(content);
+		content = Filter.filterscriptvar(content);
+		content = Filter.filterTag(content, "img");
+		content = Filter.filterHtmlEscapecharacter(content);
+		content = Filter.filterHtmlSymbol(content);
+		return content;
+	}
+	/**
+	 * 把转义字符串转成实际字符串或空
+	 * @param content String
+	 * @return String
+	 */
 	public static final String filterHtmlEscapecharacter(String content) {
-		content=content.replaceAll("&amp;","&");
-		content=content.replaceAll("&amp","");
-		content=content.replaceAll("amp;","");
-		
-		
-		content=content.replaceAll("&lt;","<");
-		content=content.replaceAll("&lt","");
-		content=content.replaceAll("lt;","");
-		
-		
-		content=content.replaceAll("&gt;",">");
-		content=content.replaceAll("&gt","");
-		content=content.replaceAll("gt;","");
-		
-		content=content.replaceAll("&apos;","'");
-		content=content.replaceAll("&apos","");
-		content=content.replaceAll("apos;","");
-		
-		content=content.replaceAll("&quot;","\"");
-		content=content.replaceAll("&quot","");
-		content=content.replaceAll("quot;","");
-		
+		content = content.replaceAll("&amp;", "&");
+		content = content.replaceAll("&amp", "");
+		content = content.replaceAll("amp;", "");
+
+		content = content.replaceAll("&lt;", "<");
+		content = content.replaceAll("&lt", "");
+		content = content.replaceAll("lt;", "");
+
+		content = content.replaceAll("&gt;", ">");
+		content = content.replaceAll("&gt", "");
+		content = content.replaceAll("gt;", "");
+
+		content = content.replaceAll("&apos;", "'");
+		content = content.replaceAll("&apos", "");
+		content = content.replaceAll("apos;", "");
+
+		content = content.replaceAll("&quot;", "\"");
+		content = content.replaceAll("&quot", "");
+		content = content.replaceAll("quot;", "");
+
 		return content;
 	}
 

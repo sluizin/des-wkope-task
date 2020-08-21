@@ -105,6 +105,60 @@ public final class UtilsFile {
 	}
 
 	/**
+	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
+	 * @param file File
+	 * @param filename String
+	 * @return String
+	 */
+	public static final String getFilePath(File file, String filename) {
+		if (file == null) return null;
+		if (filename == null || filename.length() == 0) return null;
+		if (file.getName().equalsIgnoreCase(filename)) return file.getAbsolutePath();
+		File[] list = file.listFiles();
+		for (File e : list) {
+			if (e.isFile()) {
+				if (e.getName().equalsIgnoreCase(filename)) return e.getAbsolutePath();
+			}
+			if (e.isDirectory()) {
+				String result = getFilePath(e, filename);
+				if (result != null) return result;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
+	 * @param path String
+	 * @param filename String
+	 * @return String
+	 */
+	public static final String getFilePath(String path, String filename) {
+		if (path == null || path.length() == 0) return null;
+		return getFilePath(new File(path), filename);
+	}
+
+	/**
+	 * 从目录中判断是否有此文件
+	 * @param file File
+	 * @param filename String
+	 * @return String
+	 */
+	public static final boolean isExist(File file, String filename) {
+		return getFilePath(file, filename) != null;
+	}
+
+	/**
+	 * 从目录中判断是否有此文件
+	 * @param path String
+	 * @param filename String
+	 * @return String
+	 */
+	public static final boolean isExist(String path, String filename) {
+		return getFilePath(path, filename) != null;
+	}
+
+	/**
 	 * 建立output目录下的指定文件。需要输入扩展名
 	 * @param proFolder String
 	 * @param filename String
@@ -127,7 +181,7 @@ public final class UtilsFile {
 	 * @param fileExt String
 	 * @return File
 	 */
-	public static File mkOutputRNDFile(String proFolder, String fileExt) {
+	public static final File mkOutputRNDFile(String proFolder, String fileExt) {
 		String filename = UtilsRnd.getNewFilenameNow(4, 1);
 		return mkOutputFile(proFolder, filename, fileExt);
 	}
@@ -144,70 +198,6 @@ public final class UtilsFile {
 			e.printStackTrace();
 		}
 		return new StringBuilder();
-	}
-
-	/**
-	 * 写文件，以追加的方式
-	 * @param filename String
-	 * @param content String
-	 */
-	public static final void writeFile(String filename, String content) {
-		if (filename == null || content == null) return;
-		writeFile(new File(filename), content);
-	}
-
-	/**
-	 * 写文件，以追加的方式
-	 * @param file File
-	 * @param content String
-	 */
-	public static final void writeFile(File file, String content) {
-		if (file == null || content == null) return;
-		try {
-			if (!file.exists()) file.createNewFile();
-			FileWriter fileWritter = new FileWriter(file, true);
-			fileWritter.write(content);
-			fileWritter.close();
-
-		} catch (Exception e) {
-			System.out.println("error:" + file.getAbsolutePath());
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * 向文件头部添加字符串
-	 * @param filepath String
-	 * @param content String
-	 */
-	public static void writeFileHeaderSmall(String filepath, String content) {
-		if (filepath == null || content == null) return;
-		writeFileHeaderSmall(new File(filepath), content);
-	}
-
-	/**
-	 * 向文件头部添加字符串
-	 * @param file File
-	 * @param content String
-	 */
-	public static void writeFileHeaderSmall(File file, String content) {
-		if (file == null || content == null) return;
-		try {
-			byte[] header = content.getBytes();
-			if (!file.exists()) file.createNewFile();
-			RandomAccessFile src = new RandomAccessFile(file, "rw");
-			int srcLength = (int) src.length();
-			byte[] buff = new byte[srcLength];
-			src.read(buff, 0, srcLength);
-			src.seek(0);
-			src.write(header);
-			src.seek(header.length);
-			src.write(buff);
-			src.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	/**
@@ -348,6 +338,69 @@ public final class UtilsFile {
 	}
 
 	/**
+	 * 写文件，以追加的方式
+	 * @param file File
+	 * @param content String
+	 */
+	public static final void writeFile(File file, String content) {
+		if (file == null || content == null) return;
+		try {
+			if (!file.exists()) file.createNewFile();
+			FileWriter fileWritter = new FileWriter(file, true);
+			fileWritter.write(content);
+			fileWritter.close();
+
+		} catch (Exception e) {
+			System.out.println("error:" + file.getAbsolutePath());
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 写文件，以追加的方式
+	 * @param filename String
+	 * @param content String
+	 */
+	public static final void writeFile(String filename, String content) {
+		if (filename == null || content == null) return;
+		writeFile(new File(filename), content);
+	}
+
+	/**
+	 * 向文件头部添加字符串
+	 * @param file File
+	 * @param content String
+	 */
+	public static final void writeFileHeaderSmall(File file, String content) {
+		if (file == null || content == null) return;
+		try {
+			byte[] header = content.getBytes();
+			if (!file.exists()) file.createNewFile();
+			RandomAccessFile src = new RandomAccessFile(file, "rw");
+			int srcLength = (int) src.length();
+			byte[] buff = new byte[srcLength];
+			src.read(buff, 0, srcLength);
+			src.seek(0);
+			src.write(header);
+			src.seek(header.length);
+			src.write(buff);
+			src.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * 向文件头部添加字符串
+	 * @param filepath String
+	 * @param content String
+	 */
+	public static final void writeFileHeaderSmall(String filepath, String content) {
+		if (filepath == null || content == null) return;
+		writeFileHeaderSmall(new File(filepath), content);
+	}
+	/**
 	 * 把excel写到文件中
 	 * @param filename String
 	 * @param wb Workbook
@@ -378,47 +431,5 @@ public final class UtilsFile {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	/**
-	 * 从目录中判断是否有此文件
-	 * @param path String
-	 * @param filename String
-	 * @return String
-	 */
-	public static final boolean isExist(String path, String filename) {
-		return isExistFile(path, filename) != null;
-	}
-
-	/**
-	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
-	 * @param path String
-	 * @param filename String
-	 * @return String
-	 */
-	public static final String isExistFile(String path, String filename) {
-		if (path == null || path.length() == 0) return null;
-		return isExistFile(new File(path), filename);
-	}
-
-	/**
-	 * 从目录中得到某个文件名，结果为null，即没有找到，找到后返回找到的路径
-	 * @param file File
-	 * @param filename String
-	 * @return String
-	 */
-	public static final String isExistFile(File file, String filename) {
-		if (file.getName().equalsIgnoreCase(filename)) return file.getAbsolutePath();
-		File[] list = file.listFiles();
-		for (File e : list) {
-			if (e.isFile()) {
-				if (e.getName().equalsIgnoreCase(filename)) return e.getAbsolutePath();
-			}
-			if (e.isDirectory()) {
-				String result = isExistFile(e, filename);
-				if (result != null) return result;
-			}
-		}
-		return null;
 	}
 }

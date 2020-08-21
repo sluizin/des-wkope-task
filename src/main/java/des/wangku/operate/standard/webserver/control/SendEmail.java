@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import des.wangku.operate.standard.Pv;
@@ -41,16 +43,16 @@ public class SendEmail {
 	 * @return boolean
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/sendparadigm")
+	@CrossOrigin(maxAge = 3600)
+	@RequestMapping(value = "/sendparadigm",method = RequestMethod.POST)
 	public boolean sendFormParadigm(HttpServletRequest request) {
 		String sendEmailTitle = request.getParameter("sendEmailTitle");
 		String emailContent = Utils.getParadigmEmailContent(request);
 		List<String> addressList = Utils.getParameterList(request, "sendEmailAddress");
 		String[] arr = new String[0];
-		String key1 = "sunjian@99114.com";
 		if ((Pv.ACC_ENV == Env.DEV)) {
 			addressList.clear();
-			addressList.add(key1);
+			addressList.add("sunjian@99114.com");
 		}
 		arr = addressList.toArray(arr);
 		String a =sendHtmlMail("1", sendEmailTitle, emailContent, arr);

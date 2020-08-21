@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -531,14 +532,36 @@ public final class UtilsString {
 			combinationString(list, newString);
 		}
 	}
+	/**
+	 * 截断字符串
+	 * @param source String
+	 * @param start String
+	 * @param end String
+	 * @return String
+	 */
+	public static final String cutString(String source,String start,String end) {
+		if(source==null)return null;
+		int index1 = source.indexOf(start);
+		if (index1 == -1) return null;
+		int index2 = source.indexOf(end, index1);
+		if (index2 == -1) return null;
+		String cut = source.substring(index1 + start.length(), index2);
+		return cut;
+	}
 
 	public static void main(String[] args) {
+		String s ="\\u79fb\\u52a8\\u4e92\\u8054&gt;&amp;\\u7f51\\u5e94\\u7528&ldquo;";
+		System.out.println(s);
+		System.out.println(StringEscapeUtils.unescapeJava(s));
+		System.out.println(StringEscapeUtils.unescapeHtml3(s));
+		System.out.println(StringEscapeUtils.unescapeHtml4(s));
+
+		/*
 		String str = "http://www.17books.net/fenlei/[a,009-100].html";
 
 		String[] arrs = splitString(str);
 		for (int i = 0; i < arrs.length; i++)
 			System.out.println(i + ":" + arrs[i]);
-		/*
 		 * String[] ar=keySplit("[110,a-b,c,2-4,30-1,c-a]");
 		 * for(int i=0;i<ar.length;i++)
 		 * System.out.println(i+":"+ar[i]);

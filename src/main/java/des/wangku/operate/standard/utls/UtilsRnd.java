@@ -29,8 +29,16 @@ public final class UtilsRnd {
 	 * 得到0-9随机数<br>
 	 * @return int
 	 */
-	public final static int getRndNum() {
+	public static final int getRndNum() {
 		return rd1.nextInt(10);
+	}
+
+	/**
+	 * 得到随机真假值
+	 * @return boolean
+	 */
+	public static final boolean getRndBoolean() {
+		return getRndNum() > 4;
 	}
 
 	/**
@@ -39,7 +47,7 @@ public final class UtilsRnd {
 	 * @param max int
 	 * @return int
 	 */
-	public final static int getRndInt(final int min, final int max) {
+	public static final int getRndInt(final int min, final int max) {
 		return min + rd1.nextInt(max - min + 1);
 	}
 
@@ -49,7 +57,7 @@ public final class UtilsRnd {
 	 * @param max float
 	 * @return float
 	 */
-	public final static float getRndFloat(final float min, final float max) {
+	public static final float getRndFloat(final float min, final float max) {
 		return min + rd1.nextFloat() * (max - min);
 	}
 
@@ -59,15 +67,16 @@ public final class UtilsRnd {
 	 * @param max long
 	 * @return long
 	 */
-	public final static long getRndLong(final long min, final long max) {
+	public static final long getRndLong(final long min, final long max) {
 		return min + rd1.nextLong() * (max - min);
 	}
+
 	/**
 	 * 百分比，得到是否选中
 	 * @param v float
 	 * @return boolean
 	 */
-	public final static boolean getRndProbability100(float v) {
+	public static final boolean getRndProbability100(float v) {
 		if (v <= 0) return false;
 		if (v >= 100) return true;
 		float val = getRndFloat(0, 100f);
@@ -80,7 +89,7 @@ public final class UtilsRnd {
 	 * @param v float
 	 * @return boolean
 	 */
-	public final static boolean getRndProbability1000(float v) {
+	public static final boolean getRndProbability1000(float v) {
 		if (v <= 0) return false;
 		if (v >= 1000) return true;
 		float val = getRndFloat(0, 1000f);
@@ -93,7 +102,7 @@ public final class UtilsRnd {
 	 * @param arrs float[]
 	 * @return int
 	 */
-	public final static int getRndProbability(float... arrs) {
+	public static final int getRndProbability(float... arrs) {
 		if (arrs.length == 0) return -1;
 		float sort = 0f;
 		for (float e : arrs)
@@ -119,7 +128,7 @@ public final class UtilsRnd {
 	 * @param type int
 	 * @return String
 	 */
-	public final static char getRndCharacter(final int type) {
+	public static final char getRndCharacter(final int type) {
 		switch (type) {
 		case 1:// 随机一位数字 0 - 9
 			return (char) (getRndNum() + 48);
@@ -158,7 +167,7 @@ public final class UtilsRnd {
 	 * @param type int
 	 * @return char[]
 	 */
-	public final static char[] getRndCharacters(final int len, final int type) {
+	public static final char[] getRndCharacters(final int len, final int type) {
 		if (len <= 0) return ArrayNull;
 		final char[] newarray = new char[len];
 		for (int i = 0; i < len; i++) {
@@ -182,7 +191,7 @@ public final class UtilsRnd {
 	 * @param type int
 	 * @return String
 	 */
-	public final static String getRndString(final int len, final int type) {
+	public static final String getRndString(final int len, final int type) {
 		return new String(getRndCharacters(len, type));
 	}
 
@@ -200,7 +209,7 @@ public final class UtilsRnd {
 	 * @param type int
 	 * @return String
 	 */
-	public final static String getNewFilenameNow(final int len, final int type) {
+	public static final String getNewFilenameNow(final int len, final int type) {
 		return UtilsDate.getDateTimeNow("yyyyMMddHHmmss") + getRndString(len, type);
 	}
 }

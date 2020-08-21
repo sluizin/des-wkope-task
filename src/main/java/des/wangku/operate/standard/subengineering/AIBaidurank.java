@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupCase;
 import des.wangku.operate.standard.utls.UtilsString;
 
 /**
@@ -56,7 +57,7 @@ public class AIBaidurank {
 			URL url = new URL(aizhan);
 			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
 			if (doc == null) return aiInfor;
-			List<String> resultlist=UtilsJsoup.getHrefTagBy(doc, 0, "baidurank-pager");
+			List<String> resultlist=UtilsJsoupCase.getLinkTagBy(doc, 0, "baidurank-pager");
 			//String[] arrs = UtilsJsoup.getAHrefTagArrayByClass(doc,true,removeclass, "baidurank-pager");
 			if (resultlist.size() <= 1) {
 				aiInfor.list.addAll(getInforList(aizhan, urlPath, type));

@@ -22,7 +22,7 @@ public class ReadBook {
 
 	static final void makefile(String url,String path) {
 		String title=null;
-		List<Element> list=UtilsJsoup.getAllElements(url, "infot");
+		List<Element> list=UtilsJsoup.getElementAll(url, "infot");
 		if(list.size()==0)return;	
 		title=list.get(0).text();
 		String filename=path+"/"+title+".txt";
@@ -31,7 +31,7 @@ public class ReadBook {
 			System.out.println("发现同名文件！！！");
 			return;
 		}
-		list=UtilsJsoup.getAllElements(url, "liebiao");
+		list=UtilsJsoup.getElementAll(url, "liebiao");
 		if(list.size()==0)return;
 		Elements els=list.get(0).select("li");
 		for(int i=1,len=els.size();i<len;i++) {
@@ -42,7 +42,7 @@ public class ReadBook {
 			Elements hrefarr=li.select("a");
 			if(hrefarr.size()==0)continue;
 			String href=hrefarr.get(0).attr("abs:href");
-			List<Element> contentlist=UtilsJsoup.getAllElements(href, "content");
+			List<Element> contentlist=UtilsJsoup.getElementAll(href, "content");
 			if(contentlist.size()==0)continue;
 			Element condiv=contentlist.get(0);
 			Element first=condiv.select("p").get(0);

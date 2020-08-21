@@ -13,7 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.utls.UtilsCpdetector;
-import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupCase;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 
 /**
@@ -89,11 +89,11 @@ public class News_Infor {
 				logger.debug("find\t" + newUrl.toString() + "\t已注册，但未提取到数据!!!!!\tcode:" + code);
 				return;
 			}
-			keywords = UtilsJsoup.getMetaContent(doc, "keywords");
-			description = UtilsJsoup.getMetaContent(doc, "description");
+			keywords = UtilsJsoupCase.getBaseMetaContent(doc, "keywords");
+			description = UtilsJsoupCase.getBaseMetaContent(doc, "description");
 			ee.Initialization(doc);
 			String content = ee.getContent();
-			contenthtml = ishtml ? content : UtilsJsoup.cleanHtml(content);//ee.getContent();
+			contenthtml = ishtml ? content : UtilsJsoupCase.cleanHtml(content);//ee.getContent();
 			contentpict = "";
 			if (ee.targetElement != null) {
 				Element target = ee.targetElement;
