@@ -513,11 +513,9 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	 */
 	public ResultTable getResultTable(String title) {
 		if (title == null) return null;
-		CTabItem[] arrs = this.getItems();
-		for (CTabItem e : arrs) {
-			Control econtrol = e.getControl();
-			if (econtrol instanceof ResultTable && e.getText().equals(title)) return (ResultTable) econtrol;
-		}
+		ResultTable[] arr=getResultTables();
+		for(ResultTable e:arr)
+			if(title.equals(e.title))return e;
 		return null;
 	}
 
@@ -544,10 +542,10 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 	 */
 	public ResultTable[] getResultTablesByTitle(String...titleArrs) {
 		List<ResultTable> list=new ArrayList<>();
-		for(String title:titleArrs) {
-			ResultTable e=getResultTable(title);
-			if(e!=null)list.add(e);
-		}		
+		ResultTable[] arr=getResultTables();
+		for(ResultTable e:arr) {
+			if(UtilsArrays.isExist(e.title, titleArrs))list.add(e);
+		}
 		return UtilsArrays.toArray(ResultTable.class, list);
 	}
 
@@ -582,10 +580,6 @@ public abstract class AbstractCTabFolder extends CTabFolder implements Interface
 		CTabItem target = this.getSelection();
 		if (target == null) return null;
 		return target.getText();
-	}
-
-	public final String[] getSheetNames() {
-		return getCTableTitle();
 	}
 
 	/**

@@ -42,6 +42,20 @@ public final class UtilsRnd {
 	}
 
 	/**
+	 * 得到多个min-max之间的随机数，结果为数组
+	 * @param len int
+	 * @param min int
+	 * @param max int
+	 * @return int
+	 */
+	public static final int[] getRndIntArray(final int len,final int min, final int max) {
+		if(len<=0)return new int[0];
+		int[] arr=new int[len];
+		for(int i=0;i<len;i++)
+			arr[i]=getRndInt(min,max);
+		return arr;
+	}
+	/**
 	 * 得到min-max之间的随机数
 	 * @param min int
 	 * @param max int

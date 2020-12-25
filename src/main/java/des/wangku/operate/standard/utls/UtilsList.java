@@ -8,12 +8,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 /**
  * 对list进行分割，或线程池的分配
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
  */
+@SuppressWarnings("unchecked")
 public final class UtilsList {
 
 	/**
@@ -123,9 +128,8 @@ public final class UtilsList {
 	 * @return boolean
 	 */
 	public static final boolean isBlankLines(List<String> list) {
-		for (String e : list) {
+		for (String e : list)
 			if (e != null && e.length() > 0) return false;
-		}
 		return true;
 	}
 
@@ -133,9 +137,81 @@ public final class UtilsList {
 	 * 去重，不允许null
 	 * @param list List&lt;T&gt;
 	 */
-	public static final <T> void distinct(List<T> list) {
-		if (list == null || list.size() < 2) return;
-		list = list.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+	public static final <T> List<T> distinct(List<T> list) {
+		if (list == null || list.size() < 2) return list;
+		return list.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+	}
+
+	/**
+	 * 去重，不允许null
+	 * @param arr T[]
+	 * @return List&lt;T&gt;
+	 */
+	public static final <T> List<T> distinct(T... arr) {
+		return distinct(Arrays.asList(arr));
+	}
+
+	/**
+	 * 去重，不允许null
+	 * @param es Elements
+	 * @return Elements
+	 */
+	public static final Elements distinct(Elements es) {
+		if (es == null || es.size() < 2) return es;
+		List<Element> list = es;
+		return new Elements(distinct(list));
+	}
+
+	/**
+	 * 去重，不允许null，只针对html内容，跟位置无关
+	 * @param es Elements
+	 * @return Elements
+	 */
+	public static final Elements distinctHtml(Elements es) {
+		if (es == null || es.size() < 2) return es;
+		Elements ess = new Elements();
+		loop: for (Element e : es) {
+			for (Element f : ess)
+				if (f.html().equals(e.html())) continue loop;
+			ess.add(e);
+		}
+		return ess;
+	}
+
+	/**
+	 * 去重，不允许null，只针对Text内容，跟位置无关
+	 * @param es Elements
+	 * @return Elements
+	 */
+	public static final Elements distinctText(Elements es) {
+		Elements ess = new Elements();
+		if (es == null || es.size() == 0) return ess;
+		loop: for (Element e : es) {
+			for (Element f : ess) {
+				if (f.text().equals(e.text())) continue loop;
+			}
+			ess.add(e);
+		}
+		return ess;
+	}
+
+	/**
+	 * 按指定大小，分隔集合，将集合按规定个数分为n个部分
+	 * @param <T>
+	 * @param list
+	 * @param len
+	 * @return
+	 */
+	public static <T> List<List<T>> splitList(List<T> list, int len) {
+		if (list == null || list.isEmpty() || len < 1) return Collections.emptyList();
+		List<List<T>> result = new ArrayList<>(len);
+		int size = list.size();
+		int count = (size + len - 1) / len;
+		for (int i = 0; i < count; i++) {
+			List<T> subList = list.subList(i * len, ((i + 1) * len > size ? size : len * (i + 1)));
+			result.add(subList);
+		}
+		return result;
 	}
 
 	/**
@@ -236,43 +312,107 @@ public final class UtilsList {
 	}
 
 	public static void main(String[] args) {
-		List<List<String>> list = new ArrayList<>();
-		{
-			List<String> l = new ArrayList<>();
-			String[] arr = { "a", "b", "c", "d", "e", "f" };
-			Collections.addAll(l, arr);
-			list.add(l);
-		}
-		{
-			List<String> l = new ArrayList<>();
-			String[] arr = { "a1", "b1", "", "d1", "", "f1" };
-			Collections.addAll(l, arr);
-			list.add(l);
-		}
-		{
-			List<String> l = new ArrayList<>();
-			String[] arr = { "a2", "", "", "", "e2", "" };
-			Collections.addAll(l, arr);
-			list.add(l);
-		}
-		{
-			List<String> l = new ArrayList<>();
-			String[] arr = { "", "b3", "c3", "d3", "", "f3" };
-			Collections.addAll(l, arr);
-			list.add(l);
-		}
-		{
-			List<String> l = new ArrayList<>();
-			String[] arr = { "a4", "b4", "", "d4", "", "f4" };
-			Collections.addAll(l, arr);
-			list.add(l);
-		}
-		show(list);
-		setGoUPList(list, 1, 1, 4, 4);
-		show(list);
-		setPrecipitateList(list, 1, 1, 4, 4);
-		show(list);
+		boolean isgo = false;
 
+		StringBuilder sb = new StringBuilder();
+		sb.append("<dd><a href='/4.html'>4</a></dd>");
+		sb.append("<dd><a href=\"/1.html\">1</a></dd>");
+		sb.append("<dd><a href=\"/2.html\">2</a></dd>");
+		sb.append("<dd><a href='/3.html'>3</a></dd>");
+		sb.append("<dd><a href='/4.html'>4</a></dd>");
+
+		sb.append("<dd><a href='/5.html'>5</a></dd>");
+		sb.append("<dd><a href='/6.html'>6</a></dd>");
+		sb.append("<dd><a href='/7.html'>7</a></dd>");
+		sb.append("<dd><a href='/8.html'>8</a></dd>");
+		sb.append("<dd><a href='/9.html'>9</a></dd>");
+		sb.append("<dd><a href='/4.html'>4</a></dd>");
+		sb.append("<dd><a href='/7.html'>7</a></dd>");
+		sb.append("<dd><a href='/4.html'>4</a></dd>");
+
+		Document doc = UtilsJsoup.getRebuildDoc("http://www.99114.com", sb.toString());
+		System.out.println("doc.html():" + doc.html());
+
+		System.out.println("--------------------------------------------------------");
+		System.out.println("doc.body:" + doc.body());
+		System.out.println("--------------------------------------------------------");
+		Elements es = UtilsJsoup.getElementAll(doc, "{T}dd");
+		for (Element e : es) {
+			System.out.println("[" + es.size() + "]e:" + e.html());
+			System.out.println("-----------------------------");
+		}
+		System.out.println("--------------------------------------------------------" + doc.baseUri());
+		Elements ess = UtilsList.distinctHtml(es);
+		for (Element e : ess) {
+			System.out.println("[" + ess.size() + "]e:" + e.html() + "\thref:" + e.attr("abs:href"));
+			Elements as = e.select("a[href]");
+			System.out.println("=" + as.first().attr("abs:href"));
+			System.out.println("=============================");
+		}
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.println("--------------------------------------------------------");
+		System.out.println("--------------------------------------------------------");
+		System.out.println("--------------------------------------------------------");
+		System.out.println("--------------------------------------------------------");
+		System.out.println("--------------------------------------------------------");
+
+		if (isgo) {
+			String[] arrss = { "http://www.gazww.com/4823.shtml", "aa", "", "http://www.gazww.com/4823.shtml", "", ""
+
+			};
+			List<String> aalist = UtilsList.distinct(arrss);
+			for (String e : aalist)
+				System.out.println("e:" + e);
+			List<String> bblist = new ArrayList<>();
+			bblist.add("cc");
+			bblist.add("http://www.gazww.com/4823.shtml");
+			bblist.add("ee");
+			bblist.add("http://www.gazww.com/4823.shtml");
+			bblist.add("ee");
+			List<String> bblist2 = UtilsList.distinct(bblist);
+			for (String e : bblist2)
+				System.out.println("eee:" + e);
+
+			List<List<String>> list = new ArrayList<>();
+			{
+				List<String> l = new ArrayList<>();
+				String[] arr = { "a", "b", "c", "d", "e", "f" };
+				Collections.addAll(l, arr);
+				list.add(l);
+			}
+			{
+				List<String> l = new ArrayList<>();
+				String[] arr = { "a1", "b1", "", "d1", "", "f1" };
+				Collections.addAll(l, arr);
+				list.add(l);
+			}
+			{
+				List<String> l = new ArrayList<>();
+				String[] arr = { "a2", "", "", "", "e2", "" };
+				Collections.addAll(l, arr);
+				list.add(l);
+			}
+			{
+				List<String> l = new ArrayList<>();
+				String[] arr = { "", "b3", "c3", "d3", "", "f3" };
+				Collections.addAll(l, arr);
+				list.add(l);
+			}
+			{
+				List<String> l = new ArrayList<>();
+				String[] arr = { "a4", "b4", "", "d4", "", "f4" };
+				Collections.addAll(l, arr);
+				list.add(l);
+			}
+			show(list);
+			setGoUPList(list, 1, 1, 4, 4);
+			show(list);
+			setPrecipitateList(list, 1, 1, 4, 4);
+			show(list);
+		}
 	}
 
 	static final void show(List<List<String>> list) {

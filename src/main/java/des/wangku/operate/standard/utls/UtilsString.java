@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -112,6 +111,19 @@ public final class UtilsString {
 		if (key == null) return false;
 		for (String e : arrs)
 			if (key.equals(e)) return true;
+		return false;
+	}
+
+	/**
+	 * 判断数组中的多个字符串是否在line中出现(indexof)，区分大小写
+	 * @param line String
+	 * @param arrs String[]
+	 * @return boolean
+	 */
+	public static final boolean isExistKey(String line, String... arrs) {
+		if (line == null) return false;
+		for (String e : arrs)
+			if (line.indexOf(e) > -1) return true;
 		return false;
 	}
 
@@ -492,7 +504,7 @@ public final class UtilsString {
 				}
 			}
 		}
-		UtilsList.distinct(list);/* 去重 */
+		list = UtilsList.distinct(list);/* 去重 */
 		return list.toArray(arr);
 	}
 
@@ -507,11 +519,13 @@ public final class UtilsString {
 		String newstr = str.trim();
 		List<String> list = new ArrayList<>();
 		combinationString(list, newstr);
-		UtilsList.distinct(list);/* 去重 */
+		list = UtilsList.distinct(list);/* 去重 */
 		return list.toArray(arr);
 	}
-	/** 正则 间括号  */
+
+	/** 正则 间括号 */
 	static final String ACC_Combination = "\\[[^]]*\\]";
+
 	/**
 	 * 把字符串http://www.books.net/fenlei/[a-c]_[a,1-2].html转成不同组合并放在List中<br>
 	 * 使用递归调用<br>
@@ -532,36 +546,161 @@ public final class UtilsString {
 			combinationString(list, newString);
 		}
 	}
+
 	/**
-	 * 截断字符串
+	 * 得到key字符串在content中的重复率，即content中有多少key中的字符<br>
+	 * 如返回80，则key6中有百分之80的字符出现在content中
+	 * @param content String
+	 * @param key String
+	 * @return String
+	 */
+	public static final int repetitionRate(String content, String key) {
+		if (content == null || content.length() == 0) return 0;
+		if (key == null || key.length() == 0) return 0;
+		int len = key.length();
+		int sort = 0;
+		for (int i = 0; i < len; i++) {
+			char c = key.charAt(i);
+			if (content.indexOf(c) > -1) sort++;
+		}
+		float v = (float) sort / (float) len * 100;
+		//System.out.println(sort+"="+len+"\t"+v);
+		return (int) (v);
+	}
+
+	/**
+	 * 截断字符串，如果没有找到，则返回null
 	 * @param source String
 	 * @param start String
 	 * @param end String
 	 * @return String
 	 */
-	public static final String cutString(String source,String start,String end) {
-		if(source==null)return null;
-		int index1 = source.indexOf(start);
-		if (index1 == -1) return null;
-		int index2 = source.indexOf(end, index1);
-		if (index2 == -1) return null;
-		String cut = source.substring(index1 + start.length(), index2);
-		return cut;
+	public static final String cutString(String source, String start, String end) {
+		String[] arr=cutStrings(source,start,end);
+		if(arr.length==0)return null;
+		return arr[0];
+	}
+	/**
+	 * 截取字符串，产生多个字符串，为开始与结尾之间的字符串
+	 * @param source String
+	 * @param start String
+	 * @param end String
+	 * @return String[]
+	 */
+	public static final String[] cutStrings(String source, String start, String end) {
+		String[] arrs = {};
+		if (source == null || source.length() == 0) return arrs;
+		if (start == null || start.length() == 0) return arrs;
+		if (end == null || end.length() == 0) return arrs;
+		int index1 = 0, index2 = 0;
+		List<String> list = new ArrayList<>();
+		while ((index1 = source.indexOf(start, index1)) > -1) {
+			index2 = source.indexOf(end, index1);
+			if (index2 == -1) break;
+			String cut = source.substring(index1 + start.length(), index2);
+			int lastStart = cut.lastIndexOf(start);
+			if (lastStart > -1) cut = cut.substring(lastStart + start.length());
+			list.add(cut);
+			index1 = index2 + end.length();
+		}
+		if (list.size() == 0) return arrs;
+		return list.toArray(arrs);
+	}
+
+	public static String removeStr(String src, String str) {
+		if (src == null || str == null) return src;
+		int idx = src.indexOf(str);
+		if (idx == -1) return src;
+		int pst = 0;
+		char[] cs = src.toCharArray();
+		char[] rs = new char[src.length() - str.length()];
+		for (int i = 0; i < cs.length; i++) {
+			if (i >= idx && i < idx + str.length()) continue;
+			rs[pst] = cs[i];
+			pst++;
+		}
+		return new String(rs);
+	}
+
+	public static String replaceStr(String src, String target, String replacement) {
+		if (src == null || target == null || replacement == null) return src;
+		int idx = src.indexOf(target);
+		if (idx == -1) return src;
+		int pst = 0;
+		char[] cs = src.toCharArray();
+		char[] rs = new char[src.length() - target.length() + replacement.length()];
+		for (int i = 0; i < cs.length; i++) {
+			if (i == idx) {
+				for (char c : replacement.toCharArray()) {
+					rs[pst] = c;
+					pst++;
+				}
+				continue;
+			}
+			if (i > idx && i < idx + target.length()) continue;
+			rs[pst] = cs[i];
+			pst++;
+		}
+		return new String(rs);
+	}
+
+	/**
+	 * @param src
+	 * @param target
+	 * @param replacement
+	 * @return
+	 */
+	public static String replaceAllStr(String src, String target, String replacement) {
+		if (src == null || target == null || replacement == null) return src;
+		int idx = src.indexOf(target);
+		if (idx == -1) return src;
+		int pst = 0;
+		char[] cs = src.toCharArray();
+		char[] rs = new char[src.length() - target.length() + replacement.length()];
+		for (int i = 0; i < cs.length; i++) {
+			if (i == idx) {
+				for (char c : replacement.toCharArray()) {
+					rs[pst] = c;
+					pst++;
+				}
+				continue;
+			}
+			if (i > idx && i < idx + target.length()) continue;
+			rs[pst] = cs[i];
+			pst++;
+		}
+		return replaceAllStr(new String(rs), target, replacement);
 	}
 
 	public static void main(String[] args) {
-		String s ="\\u79fb\\u52a8\\u4e92\\u8054&gt;&amp;\\u7f51\\u5e94\\u7528&ldquo;";
-		System.out.println(s);
-		System.out.println(StringEscapeUtils.unescapeJava(s));
-		System.out.println(StringEscapeUtils.unescapeHtml3(s));
-		System.out.println(StringEscapeUtils.unescapeHtml4(s));
-
+		String content="aa<b>bb<b>cc</b>dd<b>ee</b>ff<b>xx<b>hh</b>gg";
+		String[] arr=cutStrings(content,"<b>","</b>");
+		for(String e:arr) {
+			System.out.println("e:"+e);
+		}
 		/*
-		String str = "http://www.17books.net/fenlei/[a,009-100].html";
-
-		String[] arrs = splitString(str);
-		for (int i = 0; i < arrs.length; i++)
-			System.out.println(i + ":" + arrs[i]);
+		String content = "abcaa" + ACC_ENTER + "bbccaaee" + ACC_ENTER + "aaaaa";
+		String val = ACC_ENTER;
+		System.out.println("count:" + UtilsRegular.getPatternCount(content, val));
+	*/
+		/*
+		 * String content="aa<font>bb<font>cc</font>dd</font>";
+		 * String str=cutString(content,"<font>","</font>");
+		 * System.out.println("::"+str);
+		 * content="aabbccdeabefhjuabcdefzklaccggkfg";
+		 * String key="abcdefzklaccgg";
+		 * System.out.println("repetitionRate:"+repetitionRate(content,key));
+		 */
+		/*
+		 * String s ="\\u79fb\\u52a8\\u4e92\\u8054&gt;&amp;\\u7f51\\u5e94\\u7528&ldquo;";
+		 * System.out.println(s);
+		 * System.out.println(StringEscapeUtils.unescapeJava(s));
+		 * System.out.println(StringEscapeUtils.unescapeHtml3(s));
+		 * System.out.println(StringEscapeUtils.unescapeHtml4(s));
+		 * String str = "http://www.17books.net/fenlei/[a,009-100].html";
+		 * String[] arrs = splitString(str);
+		 * for (int i = 0; i < arrs.length; i++)
+		 * System.out.println(i + ":" + arrs[i]);
 		 * String[] ar=keySplit("[110,a-b,c,2-4,30-1,c-a]");
 		 * for(int i=0;i<ar.length;i++)
 		 * System.out.println(i+":"+ar[i]);

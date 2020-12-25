@@ -47,15 +47,16 @@ public final class UtilsVerification {
 	}
 
 	/**
-	 * 判断字符串是否整型
+	 * 判断字符串是否整型 含正整数与负整数
 	 * @param str String
 	 * @return boolean
 	 */
 	public static boolean isDigital(String str) {
-		if (str == null || str.length() == 0) return false;
-		Pattern p = Pattern.compile("\\d+");
+		if (str == null) return false;
+		str=str.trim();
+		if (str.length() == 0) return false;
+		Pattern p = Pattern.compile("-?[0-9]+(.[0-9]+)?");
 		Matcher m = p.matcher(str);
-		if (m == null) return false;
 		return m.matches();
 	}
 
@@ -115,6 +116,11 @@ public final class UtilsVerification {
 		String content = "abc[p10中a]ef";
 		System.out.println("Hello World!:" + getStringID(content));
 		System.out.println("Hello World!:" + getStringName(content));
+		String key="6,-17,25, 15, -20,20a";
+		String[] arr=key.split(",");
+		for(String e:arr) {
+			System.out.println(e+":"+isDigital(e));
+		}
 	}
 
 	/**
@@ -225,5 +231,15 @@ public final class UtilsVerification {
 		}		
 		return true;
 	}
-
+	/**
+	 * 判断数组中是否含有真的字符串，null或空，都为假的字符串<br>
+	 * 数组中只有含有一个非null，过滤两边空格后长度大于0，则返回true，其它返回false<br>
+	 * @param arr String[]
+	 * @return boolean
+	 */
+	public static final boolean isRealVal(String...arr) {
+		for(String e:arr)
+			if(e!=null && e.trim().length()>0)return true;
+		return false;
+	}
 }

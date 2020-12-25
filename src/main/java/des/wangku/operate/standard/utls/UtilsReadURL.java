@@ -4,10 +4,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -64,14 +67,14 @@ public final class UtilsReadURL {
 	 * @since jdk1.8
 	 */
 	public static final class LoginParameter {
-		boolean isUser = false;
-		String logUrl = "";
-		String logcheckUrl = "";
 		String formID = "";
-		String inputNameUsername = "";
-		String username = "";
 		String inputNamePassword = "";
+		String inputNameUsername = "";
+		boolean isUser = false;
+		String logcheckUrl = "";
+		String logUrl = "";
 		String password = "";
+		String username = "";
 
 		/**
 		 * @param isUser boolean
@@ -95,9 +98,15 @@ public final class UtilsReadURL {
 		}
 	}
 
-	static Logger logger = LoggerFactory.getLogger(UtilsReadURL.class);
+	static final BrowserVersion BrowserVer = BrowserVersion.BEST_SUPPORTED;
 
 	static Map<String, String> datas2 = new HashMap<>();
+
+	static Logger logger = LoggerFactory.getLogger(UtilsReadURL.class);
+
+	static final NicelyResynchronizingAjaxController nicelyAjax = new NicelyResynchronizingAjaxController();
+
+	static final WebClient webClient = new WebClient(BrowserVer);
 
 	static {
 		datas2.put("from", "en");
@@ -107,12 +116,6 @@ public final class UtilsReadURL {
 		datas2.put("sign", "14348.318269");
 		datas2.put("token", "4edbf8229215f26c6b401aaf693466a3");
 	}
-
-	static final NicelyResynchronizingAjaxController nicelyAjax = new NicelyResynchronizingAjaxController();
-	
-	static final BrowserVersion BrowserVer = BrowserVersion.BEST_SUPPORTED;
-	
-	static final WebClient webClient = new WebClient(BrowserVer);
 
 	static {
 		webClient.getOptions().setJavaScriptEnabled(true); //启用JS解释器，默认为true  
@@ -125,6 +128,120 @@ public final class UtilsReadURL {
 		webClient.setCssErrorHandler(new SilentCssErrorHandler());
 		webClient.getOptions().setPopupBlockerEnabled(true);
 		webClient.getOptions().setRedirectEnabled(true);
+	}
+
+	/**
+	 * 下载文件到当地
+	 * @param urlstr String
+	 * @param savePath String
+	 * @return File
+	 */
+	public static final File downfile(String urlstr, String savePath) {
+		if (urlstr == null || savePath == null) return null;
+		try {
+			URL url = new URL(urlstr);
+			String filename = UtilsReadURL.getFileName(url);
+			return downfile(url, filename, savePath);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 下载文件到当地
+	 * @param urlstr String
+	 * @param fileName String
+	 * @param savePath String
+	 * @return File
+	 */
+	public static final File downfile(String urlstr, String fileName, String savePath) {
+		try {
+			URL url = new URL(urlstr);
+			return downfile(url, fileName, savePath);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 下载文件到当地
+	 * @param urlstr String
+	 * @param fileName String
+	 * @param savePath String
+	 * @return File
+	 */
+	public static final synchronized File downfile(URL url, String fileName, String savePath) {
+		try {
+			URLConnection con = url.openConnection();
+			if (fileName == null || fileName.length() == 0) fileName = getFileName(con);
+			if (fileName == null) return null;
+			HttpURLConnection conn = (HttpURLConnection) con;
+			conn.setConnectTimeout(50 * 1000);
+			conn.setReadTimeout(30*1000);
+			conn = UtilsConstsRequestHeader.getRndRequestProperty(conn);//得到输入流
+			InputStream inputStream = conn.getInputStream();//获取自己数组
+			byte[] getData = UtilsFile.readInputStream(inputStream);//文件保存位置
+			File saveDir = new File(savePath);
+			if (!saveDir.exists()) saveDir.mkdir();
+			File file = new File(saveDir + File.separator + fileName);
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(getData);
+			if (fos != null) fos.close();
+			if (inputStream != null) inputStream.close();
+			return file;
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 通过URLConnection得到文件名
+	 * @param url URL
+	 * @return String
+	 */
+	public static String getFileName(URL url) {
+		if (url == null) return null;
+		String filename = null;
+		try {
+			filename = getFileName(url.openConnection());
+			if (filename != null && filename.length() > 0) return filename;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 通过URLConnection得到文件名
+	 * @param conn URLConnection
+	 * @return String
+	 */
+	public static String getFileName(URLConnection conn) {
+		if (conn == null) return null;
+		Map<String, List<String>> hf = conn.getHeaderFields();
+		if (hf == null) return null;
+		Set<String> key = hf.keySet();
+		if (key == null) return null;
+		try {
+			for (String skey : key) {
+				List<String> values = hf.get(skey);
+				for (String value : values) {
+					String result = new String(value.getBytes("ISO-8859-1"), "GBK");
+					int location = result.indexOf("filename");
+					if (location >= 0) {
+						result = result.substring(location + "filename".length());
+						return result.substring(result.indexOf("=") + 1);
+					}
+				}
+			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		URL url = conn.getURL();
+		String urlString = url.toString();
+		return urlString.substring(urlString.lastIndexOf("/") + 1);
 	}
 
 	public static void getJString(String keyword) {
@@ -504,7 +621,7 @@ public final class UtilsReadURL {
 	 */
 	public static final Document getRealContentDocument(String domain, String url, String code) {
 		String content = UtilsReadURL.getRealContent(domain, url, code);
-		Document doc = Jsoup.parse(content);
+		Document doc = Jsoup.parse(content,domain);
 		return doc;
 	}
 
@@ -616,7 +733,7 @@ public final class UtilsReadURL {
 		String host = url.getHost();
 		if (host == null) return "";
 		Socket socket = null;
-		try  {
+		try {
 			if ("http".equals(http)) {
 				socket = new Socket(InetAddress.getByName(host), port);
 			} else {
@@ -626,7 +743,7 @@ public final class UtilsReadURL {
 			socket.setSoTimeout(timeout);
 			//socket.setSendBufferSize(200);
 			if (!socket.isConnected()) {
-				logger.debug("Socket连接失败:"+url.toString());
+				logger.debug("Socket连接失败:" + url.toString());
 				return null;
 			}
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -641,33 +758,29 @@ public final class UtilsReadURL {
 			 */
 			bw.write("\r\n");
 			bw.flush();
-			
-			if(UtilsRnd.getRndBoolean())
-			try (InputStream is=socket.getInputStream();BufferedInputStream bis = new BufferedInputStream(is);){
+
+			if (UtilsRnd.getRndBoolean()) try (InputStream is = socket.getInputStream(); BufferedInputStream bis = new BufferedInputStream(is);) {
 				byte[] buffer = new byte[1024];
 				int count = 0;
 				while (true) {
 					count = bis.read(buffer);
-					if (count == -1) break;	
-					String line=new String(buffer, 0, count, code);
+					if (count == -1) break;
+					String line = new String(buffer, 0, count, code);
 					sb.append(line);
 				}
-			}catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			else
-			try(InputStream is=socket.getInputStream();InputStreamReader isr=new InputStreamReader(is);BufferedReader br = new BufferedReader(isr);) {
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-				}				
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			if (bw != null) bw.close();	
+			else try (InputStream is = socket.getInputStream(); InputStreamReader isr = new InputStreamReader(is); BufferedReader br = new BufferedReader(isr);) {
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					sb.append(line);
+				}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			if (bw != null) bw.close();
 			if (socket != null && !socket.isClosed()) socket.close();
-
-
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -799,6 +912,72 @@ public final class UtilsReadURL {
 	}
 
 	/**
+	 * 从地址中提取 http://www.sohu.com
+	 * @param url String
+	 * @return String
+	 */
+	public static final String getUrlDomain(String url) {
+		if (url == null || url.trim().length() == 0) return null;
+		try {
+			String newUrl = url.trim().replaceAll("\\\\", "/");
+			return getUrlDomain(new URL(newUrl));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 得到 http://www.99114.com
+	 * @param url URL
+	 * @return String
+	 */
+	public static final String getUrlDomain(URL url) {
+		if (url == null) return null;
+		return url.getProtocol() + "://" + url.getHost();
+	}
+
+	/**
+	 * 得到基本网址 http://www.99114.com/
+	 * @param e Element e
+	 * @return String
+	 */
+	public static final String getUrlDomain(Element e) {
+		if (e == null) return null;
+		return e.ownerDocument().baseUri();
+	}
+
+	/**
+	 * 得到字符串中的域名Host
+	 * @param host String
+	 * @return String
+	 */
+	public static String getUrlHost(String host) {
+		if (host.indexOf("://") > 0) {
+			try {
+				URL url = new URL(host);
+				return getUrlHost(url);
+			} catch (MalformedURLException e) {
+				return host;
+			}
+		} else {
+			int index = host.indexOf('/');
+			if (index > 0) return host.substring(0, index);
+		}
+		return host;
+	}
+
+	/**
+	 * 得到字符串中的域名Host
+	 * @param url URL
+	 * @return String
+	 */
+	public static String getUrlHost(URL url) {
+		if (url == null) return null;
+		return url.getHost();// 获取主机名 
+	}
+
+	/**
 	 * 得到URL的特殊关键主目录，如http://www.xxx.com/abc/DEF/123/ 得到 www.xxxx.com/abc/
 	 * @param url URL
 	 * @return String
@@ -896,52 +1075,6 @@ public final class UtilsReadURL {
 	}
 
 	/**
-	 * 得到字符串中的域名Host
-	 * @param host String
-	 * @return String
-	 */
-	public static String getUrlHost(String host) {
-		if (host.indexOf("://") > 0) {
-			try {
-				URL url = new URL(host);
-				return url.getHost();// 获取主机名 
-			} catch (MalformedURLException e) {
-				return host;
-			}
-		} else {
-			int index = host.indexOf('/');
-			if (index > 0) return host.substring(0, index);
-		}
-		return host;
-	}
-
-	/**
-	 * 从地址中提取 http://www.sohu.com
-	 * @param url String
-	 * @return String
-	 */
-	public static final String getUrlDomain(String url) {
-		if (url == null || url.trim().length() == 0) return null;
-		try {
-			String newUrl = url.trim().replaceAll("\\\\", "/");
-			return getUrlDomain(new URL(newUrl));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * 得到 http://www.99114.com
-	 * @param url URL
-	 * @return String
-	 */
-	public static final String getUrlDomain(URL url) {
-		if (url == null) return null;
-		return url.getProtocol() + "://" + url.getHost();
-	}
-
-	/**
 	 * 从url中判断是否含有关键字数组，在html之间<br>
 	 * 只支持http与https协议
 	 * @param href String
@@ -1010,11 +1143,12 @@ public final class UtilsReadURL {
 		}
 		return false;
 	}
+
 	public static void main(String[] args) {
 		String href = "http://www.gazww.com/166/zhangjie124040.shtml";
 		try {
 			URL url = new URL(href);
-			System.out.println("result:" + getSocketContent(url, "utf-8",5000));
+			System.out.println("result:" + getSocketContent(url, "utf-8", 5000));
 
 		} catch (Exception e) {
 			e.printStackTrace();

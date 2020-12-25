@@ -143,7 +143,7 @@ public abstract class AbstractDBCTabFolder extends AbstractCTabFolder {
 			}
 			ResultSet rs = stmt.executeQuery(sql);
 			mkExcelResultTableHead(t, rs);
-			t.insertData(rs);
+			t.add(rs,true);
 			rs.close();
 			stmt.close();
 			//logger.debug("isnew:" + isnew);

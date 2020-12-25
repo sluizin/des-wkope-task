@@ -3,11 +3,15 @@ package des.wangku.operate.standard.utls;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.fastjson.JSON;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -19,7 +23,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import des.wangku.operate.standard.swt.ResultTable;
-import des.wangku.operate.standard.task.InterfaceCollect;
+import des.wangku.operate.standard.swt.ResultTable.TableItemJson;
 
 /**
  * 针对Table的一些工具方法
@@ -50,32 +54,6 @@ public final class UtilsSWTTable {
 	}
 
 	/**
-	 * 得到Table中的选中行，得到鼠标选中行+checked选中行<br>
-	 * 从小到大<br>
-	 * @param table Table
-	 * @return TableItem[]
-	 */
-	public static final TableItem[] getSelectCheckTableItemAllArray(ResultTable table) {
-		List<TableItem> list = getSelectCheckTableItemAllList(table);
-		TableItem[] arrnull = {};
-		return list.toArray(arrnull);
-	}
-
-	/**
-	 * 得到Table中的选中行，得到鼠标选中行+checked选中行<br>
-	 * 从小到大<br>
-	 * @param table Table
-	 * @return List&lt;TableItem&gt;
-	 */
-	public static final List<TableItem> getSelectCheckTableItemAllList(ResultTable table) {
-		int[] arrays = getSelectCheckTableItemAllSuffix(table);
-		List<TableItem> list = new ArrayList<>(arrays.length);
-		for (int i = 0, len = arrays.length; i < len; i++)
-			list.add(table.getItem(arrays[i]));
-		return list;
-	}
-
-	/**
 	 * 判断选择与选中项中最小下标，如果没有则返回-1
 	 * @param table Table
 	 * @return int
@@ -90,24 +68,25 @@ public final class UtilsSWTTable {
 		return -1;
 	}
 
-	/**
-	 * 得到Table中的选中行的下标编号，得到鼠标选中行+checked选中行<br>
-	 * 从小到大<br>
-	 * @param table Table
-	 * @return int[]
-	 */
-	public static final int[] getSelectCheckTableItemAllSuffix(ResultTable table) {
-		List<Integer> list = new ArrayList<>();
-		TableItem[] arrs = table.getSelection();
-		TableItem[] all = table.getItems();
-		for (int i = 0; i < all.length; i++) {
-			TableItem e = all[i];
-			if (e.getChecked() || isSelect(e, arrs)) list.add(i);
+	@Deprecated
+	public static final int[] getTableItemAllSuffix(ResultTable table, Boolean isSelected, Boolean isChecked) {
+		int len = table.getItemCount();
+		List<Integer> list = new ArrayList<>(len);
+		int[] selectarr = table.getSelectionIndices();
+		int[] checkedarr = table.getCheckedAll();
+		for (int i = 0; i < len; i++) {
+			boolean is = false;
+			if (isSelected != null) {
+				if (UtilsArrays.isfilterArr(i, selectarr)) is = true;
+				else is = false;
+			}
+			if (isChecked != null) {
+				if (UtilsArrays.isfilterArr(i, checkedarr)) is = true;
+				else is = false;
+			}
+			if (is) list.add(i);
 		}
-		int[] result = new int[list.size()];
-		for (int i = 0, len = list.size(); i < len; i++)
-			result[i] = list.get(i);
-		return result;
+		return list.stream().mapToInt(Integer::valueOf).toArray();
 	}
 
 	/**
@@ -308,23 +287,28 @@ public final class UtilsSWTTable {
 	 * @param shell Shell getShell()
 	 * @param isConfirm boolean
 	 * @param table ResultTable
+	 * @param isSelected Boolean
+	 * @param isChecked Boolean
 	 */
-	public static final void removeSelectedLine(Display display, Shell shell, boolean isConfirm, ResultTable table) {
-		if (table == null || table.getItemCount() == 0) return;
+	public static final void removeSelectedCheckedLine(Display display, Shell shell, boolean isConfirm, ResultTable table, Boolean isSelected, Boolean isChecked) {
+		if (table == null || table.getItemCount() == 0 || (isChecked == null && isSelected == null)) return;
 		if (isConfirm && !UtilsSWTMessageBox.Confirm(shell, "是否要清除所选数据?")) return;
 		logger.debug("removeSelectedLine!!!");
 		@SuppressWarnings({ "static-access", "unused" })
 		Point Point = display.getCurrent().getCursorLocation();
-		int[] arrs = UtilsSWTTable.getSelectCheckTableItemAllSuffix(table);
-		Arrays.sort(arrs);
+		int[] arrs = table.getSelectedCheckedAll(isSelected, isChecked);
+		//table.getSelectedAll();
+		//Arrays.sort(arrs);
+		table.removeRows(arrs);
+		/*
 		display.asyncExec(new Runnable() {
 			@Override
 			public void run() {
 				for (int i = arrs.length - 1; i >= 0; i--)
 					table.remove(arrs[i]);
 			}
-		});
-		collectTable(table);
+		});*/
+		table.collectTable();
 	}
 
 	/**
@@ -333,8 +317,8 @@ public final class UtilsSWTTable {
 	 * @param index int
 	 * @param isAscend boolean
 	 */
+	@Deprecated
 	static void StringItemsSorter(ResultTable table, int index, boolean isAscend) {
-		Collator comparator = Collator.getInstance(Locale.getDefault());
 		TableItem[] items = table.getItems();
 		//使用冒泡法进行排序
 		for (int i = 1; i < items.length; i++) {
@@ -343,12 +327,14 @@ public final class UtilsSWTTable {
 				String str1value = items[j].getText(index);
 				boolean isLessThan = comparator.compare(str2value, str1value) < 0;
 				if ((isAscend && isLessThan) || (!isAscend && !isLessThan)) {
-					String[] values = UtilsSWTTableSQL.get(table, items[i]);
+					String[] values = UtilsSWTTableSQL.get(items[i]);
 					Object obj = items[i].getData();
+					boolean ischeck = items[i].getChecked();
 					items[i].dispose();
 					TableItem item = new TableItem(table, SWT.NONE, j);
 					item.setText(values);
 					item.setData(obj);
+					item.setChecked(ischeck);
 					items = table.getItems();
 					break;
 				}
@@ -356,14 +342,97 @@ public final class UtilsSWTTable {
 		}
 	}
 
+	@Deprecated
+	static final void changeItem(ResultTable table, TableItem e, int j) {
+		int style = e.getStyle();
+		String[] values = UtilsSWTTableSQL.get(e);
+		Object obj = e.getData();
+		boolean ischeck = e.getChecked();
+		e.dispose();
+		TableItem item = new TableItem(table, style, j);
+		item.setText(values);
+		item.setData(obj);
+		item.setChecked(ischeck);
+	}
+
 	/**
-	 * 更新表格统计
-	 * @param table ResultTable
+	 * 复制对象
+	 * @param e TableItem
+	 * @param f TableItem
 	 */
-	public static final void collectTable(ResultTable table) {
-		InterfaceCollect parent = UtilsSWTTools.getParentInterfaceObj(table, InterfaceCollect.class);
-		if (parent == null) return;
-		parent.collect();
+	static final void copyItem(TableItem e, TableItem f) {
+		f.setBackground(e.getBackground());
+		f.setFont(e.getFont());
+		f.setForeground(e.getForeground());
+		f.setGrayed(e.getGrayed());
+		f.setImage(e.getImage());
+		f.setText(UtilsSWTTableSQL.get(e));
+		f.setData(e.getData());
+		f.setChecked(e.getChecked());
+	}
+
+	/**
+	 * 对table按某个列，进行升或降序的排序
+	 * @param table ResultTable
+	 * @param index int
+	 * @param isAsc boolean
+	 */
+	static void StringItemsSorter2(ResultTable table, int index, boolean isAsc) {
+		TableItem[] items = table.getItems();
+		List<Pos> list = getPosList(items, index, isAsc);
+		for (Pos p : list) {
+			int i = p.index;
+			TableItem e=items[i];
+			TableItem item = new TableItem(table, e.getStyle(), 0);
+			copyItem(e, item);
+			e.dispose();
+		}
+	}
+
+	/**
+	 * 对table按某个列，进行升或降序的排序
+	 * @param items TableItem
+	 * @param index int
+	 * @param isAsc boolean
+	 * @return List&lt;Pos&gt;
+	 */
+	static final List<Pos> getPosList(TableItem[] items, int index, boolean isAsc) {
+		List<Pos> list = new ArrayList<>();
+		for (int i = 0; i < items.length; i++) {
+			TableItem e = items[i];
+			list.add(new Pos(i,index, e.getText(index), e.getChecked()));
+		}
+		Collections.sort(list);
+		if (isAsc) return list;
+		Collections.reverse(list);
+		return list;
+	}
+
+	static final Collator comparator = Collator.getInstance(Locale.getDefault());
+
+	private static class Pos implements Comparable<Pos> {
+		int index;
+		int colid;
+		String name;
+		boolean isChecked = false;
+
+		public Pos(int index,int colid, String name, boolean isChecked) {
+			this.index = index;
+			this.colid=colid;
+			this.name = name;
+			this.isChecked = isChecked;
+		}
+
+		@Override
+		public int compareTo(Pos arg0) {
+			if(colid==0)
+			if (isChecked != arg0.isChecked) {
+				if (isChecked) return -1;
+				else return 1;
+			}
+			if (this.name.equals(arg0.name)) return 0;
+			return comparator.compare(arg0.name, this.name);
+		}
 	}
 
 	/**
@@ -409,6 +478,47 @@ public final class UtilsSWTTable {
 			}
 		});
 	}
+	/**
+	 * 得到TableItem的下标
+	 * @param e TableItem
+	 * @return int
+	 */
+	public static final int getIndex(TableItem e) {
+		if (e == null) return -1;
+		Table parent = e.getParent();
+		TableItem[] arr = parent.getItems();
+		for (int i = 0, len = arr.length; i < len; i++)
+			if (e.equals(arr[i])) return i;
+		return -1;
+	}
+	/**
+	 * 把TableItem中的多个数值组成数组<br>
+	 * 即某一行的数据
+	 * @param e TableItem
+	 * @return String[]
+	 */
+	public static final String[] tableItemValToArray(TableItem e) {
+		String[] arr= {};
+		if(e==null)return arr;
+		int len=e.getParent().getColumnCount();
+		String[] newarr=new String[len];
+		for(int i=0;i<len;i++) {
+			String val=e.getText(i);
+			if(val==null)val="";			
+			newarr[i]=val;
+		}
+		return newarr;
+	}
+	/**
+	 * 把TableItem转成json
+	 * @param e TableItem
+	 * @return String
+	 */
+	public static final String getTableItemJson(TableItem... arr) {
+		if(arr==null || arr.length==0)return null;
+		List<TableItemJson> list=TableItemJson.getList(arr);
+		return JSON.toJSONString(list);
+	}
 
 	/**
 	 * 把table中的所有选择行 按空格时
@@ -438,7 +548,7 @@ public final class UtilsSWTTable {
 	 * @return Table
 	 */
 	public static final Table getSelectSelectCheckTableItemAllTable(ResultTable table, int... suffix) {
-		int[] arrs = UtilsSWTTable.getSelectCheckTableItemAllSuffix(table);
+		int[] arrs = table.getSelectCheckAll();
 		//TableItem[] items = table.getItems();
 		Table newTable = new Table(table, SWT.NONE);
 		//TableColumn[] tcarrs=table.getColumns();
@@ -496,20 +606,6 @@ public final class UtilsSWTTable {
 	}
 
 	/**
-	 * 清空Table，包括行与列
-	 * @param table ResultTable
-	 */
-	public static final void CleanAllTable(ResultTable table) {
-		TableItem[] arrs = table.getItems();
-		for (int i = 0; i < arrs.length; i++)
-			arrs[i].dispose();
-		TableColumn[] arr = table.getColumns();
-		for (int i = 0; i < arr.length; i++)
-			arr[i].dispose();
-		table.redraw();
-	}
-
-	/**
 	 * 得到Table上鼠标所在位置的行数与列数
 	 * @param table ResultTable
 	 * @param point Point
@@ -540,15 +636,15 @@ public final class UtilsSWTTable {
 	 * @return String
 	 */
 	public static String getColsValueUpDownNotNull(ResultTable table, int x, int y) {
-		String value = UtilsSWTTableSQL.get(table, x, y);
+		String value = table.get(x, y);
 		if (value != null && value.length() > 0) return value;
 		int rows = table.getItemCount();
 		for (int i = x; i >= 0; i--) {/* 向上寻找内容 */
-			value = UtilsSWTTableSQL.get(table, i, y);
+			value = table.get(i, y);
 			if (value != null && value.length() > 0) return value;
 		}
 		for (int i = x + 1; i < rows; i++) {/* 向下寻找内容 */
-			value = UtilsSWTTableSQL.get(table, i, y);
+			value = table.get(i, y);
 			if (value != null && value.length() > 0) return value;
 		}
 		return null;

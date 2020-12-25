@@ -66,7 +66,7 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 	/** 容器宽度 */
 	public static final int ACC_CpsWidth = 900;
 	/** 容器高度 */
-	public static final int ACC_CpsHeight = 600;
+	public static final int ACC_CpsHeight = 550;
 	/** 父Shell */
 	public Shell parentShell = null;
 	/** 父容器 */
@@ -266,7 +266,8 @@ public abstract class AbstractTask extends Composite implements InterfaceProject
 		pc.setSaveFolder(this.getIdentifierAll()).init(this.getProProperties());
 		this.basicClass = basicClass;
 		this.abstractMenuValue = abstractMenuValue;
-		parent.setSize(ACC_CpsWidth, ACC_CpsHeight);
+		parent.setSize(900, 550);
+		//parent.setSize(ACC_CpsWidth, ACC_CpsHeight);
 		parentComposite = parent;
 		parentDisplay = parent.getDisplay();
 		parentShell = parent.getShell();

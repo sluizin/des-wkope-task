@@ -1039,15 +1039,27 @@ public final class UtilsPOI {
 		if (sheet == null) return list;
 		for (int i = 0, len = sheet.getLastRowNum(); i <= len; i++) {
 			Row row = sheet.getRow(i);
-			if (row == null) continue;
-			List<String> newlist = new ArrayList<>();
-			for (int ii = 0, len2 = row.getLastCellNum(); ii <= len2; ii++) {
-				Cell cell = row.getCell(ii);
-				if (cell == null) continue;
-				String value = getCellValueByString(cell);
-				newlist.add(value);
-			}
+			List<String> newlist = getValuesList(row);
 			list.add(newlist);
+		}
+		return list;
+	}
+	/**
+	 * 把Row转在List&lt;String&gt;
+	 * @param row Row
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getValuesList(Row row) {
+		if(row==null)return new ArrayList<>();
+		List<String> list = new ArrayList<>();
+		for (int i = 0, len = row.getLastCellNum(); i <= len; i++) {
+			Cell cell = row.getCell(i);
+			if (cell == null) {
+				list.add("");
+				continue;
+			}
+			String value = getCellValueByString(cell);
+			list.add(value);
 		}
 		return list;
 	}

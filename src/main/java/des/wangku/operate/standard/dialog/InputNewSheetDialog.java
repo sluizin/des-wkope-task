@@ -19,7 +19,6 @@ import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.utls.UtilsDialogState;
 import des.wangku.operate.standard.utls.UtilsSWTListener;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
-import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 
 /**
  * 添加新的sheet
@@ -192,7 +191,7 @@ public class InputNewSheetDialog extends Dialog {
 			String[] arrs = new String[cols];
 			Arrays.fill(arrs, "");
 			for (int i = 0; i < this.rows; i++)
-				UtilsSWTTableSQL.add(table, arrs);
+				table.add(arrs);
 		}
 	}
 }

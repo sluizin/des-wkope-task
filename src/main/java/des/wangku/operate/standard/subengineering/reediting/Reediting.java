@@ -63,7 +63,11 @@ public class Reediting {
 		}
 		newcontent = sb.toString();
 	}
-
+	public String getNewsChangeContent(String content) {
+		this.content=content;
+		change();
+		return newcontent;
+	}
 	void change2() {
 		if (content == null || s == null) return;
 		IKSegmenter ik = new IKSegmenter(new StringReader(content), true);

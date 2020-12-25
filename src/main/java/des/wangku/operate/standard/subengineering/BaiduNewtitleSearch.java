@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsConsts;
+import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsString;
 
 /**
  * 从百度中提出某个新闻标题的位置或比例数
@@ -63,8 +65,41 @@ public class BaiduNewtitleSearch {
 		}
 		return true;
 	}
+	/**
+	* 判断新闻标题是否在百度检索时，红色字体在所在的标题的百分比之中<br>
+	 * 例: "abcd",20 即百度检索abcd时，所有列出的标题中是否有超出20%的情况，如果发现有一个超出20%，则返回false
+	 * @param key String
+	 * @param repetionrate int
+	 * @param page int
+	 * @return boolean
+	 */
+	public static final boolean isRepetitionRate(String key,int repetionrate,int page) {
+		if(key==null)return false;
+		key=key.trim();
+		if(key.length()==0)return false;
+		String url="https://www.baidu.com/s?wd="+key;
+		Elements es=UtilsJsoup.getElementAll(url, "{C}result->{T}h3");
+		for(Element e:es) {
+			String text=e.text();
+			if(UtilsString.repetitionRate(text, key)>=repetionrate)return true;
+		}
+		return false;
+	}
 	public static void main(String[] args) 
 	{
-		System.out.println(isExistNewstitle("刷墙涂料有哪些 刷墙 涂料的分类有哪些",60.0f));
+		//System.out.println(isExistNewstitle("刷墙涂料有哪些 刷墙 涂料的分类有哪些",60.0f));
+		String[] arr= {
+				"利辛县亮盛服装*召回部分一次性防护口罩",
+				"欧美订单减少 为了生存 越南服装**改卖口罩",
+				"越南推动服装制造商生产口罩等个人防护设备",
+				"注意了 布料口罩别乱卖 美国准入标准要出来了",
+				"约旦口罩 防护服行业有潜力创造3.3万个工作岗位",
+				"数十亿计的口罩 丢弃后都去哪儿了 ",
+				"中产协发布口罩行业高质量发展倡议书",
+				"欧盟继续对进口**设备和个人防护装备暂免关税和增值税",
+				
+		};
+		for(String e:arr)
+		System.out.println(isRepetitionRate(e,80,1));
 	}
 }

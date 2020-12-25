@@ -6,8 +6,8 @@ import java.util.List;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import des.wangku.operate.standard.subengineering.reediting.Filter;
 import des.wangku.operate.standard.utls.UtilsFile;
+import des.wangku.operate.standard.utls.UtilsHtmlFilter;
 import des.wangku.operate.standard.utls.UtilsJsoup;
 
 /**
@@ -48,11 +48,11 @@ public class ReadBook {
 			Element first=condiv.select("p").get(0);
 			first.remove();
 			content=condiv.html();
-			content=Filter.filterscript(content);
-			content=Filter.filterscriptvar(content);
-			content = Filter.filterTag(content,"img");
-			content=Filter.filterHtmlEscapecharacter(content);
-			content=Filter.filterHtmlSymbol(content);
+			content=UtilsHtmlFilter.filterscript(content);
+			content=UtilsHtmlFilter.filterscriptvar(content);
+			content = UtilsHtmlFilter.filterTag(content,"img");
+			content=UtilsHtmlFilter.filterHtmlEscapecharacter(content);
+			content=UtilsHtmlFilter.filterHtmlSymbol(content);
 			String newname="第"+i+"章 "+name;
 			UtilsFile.writeFile(filename, ACC_Enter+ACC_Enter+ACC_Enter+newname+ACC_Enter+ACC_Enter+ACC_Enter);
 			UtilsFile.writeFile(filename, content);

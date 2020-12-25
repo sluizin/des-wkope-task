@@ -1,5 +1,6 @@
 package des.wangku.operate.standard.utls;
 
+
 import java.lang.reflect.Constructor;
 import java.util.List;
 
@@ -9,12 +10,12 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -83,12 +84,12 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 清空某列数据
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerAddColumn(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerAddColumn(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				InputValueDialog inputNameDialog = new InputValueDialog(table.getShell(), 0, "设置列名", "名称", "", false);
 				Object obj = inputNameDialog.open();
@@ -97,8 +98,8 @@ public final class UtilsSWTTableListener {
 				table.getShell().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						TableColumn e = ResultTable.getDefaultTableColumn(table, SWT.LEFT, 150, newValue);
-						ResultTable.setDefaultTableColumnPos(table, e);
+						TableColumn e = table.getDefaultTableColumn(SWT.LEFT, 150, newValue);
+						table.setDefaultTableColumnPos(e);
 					}
 				});
 			}
@@ -109,12 +110,12 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 添加一行信息
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerAddLine(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerAddLine(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				table.getShell().getDisplay().asyncExec(new Runnable() {
 					@Override
@@ -122,7 +123,7 @@ public final class UtilsSWTTableListener {
 						int point = table.getSelectionIndex();
 						int cols = table.getColumnCount();
 						String[] arr = new String[cols];
-						UtilsSWTTableSQL.insert(table, point, arr);
+						table.insert(point, arr);
 					}
 				});
 				table.redraw();
@@ -134,18 +135,18 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 清空
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerCleanAll(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerCleanAll(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				logger.debug("CleanALL!!!");
 				if (UtilsSWTMessageBox.Confirm(table.getShell(), "是否要清空数据?")) {
 					logger.debug("清空数据\"CleanALL!!!");
 					table.removeAll();
-					UtilsSWTTable.collectTable(table);
+					table.collectTable();
 				}
 			}
 		};
@@ -155,12 +156,12 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 清空某列数据
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerCleanColumn(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerCleanColumn(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				int column = table.getSelectColumn();
 				logger.debug("CleanColALL!!!:" + column);
@@ -179,7 +180,7 @@ public final class UtilsSWTTableListener {
 						table.redraw();
 					}
 				});
-				UtilsSWTTable.collectTable(table);
+				table.collectTable();
 			}
 		};
 		return t;
@@ -200,7 +201,7 @@ public final class UtilsSWTTableListener {
 				table.setSortColumn(column);
 				boolean newisAscend = table.getIsAscend();
 				table.setSortDirection((newisAscend ? SWT.UP : SWT.DOWN));
-				UtilsSWTTable.StringItemsSorter(table, index, newisAscend);
+				UtilsSWTTable.StringItemsSorter2(table, index, newisAscend);
 				table.setIsAscend(!newisAscend);
 			}
 		};
@@ -214,6 +215,7 @@ public final class UtilsSWTTableListener {
 	 */
 	public static final Listener getListenerCopyJson(ResultTable table) {
 		Listener t = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				copyToJson(table);
 			}
@@ -223,7 +225,7 @@ public final class UtilsSWTTableListener {
 	public static final void copyToJson(ResultTable table) {
 		if (table == null) return;
 		logger.debug("copyJson!!!");
-		TableItem[] arr = UtilsSWTTable.getSelectCheckTableItemAllArray(table);
+		TableItem[] arr = table.getSelectCheckTableItemArray();
 		if (arr.length == 0) return;
 		List<List<String>> list = UtilsSWTTable.getTableItemList(false, table, arr);
 		String itemString = JSON.toJSONString(list);
@@ -241,6 +243,7 @@ public final class UtilsSWTTableListener {
 	 */
 	public static final Listener getListenerCopyClipboard(ResultTable table) {
 		Listener t = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				copyToClipboard(table);
 			}
@@ -268,6 +271,7 @@ public final class UtilsSWTTableListener {
 	 */
 	public static final Listener getListenerCopyToExcel(ResultTable table, boolean isCheck) {
 		Listener t = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				copyToExcel(table, isCheck);
 			}
@@ -282,7 +286,7 @@ public final class UtilsSWTTableListener {
 	public static final void copyToExcel(ResultTable table, boolean isCheck) {
 		if (table == null) return;
 		TableItem[] arr = {};
-		if (isCheck) arr = UtilsSWTTable.getSelectCheckTableItemAllArray(table);
+		if (isCheck) arr = table.getSelectCheckTableItemArray();
 		else arr = table.getItems();
 		if (arr.length == 0) return;
 		boolean isHead = false;
@@ -314,12 +318,12 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 移除某列数据
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerRemoveColumn(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerRemoveColumn(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				int column = table.getSelectColumn();
 				logger.debug("RevmoveColALL!!!:" + column);
@@ -335,7 +339,7 @@ public final class UtilsSWTTableListener {
 						table.redraw();
 					}
 				});
-				UtilsSWTTable.collectTable(table);
+				table.collectTable();
 			}
 		};
 		return t;
@@ -345,27 +349,22 @@ public final class UtilsSWTTableListener {
 	 * 把选中的多行删除
 	 * @param isConfirm boolean
 	 * @param table ResultTable
+	 * @param isSelected Boolean
+	 * @param isChecked Boolean
 	 * @return Listener
 	 */
-	public static final Listener getListenerRemoveSelectedLine(boolean isConfirm, ResultTable table) {
+	public static final Listener getListenerRemoveSelectedCheckedLine(boolean isConfirm, ResultTable table,Boolean isSelected,Boolean isChecked) {
 		Listener t = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				if (table == null) return;
-				logger.debug("RemoveSelectedLine!!!");
-				UtilsSWTTable.removeSelectedLine(table.getDisplay(), table.getShell(), isConfirm, table);
+				logger.debug("RemoveSelectedCheckedLine!!!");
+				UtilsSWTTable.removeSelectedCheckedLine(table.getDisplay(), table.getShell(), isConfirm, table,isSelected,isChecked);
 			}
 		};
 		return t;
 	}
 
-	/**
-	 * 把选中的多行删除 默认有提醒确认窗口
-	 * @param table ResultTable
-	 * @return Listener
-	 */
-	public static final Listener getListenerRemoveSelectedLine(ResultTable table) {
-		return getListenerRemoveSelectedLine(true, table);
-	}
 
 	/**
 	 * 选中某行
@@ -374,6 +373,7 @@ public final class UtilsSWTTableListener {
 	 */
 	public static final Listener getListenerSelectedLine(ResultTable table) {
 		Listener t = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				if (table == null) return;
 				UtilsSWTTable.setSelectedLine(table.getDisplay(), table);
@@ -400,13 +400,13 @@ public final class UtilsSWTTableListener {
 
 	/**
 	 * 选中所有含有当前某列值相同的值 注意：null和空，相同
-	 * @param table SelectionListener
-	 * @return SelectionListener
+	 * @param table Listener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerTableLikeValueSelectionAll(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerTableLikeValueSelectionAll(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				int line = table.getSelectLine();
 				int column = table.getSelectColumn();
@@ -418,7 +418,7 @@ public final class UtilsSWTTableListener {
 				table.getShell().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						String value = table.getString(line, column);
+						String value = table.get(line, column);
 						for (TableItem e : table.getItems()) {
 							String v = e.getText(column);
 							if ((value == null || value.length() == 0) && (v == null || v.length() == 0)) e.setChecked(true);
@@ -426,7 +426,7 @@ public final class UtilsSWTTableListener {
 						}
 					}
 				});
-				UtilsSWTTable.collectTable(table);
+				table.collectTable();
 			}
 		};
 		return t;
@@ -466,12 +466,12 @@ public final class UtilsSWTTableListener {
 	/**
 	 * 反选
 	 * @param table ResultTable
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerTableRevSelectionAll(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerTableRevSelectionAll(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				for (int i = 0; i < table.getItemCount(); i++) {
 					TableItem ee = table.getItem(i);
@@ -484,13 +484,13 @@ public final class UtilsSWTTableListener {
 
 	/**
 	 * 选中所有当前某列值相同的值 注意：null和空，相同
-	 * @param table SelectionListener
-	 * @return SelectionListener
+	 * @param table Listener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerTableSameValueSelectionAll(ResultTable table) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerTableSameValueSelectionAll(ResultTable table) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				int line = table.getSelectLine();
 				int column = table.getSelectColumn();
@@ -502,7 +502,7 @@ public final class UtilsSWTTableListener {
 				table.getShell().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						String value = table.getString(line, column);
+						String value = table.get(line, column);
 						for (TableItem e : table.getItems()) {
 							String v = e.getText(column);
 							if ((value == null || value.length() == 0) && (v == null || v.length() == 0)) e.setChecked(true);
@@ -512,7 +512,7 @@ public final class UtilsSWTTableListener {
 						}
 					}
 				});
-				UtilsSWTTable.collectTable(table);
+				table.collectTable();
 			}
 		};
 		return t;
@@ -522,12 +522,12 @@ public final class UtilsSWTTableListener {
 	 * Table全选 / 全取消
 	 * @param table ResultTable
 	 * @param check boolean
-	 * @return SelectionListener
+	 * @return Listener
 	 */
-	public static final SelectionListener getListenerTableSelectAll(ResultTable table, boolean check) {
-		SelectionListener t = new SelectionAdapter() {
+	public static final Listener getListenerTableSelectAll(ResultTable table, boolean check) {
+		Listener t = new Listener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
+			public void handleEvent(Event e) {
 				if (table == null) return;
 				for (int i = 0; i < table.getItemCount(); i++) {
 					TableItem ee = table.getItem(i);
@@ -536,5 +536,31 @@ public final class UtilsSWTTableListener {
 			}
 		};
 		return t;
+	}
+	/**
+	 * 添加弹出菜单选择后的界面
+	 * @param parent Menu
+	 * @param name String
+	 * @param listener SelectionListener
+	 * @return MenuItem
+	 */
+	public static final MenuItem addSelectionMenu(Menu parent,String name,SelectionListener listener) {
+		MenuItem m = new MenuItem(parent, SWT.NONE);
+		m.setText(name);
+		if(listener!=null)m.addSelectionListener(listener);
+		return m;
+	}
+	/**
+	 * 添加弹出菜单选择后的界面
+	 * @param parent Menu
+	 * @param name String
+	 * @param listener Listener
+	 * @return MenuItem
+	 */
+	public static final MenuItem addSelectionMenu(Menu parent,String name,Listener listener) {
+		MenuItem m = new MenuItem(parent, SWT.NONE);
+		m.setText(name);
+		if(listener!=null)m.addListener(SWT.Selection,listener);
+		return m;
 	}
 }

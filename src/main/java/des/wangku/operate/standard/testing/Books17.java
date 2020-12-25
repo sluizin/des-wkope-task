@@ -6,9 +6,9 @@ import java.util.List;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import des.wangku.operate.standard.subengineering.reediting.Filter;
 import des.wangku.operate.standard.testing.Books17Utils.StyleClass;
 import des.wangku.operate.standard.utls.UtilsFile;
+import des.wangku.operate.standard.utls.UtilsHtmlFilter;
 import des.wangku.operate.standard.utls.UtilsJsoup;
 import des.wangku.operate.standard.utls.UtilsStringFilter;
 
@@ -84,19 +84,19 @@ public class Books17 {
 			
 			
 			content=condiv.html();
-			content=Filter.filterscript(content);
-			content=Filter.filterscriptvar(content);
-			content = Filter.filterTag(content,"img");
+			content=UtilsHtmlFilter.filterscript(content);
+			content=UtilsHtmlFilter.filterscriptvar(content);
+			content = UtilsHtmlFilter.filterTag(content,"img");
 			content=Books17Utils.filter(content);
 			content=content.replaceAll("2u2u2u","");
 			content=content.replaceAll("4f4f4f","");
 			content=content.replaceAll("\\\\u[a-zA-Z0-9]{4}","");
 			content=content.replaceAll("[0-9]{4}年[0-9]{1,2}月[0-9]{1,2}日","");
 			
-			content=Filter.filterHtmlEscapecharacter(content);
+			content=UtilsHtmlFilter.filterHtmlEscapecharacter(content);
 			
 			
-			content=Filter.filterHtmlSymbol(content);
+			content=UtilsHtmlFilter.filterHtmlSymbol(content);
 
 			//System.out.println("content:"+content);
 			

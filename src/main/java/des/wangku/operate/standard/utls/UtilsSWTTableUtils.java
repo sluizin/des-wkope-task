@@ -24,7 +24,7 @@ public final class UtilsSWTTableUtils {
 	 */
 	public static final boolean copyMultiLineToClipboard(ResultTable table) {
 		logger.debug("copyMultiline to Clipboard!!!");
-		TableItem[] arr = UtilsSWTTable.getSelectCheckTableItemAllArray(table);
+		TableItem[] arr = table.getSelectCheckTableItemArray();
 		if (arr.length == 0) return false;
 		String itemString = tableItemToString(arr);
 		UtilsClipboard.copy(itemString);

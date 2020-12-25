@@ -13,7 +13,6 @@ import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.task.InterfaceThreadRunUnit;
 import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsReadURL;
-import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsString;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
@@ -86,7 +85,7 @@ public class BaiduKeySearchPosid {
 	public static final int getBaiduPosid(String type, int maxPage, String key, String url, String intervalkey, int timeout, int cutUrl) {
 		return getBaiduPosid(false, type, maxPage, key, url,intervalkey, timeout, cutUrl);
 	}
-	public static long BaiduSleepTime=200;
+	public static long BaiduSleepTime=1000;
 	/**
 	 * url 必须 为 "abc.99114.com" 不能有协议与空格，并已截取
 	 * 得到baidu中的排名 如没检索到，则返回-1<br>
@@ -415,7 +414,7 @@ public class BaiduKeySearchPosid {
 		float[] result = { 0, 0 };
 		int count = 0, well = 0;
 		for (int i = x1; i <= x2; i++) {
-			String value = UtilsSWTTableSQL.get(table, i, y);
+			String value = table.get(i, y);
 			if (value == null || value.length() == 0) continue;
 			if (UtilsVerification.isNumeric(value)) {
 				well++;

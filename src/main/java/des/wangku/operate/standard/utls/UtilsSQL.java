@@ -32,7 +32,7 @@ public final class UtilsSQL {
 				if (sb.length() > 0) sb.append(middle);
 				sb.append(rsmd.getColumnName(p + 1));
 				sb.append("=");
-				String newValue = UtilsSWTTableSQL.get(base, x, p);
+				String newValue = base.get(x, p);
 				sb.append(UtilsSQL.getFieldString(rsmd, rsmd.getColumnName(p + 1), newValue));
 			}
 
@@ -115,16 +115,35 @@ public final class UtilsSQL {
 	public static final List<String> resultSetToList(ResultSet rs) {
 		List<String> list = new ArrayList<>();
 		try {
-			int len = rs.getMetaData().getColumnCount();
-			for (int i = 1; i <= len; i++) {
-				Object obj = rs.getObject(i);
-				String value = "";
-				if (obj != null) value = obj.toString();
-				list.add(value);
+		int len = rs.getMetaData().getColumnCount();
+		for (int i = 1; i <= len; i++) {
+			Object obj = rs.getObject(i);
+			String value = "";
+			if (obj != null) value = obj.toString();
+			list.add(value);
+		}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	/**
+	 * 把rs转成多个list
+	 * @param rs ResultSet
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public static final List<List<String>> resultSetToMulitList(ResultSet rs) {
+		List<List<String>> list = new ArrayList<>();
+		if(rs==null)return list;
+		try {
+			while (rs.next()) {
+				List<String> line=resultSetToList(rs);
+				if(list.size()>0)list.add(line);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 		return list;
 	}
 }

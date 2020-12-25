@@ -22,6 +22,7 @@ public final class Constants {
 	public static int CTabItemBaseOffset = 0;
 	public static int CTabItemIndexScale = 0;
 	public static long CTabFolderItemsOffset = 0L;
+	
 	public static int TreeBaseOffset = 0;
 	public static int TreeIndexScale = 0;
 	public static long TreeItemsOffset = 0L;

@@ -33,7 +33,10 @@ public class Badword {
 		}
 		return content;
 	}
-	static final String rep(int len) {
+	public static final String rep(String key) {
+		return rep(key.length());
+	}
+	public static final String rep(int len) {
 		if(len<=0|| len>50)return "";
 		char[] arr=new char[len];
 		for(int i=0;i<len;i++)

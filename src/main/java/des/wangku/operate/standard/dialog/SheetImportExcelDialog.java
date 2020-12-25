@@ -200,7 +200,7 @@ public class SheetImportExcelDialog extends Dialog {
 				int cols=UtilsPOI.getWidthMax(sheet);
 				for (int i = 0; i < cols; i++)
 					table.setTableColumn(SWT.LEFT,i + "", 180);
-				table.addData(sheet);
+				table.add(sheet);
 				
 				
 				

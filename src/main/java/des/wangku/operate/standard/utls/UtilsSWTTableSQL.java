@@ -1,14 +1,12 @@
 package des.wangku.operate.standard.utls;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import des.wangku.operate.standard.swt.ResultTable;
 
 /**
- * get、update、insert
+ * 针对Table的操作
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -25,39 +23,14 @@ public final class UtilsSWTTableSQL {
 	public static final synchronized String[] get(TableItem item) {
 		String[] strs = {};
 		if (item == null) return strs;
-		ResultTable table = (ResultTable) item.getParent();
-		return get(table, item);
-	}
-
-	/**
-	 * 得到某行数组
-	 * @param table ResultTable
-	 * @param item TableItem
-	 * @return String[]
-	 */
-	public static final synchronized String[] get(ResultTable table, TableItem item) {
-		String[] strNull = {};
-		if (table == null) return strNull;
+		Table table = item.getParent();
 		int count = table.getColumnCount();
-		String[] strs = new String[count];
-		for (int i = 0; i < count; i++)
-			strs[i] = item.getText(i);
-		return strs;
-	}
+		String[] strs2 = new String[count];
+		for (int i = 0; i < count; i++) {
+			strs2[i] = item.getText(i);
+		}
+		return strs2;
 
-	/**
-	 * 得到table中的某个值
-	 * @param e ResultTable
-	 * @param x int
-	 * @param y int
-	 * @return String
-	 */
-	public static final synchronized String get(ResultTable e, int x, int y) {
-		if (e == null) return null;
-		if (x < 0 || x >= e.getItemCount()) return null;
-		if (y < 0 || y >= e.getColumnCount()) return null;
-		//return e.getData().get(x)[y];
-		return e.getItem(x).getText(y);
 	}
 
 	/**
@@ -75,22 +48,6 @@ public final class UtilsSWTTableSQL {
 
 	/**
 	 * 更新
-	 * @param e ResultTable
-	 * @param x int
-	 * @param y int
-	 * @param value String
-	 */
-	public static final synchronized void update(ResultTable e, int x, int y, String value) {
-		if (e == null || value == null) return;
-		if (x < 0 || x >= e.getItemCount()) return;
-		if (y < 0 || y >= e.getColumnCount()) return;
-		//e.getData().get(x)[y]=value;
-		//e.redrawTable();
-		e.getItem(x).setText(y, value);
-	}
-
-	/**
-	 * 更新
 	 * @param e Table
 	 * @param x int
 	 * @param y int
@@ -101,90 +58,6 @@ public final class UtilsSWTTableSQL {
 		if (x < 0 || x >= e.getItemCount()) return;
 		if (y < 0 || y >= e.getColumnCount()) return;
 		e.getItem(x).setText(y, value);
-		//e.getData().get(x)[y]=value;
-		//e.redrawTable();
-	}
-
-	/**
-	 * 更新
-	 * @param e TableItem
-	 * @param column int
-	 * @param value String
-	 */
-	public static final synchronized void updateDDD(TableItem e, int column, String value) {
-		if (e == null) return;
-		String[] arrs = get(e);
-		int len = arrs.length;
-		if (column < 0 || column >= len) return;
-		arrs[column] = value;
-		e.setText(arrs);
-	}
-
-	/**
-	 * 插入list List&lt;String&gt;
-	 * @param table ResultTable
-	 * @param point int
-	 * @param arrs String[]
-	 */
-	public static synchronized void insert(ResultTable table, int point, String... arrs) {
-		if (point < 0 || point >= table.getItemCount()) {
-			add(table, arrs);
-			return;
-		}
-		String[] newArr = getFormatArray(table, arrs);
-		//table.getData().add(point,newArr);
-		//table.redrawTable();
-		table.addTableItem(point, newArr);
-		/*
-		 * setText(item, arrs);
-		 */
-	}
-
-	/**
-	 * 添加list List &lt; String &gt;
-	 * @param table ResultTable
-	 * @param list List &lt; String &gt;
-	 */
-	public static synchronized void add(ResultTable table, List<String> list) {
-		if (list.size() == 0) return;
-		String[] arr = {};
-		add(table, list.toArray(arr));
-	}
-
-	/**
-	 * 添加list List&lt;String&gt;
-	 * @param table ResultTable
-	 * @param arrs String []
-	 */
-	public static synchronized void add(ResultTable table, String... arrs) {
-		if (arrs.length == 0) return;
-		String[] newArr = getFormatArray(table, arrs);
-		//table.getData().add(newArr);
-		//table.redrawTable();
-		table.addTableItem(-1, newArr);
-		//setText(item, arrs);
-	}
-	/**
-	 * 判断字符串数组是否在table中出现，如果数组中出现null，则转换成空字符串
-	 * @param table ResultTable
-	 * @param arrs String[]
-	 * @return boolean
-	 */
-	public static synchronized boolean isExist(ResultTable table, String... arrs) {
-		if (arrs.length == 0) return true;
-		String[] newArr = getFormatArray(table, arrs);
-		int rows = table.getItemCount();
-		int len = table.getColumnCount();
-		loop: for (int x = 0; x < rows; x++) {
-			TableItem e = table.getItem(x);
-			for (int y = 0; y < len; y++) {
-				String val = e.getText(y);
-				String v = newArr[y];
-				if (!v.equals(val)) continue loop;
-			}
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -202,55 +75,4 @@ public final class UtilsSWTTableSQL {
 
 	}
 
-	/**
-	 * 得到扩展数组值，规则化
-	 * @param table ResultTable
-	 * @param arrs String[]
-	 * @return String[]
-	 */
-	public static final String[] getFormatArray(ResultTable table, String... arrs) {
-		String[] arr = new String[table.getColumnCount()];
-		for (int i = 0; i < arr.length; i++)
-			arr[i] = (i < arrs.length && arrs[i] != null) ? arrs[i] : "";
-		return arr;
-	}
-
-	/**
-	 * 把粘贴板中的数据存入到表中
-	 * @param table ResultTable
-	 * @param point int
-	 */
-	public static synchronized void addClipboard(ResultTable table, int point) {
-		String content = UtilsClipboard.getString();
-		if (content == null || content.length() == 0) return;
-		/*
-		 * 此处判断粘贴板内容格式，默认为text格式
-		 * 如果是json，需要确定json格式，如果是xml，都需要确定格式
-		 */
-		String[] arr = content.split(System.getProperty("line.separator"));
-		for (int i = 0; i < arr.length; i++) {
-			String[] arrLine = arr[i].split("\t");
-			insert(table, point, arrLine);
-		}
-
-	}
-
-	/**
-	 * 汇总某列所有值的和
-	 * @param rt ResultTable
-	 * @param y int
-	 * @param filterLine int[]
-	 * @return long
-	 */
-	public static final synchronized long SortY(ResultTable rt, int y, int... filterLine) {
-		long sort = 0;
-		for (int i = 0, len = rt.getItemCount(); i < len; i++) {
-			if (UtilsString.isExist(i, filterLine)) continue;
-			String value = get(rt, i, y);
-			if (!UtilsVerification.isNumeric(value)) continue;
-			int v = Integer.parseInt(value);
-			sort += v;
-		}
-		return sort;
-	}
 }

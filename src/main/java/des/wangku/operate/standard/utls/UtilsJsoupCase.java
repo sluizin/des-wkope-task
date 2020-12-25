@@ -16,8 +16,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import des.wangku.operate.standard.subengineering.reediting.Filter;
-
 /**
  * Jsoup工具<br>
  * <br>
@@ -88,12 +86,12 @@ public final class UtilsJsoupCase {
 	/**
 	 * 把字符串转成Jsoup对象再得到text()内容
 	 * @param content String
-	 * @param urldomain String
+	 * @param domain String
 	 * @return String
 	 */
-	public static final String cleanHtml(String content, String urldomain) {
+	public static final String cleanHtml(String content, String domain) {
 		if (content == null) return null;
-		Element e = urldomain == null ? Jsoup.parse(content) : Jsoup.parse(content, urldomain);
+		Document e = getDocument(content, domain);
 		if (e == null) return null;
 		return e.text();
 	}
@@ -122,7 +120,7 @@ public final class UtilsJsoupCase {
 				es.addAll(t.select("li"));
 			}
 		}
-		if (es.size() > 1) UtilsList.distinct(es);
+		if (es.size() > 1) es = UtilsList.distinctHtml(es);
 		return es;
 	}
 
@@ -216,7 +214,7 @@ public final class UtilsJsoupCase {
 				list.addAll(t.select("li"));
 			}
 		}
-		if (list.size() > 1) UtilsList.distinct(list);
+		if (list.size() > 1) list = UtilsList.distinct(list);
 		return list;
 	}
 
@@ -303,126 +301,6 @@ public final class UtilsJsoupCase {
 		}
 		Collections.sort(list);
 		return list;
-	}
-
-	/**
-	 * 从element中提取指定下标的链接
-	 * @param f Element
-	 * @param index int
-	 * @param arrs String[]
-	 * @return String
-	 */
-	public static final String getLink(Element f, String... arrs) {
-		return getLinkAll(f, 0, arrs);
-	}
-
-	/**
-	 * 从element中提取指定下标的链接
-	 * @param f Element
-	 * @param index int
-	 * @param arrs String[]
-	 * @return String
-	 */
-	public static final String getLinkAll(Element f, int index, String... arrs) {
-		List<String> list = getLinkAllHref(f, arrs);
-		int size = list.size();
-		if (size == 0) return null;
-		if (index >= 0 && index < size) return list.get(index);
-		return null;
-	}
-
-	/**
-	 * 从element中提取所有的链接
-	 * @param f Element
-	 * @param arrs String[]
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getLinkAllHref(Element f, String... arrs) {
-		if (f == null || arrs.length == 0) return new ArrayList<>(0);
-		List<String> list = new ArrayList<>(1);
-		List<Element> li = UtilsJsoup.getElementAll(f, arrs);
-		for (Element e : li) {
-			Elements arr = e.select("a");
-			for (int i = 0; i < arr.size(); i++) {
-				Element tt = arr.get(i);
-				list.add(tt.attr("abs:href"));
-			}
-		}
-		UtilsList.distinct(list);
-		return list;
-	}
-
-	/**
-	 * 从doc中提取所有链接，并提取第一个链接地址
-	 * @param doc Element
-	 * @return String
-	 */
-	public static final String getLinkFirstHref(Element doc) {
-		List<String> list = getLinkTagAll(doc, 0);
-		if (list.size() == 0) return null;
-		return list.get(0);
-	}
-
-	/**
-	 * 从doc中提取所有链接，并提取第一个链接文本
-	 * @param doc Element doc
-	 * @return String
-	 */
-	public static final String getLinkFirstText(Element doc) {
-		List<String> list = getLinkTagAll(doc, 1);
-		if (list.size() == 0) return null;
-		return list.get(0);
-	}
-
-	/**
-	 * 从doc中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param doc Element
-	 * @param style int
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getLinkTagAll(Element doc, int style) {
-		if (doc == null) return new ArrayList<>();
-		List<String> list = new ArrayList<>();
-		Elements as = doc.select("a[href]");
-		for (Element t1 : as) {
-			String val = null;
-			if (style <= 0) {
-				val = t1.attr("abs:href");
-			} else {
-				val = t1.text();
-			}
-			if (val != null) list.add(val);
-		}
-		return list;
-	}
-
-	/**
-	 * 从es列表中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param es List&lt;String&gt;
-	 * @param style int
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getLinkTagAll(List<Element> es, int style) {
-		if (es == null || es.size() == 0) return new ArrayList<>();
-		List<String> list = new ArrayList<>(es.size());
-		for (Element e : es)
-			list.addAll(getLinkTagAll(e, style));
-		return list;
-	}
-
-	/**
-	 * 从doc中提取所有 id class tag 节点并从中提取链接组或标题组 &lt; a href="" &gt; &lt; /a &gt;<br>
-	 * style:0 得到链接 1:得到链接文本
-	 * @param doc Element
-	 * @param style int
-	 * @param arr String[]
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getLinkTagBy(Element doc, int style, String... arr) {
-		if (doc == null) return new ArrayList<>();
-		return getLinkTagAll(UtilsJsoup.getElementAll(doc, arr), style);
 	}
 
 	/**
@@ -556,7 +434,7 @@ public final class UtilsJsoupCase {
 		if (es.size() <= 0) return "";
 		Element e = es.first();
 		UtilsJsoup.remove(e, filter);
-		return Filter.filter(e.text());
+		return UtilsHtmlFilter.filter(e.text());
 	}
 
 	/**
@@ -567,9 +445,9 @@ public final class UtilsJsoupCase {
 	 */
 	public static final Elements getWebSearchItems(Element source, String div) {
 		if (source == null) return new Elements();
-		String key=div.trim();
+		String key = div.trim();
 		Element obj = source;
-		if (div != null && key.length() > 0) obj = UtilsJsoup.getElementAllFirst(source,key);
+		if (div != null && key.length() > 0) obj = UtilsJsoup.getElementFirst(source, key);
 		if (obj == null) return new Elements();
 		return obj.select("a");
 	}
@@ -605,8 +483,8 @@ public final class UtilsJsoupCase {
 						Elements gs = doc.getElementsByClass("firstLine");
 						for (Element gse : gs) {
 							String line = "";
-							String name = UtilsJsoupCase.getLinkFirstText(gse);
-							String href = UtilsJsoupCase.getLinkFirstHref(gse);
+							String name = UtilsJsoupLink.getTextFirst(gse);
+							String href = UtilsJsoupLink.getHrefFirst(gse);
 							line = UtilsConsts.ACC_ENTER + "" + name + "\t" + href;
 							UtilsFile.writeFile(smallcategorypath, line);
 						}
@@ -655,5 +533,17 @@ public final class UtilsJsoupCase {
 					f.remove();
 			}
 		}
+	}
+
+	/**
+	 * 重组Docment
+	 * @param content String
+	 * @param domain String
+	 * @return Document
+	 */
+	public static final Document getDocument(String content, String domain) {
+		if(content==null)return null;
+		if (domain == null) return Jsoup.parse(content);
+		return Jsoup.parse(content, domain);
 	}
 }

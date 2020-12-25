@@ -1,21 +1,26 @@
 package des.wangku.operate.standard.testing;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJsoup;
 import des.wangku.operate.standard.utls.UtilsStringFilter;
 
 public class Books17Utils {
+	/** 日志 */
+	static final Logger logger = LoggerFactory.getLogger(Books17Utils.class);
 
 	static final String[] ACC_catalog = { "短篇", "中篇", "长篇", "超长篇" };
 
-	static class StyleClass {
-		String key = null;
+	public static class StyleClass {
+		public String key = null;
 		long min = 0;
 		long max = 0;
 
@@ -34,7 +39,7 @@ public class Books17Utils {
 		sclist.add(new StyleClass("超长篇", 2 * 1024 * 1024, -1));
 	}
 
-	static final StyleClass getSC(long len) {
+	public static final StyleClass getSC(long len) {
 		for (StyleClass e : Books17Utils.sclist)
 			if ((e.max == -1 && len > e.min) || (e.max > -1 && len > e.min && len <= e.max)) return e;
 		return sclist.get(0);
@@ -76,8 +81,9 @@ public class Books17Utils {
 	}
 
 	static final boolean isexist(String filename) {
-		String file = UtilsFile.getFilePath(Books17.ACC_Path, filename + ".txt");
-		if (file != null) System.out.println("发现同名文件\t" + file);
+		File file = UtilsFile.getFilePath(Books17.ACC_Path, filename + ".txt");
+		//if (file != null) 
+			//logger.debug("发现同名文件\t" + file+"\t"+file.lastModified());
 		return file != null;
 		/*
 		 * for(StyleClass e:sclist) {

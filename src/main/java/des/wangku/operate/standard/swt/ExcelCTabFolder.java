@@ -19,7 +19,6 @@ import des.wangku.operate.standard.desktop.DesktopUtils;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPOI;
-import des.wangku.operate.standard.utls.UtilsSWTTableSQL;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 
 /**
@@ -237,7 +236,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 				list.add(value);
 			}
 			if (!(isFilterBlankLines && UtilsList.isBlankLines(list))) {
-				UtilsSWTTableSQL.add(t, list);
+				t.add(list);
 			}
 		}
 	}

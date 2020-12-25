@@ -1,6 +1,12 @@
 package des.wangku.operate.standard.utls;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
 
 import info.monitorenter.cpdetector.io.ASCIIDetector;
 import info.monitorenter.cpdetector.io.ByteOrderMarkDetector;
@@ -65,4 +71,104 @@ public final class UtilsCpdetector {
 		if (c == null) return null;
 		return charset.name();
 	}
+	/**
+	 * 判断编码格式方法
+	 * @param file String
+	 * @return String
+	 */
+	public static  String getFilecharset(String file) {
+		if(file==null||file.length()==0)return null;
+		return getFilecharset(new File(file));
+	}
+	/**
+	 * 判断编码格式方法
+	 * @param file File
+	 * @return String
+	 */
+	public static  String getFilecharset(File file) {
+		if(file==null || !file.isFile())return null;
+		try {
+			 return getFilecharset(new ByteArrayInputStream(FileUtils.readFileToByteArray(file)));
+		} catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+		
+	}
+	/**
+	 * 判断编码格式方法
+	 * @param byteArrayInputStream ByteArrayInputStream
+	 * @return String
+	 */
+	public static  String getFilecharset(ByteArrayInputStream byteArrayInputStream) {
+	    if (byteArrayInputStream == null) return null;
+	    String charset = "GBK";
+	    byte[] first3Bytes = new byte[3];
+	    try {
+	        boolean checked = false;
+	        BufferedInputStream bis = new BufferedInputStream(byteArrayInputStream);
+	        bis.mark(0);
+	        int read = bis.read(first3Bytes, 0, 3);
+	        if (read == -1) {
+	            return charset; //文件编码为 ANSI
+	        } else if (first3Bytes[0] == (byte) 0xFF
+	                && first3Bytes[1] == (byte) 0xFE) {
+	            charset = "UTF-16LE"; //文件编码为 Unicode
+	            checked = true;
+	        } else if (first3Bytes[0] == (byte) 0xFE
+	                && first3Bytes[1] == (byte) 0xFF) {
+	            charset = "UTF-16BE"; //文件编码为 Unicode big endian
+	            checked = true;
+	        } else if (first3Bytes[0] == (byte) 0xEF
+	                && first3Bytes[1] == (byte) 0xBB
+	                && first3Bytes[2] == (byte) 0xBF) {
+	            charset = "UTF-8"; //文件编码为 UTF-8
+	            checked = true;
+	        }
+	        bis.reset();
+	        if (!checked) {
+	            @SuppressWarnings("unused")
+				int loc = 0;
+	            while ((read = bis.read()) != -1) {
+	                loc++;
+	                if (read >= 0xF0)
+	                    break;
+	                if (0x80 <= read && read <= 0xBF) // 单独出现BF以下的，也算是GBK
+	                    break;
+	                if (0xC0 <= read && read <= 0xDF) {
+	                    read = bis.read();
+	                    if (0x80 <= read && read <= 0xBF) // 双字节 (0xC0 - 0xDF)
+	                        // (0x80
+	                        // - 0xBF),也可能在GB编码内
+	                        continue;
+	                    else
+	                        break;
+	                } else if (0xE0 <= read && read <= 0xEF) {// 也有可能出错，但是几率较小
+	                    read = bis.read();
+	                    if (0x80 <= read && read <= 0xBF) {
+	                        read = bis.read();
+	                        if (0x80 <= read && read <= 0xBF) {
+	                            charset = "UTF-8";
+	                            break;
+	                        } else
+	                            break;
+	                    } else
+	                        break;
+	                }
+	            }
+	        }
+	        bis.close();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try {
+	            byteArrayInputStream.close();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return charset;
+	}
+
 }
