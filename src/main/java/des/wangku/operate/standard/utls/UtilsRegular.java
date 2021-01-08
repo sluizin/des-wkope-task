@@ -157,12 +157,55 @@ public final class UtilsRegular {
 		}
 		return content;
 	}
-
+	/**
+	 * 得到字符串以first开头以end结果的字符串，字符串中可以含有first
+	 * @param content String
+	 * @param first char
+	 * @param end char
+	 * @return String[]
+	 */
 	public static final String[] getRegexArray(String content, char first, char end) {
 		String regex = first + "([^" + end + "])*" + end;
 		return getRegexArray(regex, content);
 	}
 
+	/**
+	 * 得到字符串以first开头以end结果的字符串，字符串中不可以含有first
+	 * @param content String
+	 * @param first String
+	 * @param end String
+	 * @return String[]
+	 */
+	public static final String[] getSubArrayString(String content, String first, String end) {
+		String[] arr = {};
+		if(content==null ||content.length()==0)return arr;
+		if(first==null ||first.length()==0)return arr;
+		if(end==null ||end.length()==0)return arr;
+		String regex = first + "([^(" + first + ")^(" + end + ")])*" + end;
+		return getSubArray(regex, content);
+	}
+	/**
+	 * 得到字符串以first开头以end结果的字符串，字符串中不可以含有first
+	 * @param content String
+	 * @param first String
+	 * @param end String
+	 * @return String[]
+	 */
+	public static final String[] getSubArrayVal(String content, String first, String end) {
+		String[] result=getSubArrayString(content,first,end);
+		int firstlen=first.length();
+		int endlen=end.length();
+		for(int i=0;i<result.length;i++) {
+			String e=result[i];
+			if(e.length()<=firstlen+endlen) {
+				result[i]="";
+				continue;
+			}
+			e=e.substring(firstlen, e.length() - endlen);
+			result[i]=e;
+		}
+		return result;
+	}
 	/**
 	 * 得到正则的结果数组
 	 * @param pattern String
@@ -181,6 +224,23 @@ public final class UtilsRegular {
 		return list.toArray(arr);
 	}
 
+	/**
+	 * 得到正则的结果数组
+	 * @param pattern String
+	 * @param content String
+	 * @return String[]
+	 */
+	public static final String[] getSubArray(String pattern, String content) {
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(content);
+		List<String> list = new ArrayList<>();
+		while (m.find()) {
+			String str = m.group(0);
+			list.add(str);
+		}
+		String[] arr = {};
+		return list.toArray(arr);
+	}
 	/**
 	 * 得到正则的结果数组 查出同对性质的数据组 如【】 最好使用全角
 	 * @param pattern String

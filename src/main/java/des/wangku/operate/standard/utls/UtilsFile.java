@@ -183,6 +183,19 @@ public final class UtilsFile {
 		}
 		return nlist;
 	}
+	/**
+	 * 
+	 * 从目录中提出所有文件，指名扩展名，忽略大小写，并进行排序
+	 * @param catalog String
+	 * @param extendName String
+	 * @param com Comparator&lt;File&gt;
+	 * @return List&lt;File&gt;
+	 */
+	public static final List<File> getFileAll(String catalog, String extendName,Comparator<File> com) {
+		List<File> list=getFileAll(catalog, extendName);
+		Collections.sort(list, com);
+		return list;
+	}
 
 	/**
 	 * 从目录中提出所有文件
@@ -603,7 +616,7 @@ public final class UtilsFile {
 		} catch (Exception e) {
 		}
 	}
-
+	static final int ACC_ShowLogger_WriteFileInforLen=26;
 	/**
 	 * 写文件，以追加的方式
 	 * @param file File
@@ -617,7 +630,7 @@ public final class UtilsFile {
 			FileWriter fw = new FileWriter(file, true);
 			fw.write(content);
 			String cut = content.trim();
-			if (cut.length() > 10) cut = cut.substring(0, 10);
+			if (cut.length() > ACC_ShowLogger_WriteFileInforLen) cut = cut.substring(0, ACC_ShowLogger_WriteFileInforLen);
 			logger.debug("add File[" + file.getAbsolutePath() + "] content:" + cut);
 			fw.close();
 
@@ -771,6 +784,7 @@ public final class UtilsFile {
 			String content = readAll(e, fileEncode).toString();
 			int count=UtilsRegular.getPatternCount(content,val);
 			//System.out.println(e.getName()+":"+count);
+			if(count<15)continue;
 			infor c=new infor();
 			c.e=e;
 			c.sort=count;

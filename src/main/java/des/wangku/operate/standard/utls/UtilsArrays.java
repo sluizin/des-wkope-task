@@ -7,10 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static des.wangku.operate.standard.utls.UtilsJsoup.ACC_JsoupRulePrecisePositioningInPage;
-import static des.wangku.operate.standard.utls.UtilsJsoup.ACC_JsoupRuleInterval;
-import static des.wangku.operate.standard.utls.UtilsJsoup.ACC_JsoupRuleIntervalSplit;
-import static des.wangku.operate.standard.utls.UtilsJsoup.ACC_JsoupRulePrecisePositioningOutPage;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningInPage;
 
 /**
  * 针对数组的操作
@@ -51,7 +48,7 @@ public class UtilsArrays {
 	}
 
 	/**
-	 * 对数组进行倒序排序
+	 * 对数组进行倒序排序 从大到小
 	 * @param arr int[]
 	 * @return int[]
 	 */
@@ -400,15 +397,16 @@ public class UtilsArrays {
 	}
 
 	/**
-	 * 把a,0,2,d,8字符串转成int[]数组
+	 * 把a,0,2,-5,d,8字符串转成int[]数组
 	 * @param str String
 	 * @return int[]
 	 */
 	public static int[] getArrayInteger(String str) {
 		int[] arr = {};
 		if (str == null || str.length() == 0) return arr;
-		return UtilsConvert.convertIntArray(str.split(","));
+		return UtilsConvert.convertIntegerArray(str.split(","));
 	}
+
 
 	/**
 	 * 是否存在过滤字符串
@@ -564,62 +562,6 @@ public class UtilsArrays {
 	}
 
 	/**
-	 * 把规则关键字放入数组中
-	 * @param arr String[]
-	 * @return String[]
-	 */
-	public static final String[] getJsoupRuleKey(String... arr) {
-		String[] arrs = {};
-		List<String> list = new ArrayList<>();
-		for (String e : arr) {
-			if (e == null || e.length() == 0) continue;
-			jsoupRuleSingleKey(list, e);
-		}
-		list = UtilsList.distinct(list);
-		return list.toArray(arrs);
-	}
-	/**
-	 * 把规则关键字放入list中，是最终数组，已经完成分组
-	 * @param list List&lt;String&gt;
-	 * @param key String
-	 * @param arr String[]
-	 */
-	private static final void jsoupRuleSingleKey(List<String> list, String key) {
-			if (key == null) return;
-			key=key.trim();
-			if (key.length() == 0) return;
-			if (key.indexOf(ACC_JsoupRuleInterval) > -1) {
-				String[] arr = key.split(ACC_JsoupRuleIntervalSplit);
-				for(String e:arr)jsoupRuleSingleKey(list,e);
-				return;
-			}
-			if (key.indexOf(ACC_JsoupRulePrecisePositioningOutPage) > -1) {
-				list.add(key);
-				return;
-			}
-			if (key.indexOf(ACC_JsoupRulePrecisePositioningInPage) > -1) {
-				list.add(key);
-				return;
-			}
-			if (key.indexOf("||") > -1) {
-				String[] arr = key.split("\\|\\|");
-				for(String f:arr)list.add(f);
-				return;
-			}
-			if (key.indexOf("|") > -1) {
-				String[] arr = key.split("\\|");
-				for(String f:arr)list.add(f);
-				return;
-			}
-			String[] arrs = key.split("[\\|;,]+");
-			for (String e : arrs) {
-				if (e == null) continue;
-				e = e.trim();
-				if (e.length() == 0) continue;
-				list.add(e);
-			}
-	}
-	/**
 	 * 把规则关键字放入list中
 	 * @param list List&lt;String&gt;
 	 * @param arr String[]
@@ -649,25 +591,7 @@ public class UtilsArrays {
 		}
 	}
 
-	/**
-	 * UtilsJsoup工具读取多个关键时，只支持关键字，以分号与逗号与空格进行分格 ","/";"/" "
-	 * @param arr String[]
-	 * @return String[]
-	 */
-	public static final String[] jsoupSingleKeyArray(String... arr) {
-		List<String> list = new ArrayList<>();
-		for (String e : arr) {
-			if (e == null || (e = e.trim()).length() == 0) continue;
-			String[] arrs = e.split("[,; ]");
-			for (String f : arrs) {
-				if (f == null || (f = f.trim()).length() == 0) continue;
-				list.add(f);
-			}
-		}
-		String[] arrs = {};
-		if (list.size() == 0) return arrs;
-		return list.toArray(arrs);
-	}
+
 	/**
 	 * 判断数值数组的状态 <br>
 	 * 1:所有数值正数与零<br>
@@ -676,15 +600,15 @@ public class UtilsArrays {
 	 * @param arr int[]
 	 * @return int
 	 */
-	public static final int arrayIsState(int...arr) {
-		int len=arr.length;
-		int count=0;
-		for(int e:arr)
-			if(e>=0)count++;
-		if(count==0)return -1;
-		if(count>0 && count<len)return 0;
+	public static final int isStateArraysInt(int... arr) {
+		int len = arr.length;
+		int count = 0;
+		for (int e : arr)
+			if (e >= 0) count++;
+		if (count == 0) return -1;
+		if (count > 0 && count < len) return 0;
 		return 1;
-		
+
 	}
 
 	/**
@@ -695,7 +619,7 @@ public class UtilsArrays {
 	 */
 	public static final <T> T[] arrangement(Class<T> type, T... arr) {
 		T[] ar = (T[]) Array.newInstance(type, 0);
-		if(type==null || arr.length==0)return ar;
+		if (type == null || arr.length == 0) return ar;
 		List<T> list = new ArrayList<>(ar.length);
 		for (T t : arr) {
 			if (t == null) continue;
@@ -706,20 +630,20 @@ public class UtilsArrays {
 	}
 
 	public static void main(String[] args) {
-		String content="abc,def|xx;gg|tO|ee|To|cc|TTO|ee|ToO|eee";
+		String content = "abc,def|xx;gg|tO|ee|To|cc|TTO|ee|ToO|eee";
 		//String[] arrs=content.split("[\\|;,]+");
-		String[] arrs=content.split("\\|[Tt]{1}[oO]{1}\\|");
-		for(String e:arrs) {
-			System.out.println( ":" + e );
+		String[] arrs = content.split("\\|[Tt]{1}[oO]{1}\\|");
+		for (String e : arrs) {
+			System.out.println(":" + e);
 		}
-		System.out.println( ":" + content.indexOf("|to|") );
-		
+		System.out.println(":" + content.indexOf("|to|"));
+
 		/*
-		String[] arr = { "abc", "deg ", null, "", " xxx", "null ", "    ", null, " dd " };
-		String[] ar = arrangement(String.class, arr);
-		for (int i = 0, len = ar.length; i < len; i++) {
-			System.out.println(i + ":(" + ar[i] + ")");
-		}
-	*/	
+		 * String[] arr = { "abc", "deg ", null, "", " xxx", "null ", "    ", null, " dd " };
+		 * String[] ar = arrangement(String.class, arr);
+		 * for (int i = 0, len = ar.length; i < len; i++) {
+		 * System.out.println(i + ":(" + ar[i] + ")");
+		 * }
+		 */
 	}
 }

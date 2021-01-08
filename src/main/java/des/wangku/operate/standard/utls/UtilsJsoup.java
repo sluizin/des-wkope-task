@@ -1,5 +1,6 @@
 package des.wangku.operate.standard.utls;
 
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,6 +17,11 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.Evaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRuleCutIntervalSplit;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningInPage;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningOutPage;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.isCutInterval;
+import static des.wangku.operate.standard.utls.UtilsJsoupConst.getJsoupRuleKey;
 
 /**
  * Jsoup工具<br>
@@ -52,17 +58,6 @@ public final class UtilsJsoup {
 
 	public static int ACC_BaiduDefaultTimeout = 30000;
 
-	/** jsoup关键字规则，间断关键字 */
-	public static final String ACC_JsoupRuleCutIntervalSplit = "\\|[Tt]{1}[oO]{1}\\|";
-	/** jsoup关键字规则，最高等级间隔 */
-	public static final String ACC_JsoupRuleInterval = "|;|";
-	public static final String ACC_JsoupRuleIntervalSplit = "\\|\\;\\|";
-	/** jsoup关键字规则，用于页内精确定位 主要用于通过与id、class等相似的规则，进行定位 */
-	public static final String ACC_JsoupRulePrecisePositioningInPage = "|->|";
-	public static final String ACC_JsoupRulePrecisePositioningInPageSplit = "\\|->\\|";
-	/** jsoup关键字规则，用于页外精确定位 主要用于通过链接的连锁，定位节点 */
-	public static final String ACC_JsoupRulePrecisePositioningOutPage = "|=>|";
-	public static final String ACC_JsoupRulePrecisePositioningOutPageSplit = "\\|=>\\|";
 	static final List<STC> ACC_STCList = new ArrayList<>();
 
 	/** 顶级分隔符或串 */
@@ -115,51 +110,6 @@ public final class UtilsJsoup {
 		return list.toArray(a);
 	}
 
-	/**
-	 * 多个关键字进行精确定位a1 a2 a3
-	 * @param source Element
-	 * @param arrs String[]
-	 * @return Elements
-	 */
-	public static final Elements forward(Element source, String... arrs) {
-		if (arrs.length == 0) return new Elements();
-		List<String> list = Arrays.asList(arrs);
-		Elements es = new Elements();
-		forwardPrivate(es, source, list, 0);
-		return es;
-	}
-
-	/**
-	 * 多个关键字进行精确定位 a1 |->| a2 |->| a3
-	 * @param source Element
-	 * @param key String
-	 * @return Elements
-	 */
-	public static final Elements forwardKey(Element source, String key) {
-		if (key.indexOf(ACC_JsoupRulePrecisePositioningInPage) == -1) return new Elements();
-		String[] arr = key.split(ACC_JsoupRulePrecisePositioningInPageSplit);
-		return forward(source, arr);
-	}
-
-	/**
-	 * 递归循环调取精确定位
-	 * @param es Elements
-	 * @param source Element
-	 * @param list List&lt;String&gt;
-	 * @param index int
-	 */
-	private static final void forwardPrivate(Elements es, Element source, List<String> list, int index) {
-		if (index < 0 || index >= list.size()) return;
-		String key = list.get(index);
-		Elements ess = UtilsJsoup.getElementAll(source, key);
-		if (ess.size() == 0) return;
-		if (index == list.size() - 1) {
-			es.addAll(ess);
-			return;
-		}
-		for (Element ee : ess)
-			forwardPrivate(es, ee, list, index + 1);
-	}
 
 	/**
 	 * 读取url，得到节点列表<br>
@@ -170,6 +120,7 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return Elements
 	 */
+	 @Deprecated
 	public static final Elements getAllElementsByKey(String url, String key) {
 		Elements es = new Elements();
 		if (url == null || url.length() == 0 || key == null || key.length() == 0) return es;
@@ -196,7 +147,7 @@ public final class UtilsJsoup {
 			URL url1 = new URL(url);
 			return getDoc(url1);
 		} catch (IOException e) {
-			System.out.println("error:" + url);
+			logger.debug("error:" + url);
 			//e.printStackTrace();
 		}
 		return null;
@@ -214,7 +165,7 @@ public final class UtilsJsoup {
 			URL url1 = new URL(url);
 			return getDoc(url1, mode);
 		} catch (IOException e) {
-			System.out.println("error:" + url);
+			logger.debug("error:" + url);
 			//e.printStackTrace();
 		}
 		return null;
@@ -290,12 +241,12 @@ public final class UtilsJsoup {
 		if (UtilsShiftCompare.isCompare(mode, MODE_Socket)) {
 			logger.debug(getMessage(url, "socket", timeout));
 			String content = UtilsReadURL.getSocketContent(url, newCode, timeout);
-			if (content != null && content.length() > 0) { return UtilsJsoupCase.getDocument(content, domain); }
+			if (content != null && content.length() > 0) { return UtilsJsoupCase.getDocument(domain,content); }
 		}
 		if (UtilsShiftCompare.isCompare(mode, MODE_URL)) {
 			logger.debug(getMessage(url, "UrlRead", timeout));
 			String content = UtilsReadURL.getUrlContent(url, newCode, timeout);
-			if (content != null && content.length() > 0) return UtilsJsoupCase.getDocument(content, domain);
+			if (content != null && content.length() > 0) return UtilsJsoupCase.getDocument(domain,content);
 		}
 		return null;
 	}
@@ -311,7 +262,7 @@ public final class UtilsJsoup {
 			URL url1 = new URL(url);
 			return getDocJS(url1);
 		} catch (IOException e) {
-			System.out.println("error:" + url);
+			logger.debug("error:" + url);
 			//e.printStackTrace();
 		}
 		return null;
@@ -326,7 +277,7 @@ public final class UtilsJsoup {
 		if (UtilsConsts.isErrorUrl(url)) return null;
 		String content = UtilsReadURL.getReadUrlJsDefault(url.toString());
 		String domain = UtilsReadURL.getUrlDomain(url);
-		return UtilsJsoupCase.getDocument(content, domain);
+		return UtilsJsoupCase.getDocument(domain,content);
 	}
 
 	/**
@@ -355,10 +306,10 @@ public final class UtilsJsoup {
 	public static final Element getElement(Element source, String start, String end) {
 		if (source == null) return null;
 		String result = source.html();
-		String head = UtilsReadURL.getUrlDomain(source);
+		String domain = UtilsReadURL.getUrlDomain(source);
 		String cut = UtilsString.cutString(result, start, end);
 		if (cut == null) return null;
-		return UtilsJsoupCase.getDocument(cut, head);
+		return UtilsJsoupCase.getDocument(domain,cut);
 	}
 
 	/**
@@ -371,22 +322,11 @@ public final class UtilsJsoup {
 	public static final Elements getElementAll(Element f, String... arr) {
 		if (f == null) return new Elements();
 		Elements es = new Elements();
-		String[] arrs = UtilsArrays.getJsoupRuleKey(arr);
+		String[] arrs = getJsoupRuleKey(arr);
 		for (String e : arrs) {
-			Elements ess = getElementPrivate(f, e);
+			Elements ess = getElementsFinalPrivate(f, e);
 			if (ess != null && ess.size() > 0) es.addAll(ess);
 		}
-		/*
-		 * for (String e : arr) {//*************************************************************************
-		 * if (e.indexOf("||") < 0) {
-		 * es.addAll(getElementPrivate(f, e));
-		 * continue;
-		 * }
-		 * String[] arrs = e.split("\\|\\|");
-		 * for (String g : arrs)
-		 * es.addAll(getElementPrivate(f, g));
-		 * }
-		 */
 		if (es.size() > 1) es = UtilsList.distinctHtml(es);
 		return es;
 	}
@@ -450,7 +390,6 @@ public final class UtilsJsoup {
 		if (e == null) return null;
 		return e.text();
 	}
-
 	/**
 	 * 读取Element得到 name 这个字符串，id class tag attribname,text，所有单元 过滤掉重复项<br>
 	 * 以下划线区分切块，即先判断下划线，如果有，则切块，后再以,进行多个区分，允许精确定位<br>
@@ -458,30 +397,30 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return Elements
 	 */
-	private static final Elements getElementPrivate(Element f, String key) {
+	private static final Elements getElementsFinalPrivate(Element f, String key) {
 		if (key == null) return new Elements();
 		key = key.trim();
 		if (key.length() == 0) return new Elements();
 		Elements es = new Elements();
 		if (key.indexOf(ACC_JsoupRulePrecisePositioningOutPage) > -1) {
-			Elements ees = relationKey(f, key);
+			Elements ees = UtilsJsoupConst.relationKey(f, key);
 			es.addAll(ees);
 		}else {
 			if (key.indexOf(ACC_JsoupRulePrecisePositioningInPage) > -1) {
-				Elements ees = forwardKey(f, key);
+				Elements ees = UtilsJsoupConst.forwardKey(f, key);
 				es.addAll(ees);
 			} else {
 				if (isCutInterval(key)) {
-					Elements cut = getElementsByCut(f, key);
+					Elements cut = getElementsFinalByCut(f, key);
 					if (cut != null) es.addAll(cut);
 
 				} else {
-					es.addAll(getElementsByID(f, key));
-					es.addAll(getElementsByClass(f, key));
-					es.addAll(getElementsByTag(f, key));
+					es.addAll(getElementsFinalByID(f, key));
+					es.addAll(getElementsFinalByClass(f, key));
+					es.addAll(getElementsFinalByTag(f, key));
 					//es.addAll(getElementsByAttribute(f, key));
 					//es.addAll(getElementsByText(f, key));
-					es.addAll(getElementsByHref(f, key));
+					es.addAll(getElementsFinalByHref(f, key));
 				}
 			}
 		}
@@ -515,10 +454,10 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsBy(Element source, int style, String... arrs) {
+	private static final Elements getElementsFinalBy(Element source, int style, String... arrs) {
 		if (source == null || arrs.length == 0) return new Elements();
 		Elements es = new Elements();
-		String[] arr = UtilsArrays.jsoupSingleKeyArray(arrs);
+		String[] arr = UtilsJsoupConst.jsoupSingleKeyArray(arrs);
 		for (String e : arr) {
 			if (!isGenericKeyType(e, style)) continue;
 			String key = UtilsJsoup.getGenericKeyVal(e);
@@ -530,14 +469,9 @@ public final class UtilsJsoup {
 				es.addAll(els);
 				continue;
 			}
-			/* 只提取指定的下标记录 */
-			//Arrays.sort(surplus);
-			int len = els.size();
-			for (int vv : surplus) {
-				if (vv >= 0 && vv < len) es.add(els.get(vv));
-			}
+			es.addAll(UtilsJsoupConst.setMainKeyRange(els,surplus));
 		}
-		if (es.size() > 1) es = UtilsList.distinctHtml(es);/* 去重 */
+		//if (es.size() > 1) es = UtilsList.distinctHtml(es);/* 去重 */
 		return es;
 	}
 
@@ -547,8 +481,8 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByAttribute(Element source, String... arrs) {
-		return getElementsBy(source, 3, arrs);
+	public static final Elements getElementsFinalByAttribute(Element source, String... arrs) {
+		return getElementsFinalBy(source, 3, arrs);
 	}
 
 	/**
@@ -557,34 +491,27 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByClass(Element source, String... arrs) {
-		return getElementsBy(source, 1, arrs);
+	public static final Elements getElementsFinalByClass(Element source, String... arrs) {
+		return getElementsFinalBy(source, 1, arrs);
 	}
 
-	/**
-	 * 以|to|进行区分切块
-	 * @param e Document
-	 * @param key String
-	 * @return Elements
-	 */
-	public static final Elements getElementsByCut(Document e, String key) {
-		if (e == null || key == null || key.length() == 0) return new Elements();
-		if (!isCutInterval(key)) return new Elements();
-		String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-		return UtilsJsoup.getRebuildElements(e.baseUri(), e, arrs[0], arrs[1]);
-	}
 
 	/**
 	 * 以|To|线进行区分切块
 	 * @param e Element
-	 * @param key String
+	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByCut(Element e, String key) {
-		if (e == null || key == null || key.length() == 0) return new Elements();
-		if (!isCutInterval(key)) return new Elements();
-		String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-		return UtilsJsoup.getRebuildElements(e.baseUri(), e, arrs[0], arrs[1]);
+	public static final Elements getElementsFinalByCut(Element e,String... arrs) {
+		if (e == null || arrs.length == 0) return new Elements(0);
+		Elements es=new Elements();
+		for(String key:arrs) {
+			if (!isCutInterval(key)) return new Elements();
+			String[] keyarrs = key.split(ACC_JsoupRuleCutIntervalSplit);
+			Elements result= UtilsJsoup.getRebuildElements(e, keyarrs[0], keyarrs[1]);
+			es.addAll(result);
+		}
+		return es;
 	}
 
 	/**
@@ -593,8 +520,8 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByHref(Element source, String... arrs) {
-		return getElementsBy(source, 5, arrs);
+	public static final Elements getElementsFinalByHref(Element source, String... arrs) {
+		return getElementsFinalBy(source, 5, arrs);
 	}
 
 	/**
@@ -603,14 +530,10 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByID(Element source, String... arrs) {
-		return getElementsBy(source, 0, arrs);
+	public static final Elements getElementsFinalByID(Element source, String... arrs) {
+		return getElementsFinalBy(source, 0, arrs);
 	}
 
-	public static final void getElementsByKeyRange(Elements count, Elements els, int... surplus) {
-		if (surplus.length == 0) return;
-
-	}
 
 	/**
 	 * 通过Tag查找节点
@@ -618,8 +541,8 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByTag(Element source, String... arrs) {
-		return getElementsBy(source, 2, arrs);
+	public static final Elements getElementsFinalByTag(Element source, String... arrs) {
+		return getElementsFinalBy(source, 2, arrs);
 	}
 
 	/**
@@ -628,8 +551,8 @@ public final class UtilsJsoup {
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsByText(Element source, String... arrs) {
-		return getElementsBy(source, 4, arrs);
+	public static final Elements getElementsFinalByText(Element source, String... arrs) {
+		return getElementsFinalBy(source, 4, arrs);
 	}
 
 	/**
@@ -679,7 +602,8 @@ public final class UtilsJsoup {
 
 	/**
 	 * 获取节点中的关键字，按不同方式查找，并去重<br>
-	 * 此关键字为无修饰关键字。即纯关键字
+	 * 此关键字为无修饰关键字。即纯关键字<br>
+	 * style:-1 To Cut<br>
 	 * style:0 id<br>
 	 * style:1 class<br>
 	 * style:2 tag<br>
@@ -700,7 +624,7 @@ public final class UtilsJsoup {
 		case -1:/* S */
 			if (!isCutInterval(key)) return new Elements();
 			String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-			es= UtilsJsoup.getRebuildElements(source.baseUri(), source, arrs[0], arrs[1]);
+			es= UtilsJsoup.getRebuildElements( source, arrs[0], arrs[1]);
 			//es = source.getElementsByClass(e);aaa
 			break;
 		case 1:/* 1 */
@@ -739,18 +663,35 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getGenericKeyRange(String key) {
-		return UtilsStringPrefix.getMiddle(key, true);//UtilsRegular.geCheckIntervalVal(ACC_SearchRangePattern, key);
+		String result= getGenericKeyRangeAll(key);		
+		if(result==null||result.length()<3)return "";
+		return result.substring(1,result.length()-1);
 	}
 
 	/**
+	 * 返回检索关键的范围判断，如没有限制，则返回null，否则返回类型字符串，即{}之间的所有字符串<br>
+	 * 以{}为开头的字符串，如:"{ICAT}classname1[]","{T}IDname1[1,2,5]"<br>
+	 * 返回""或[1,2,5]
+	 * @param key String
+	 * @return String
+	 */
+	public static final String getGenericKeyRangeAll(String key) {
+		String result= UtilsStringPrefix.getMiddle(key, true);		
+		if(result==null)return "";
+		return result;
+		//UtilsRegular.geCheckIntervalVal(ACC_SearchRangePattern, key);
+	}
+	/**
 	 * 返回检索关键的类型判断，如没有限制，则返回null，否则返回类型字符串，即{}之间的字符串<br>
 	 * 以{}为开头的字符串，如:"{ICAT}classname1","{T}IDname1"<br>
-	 * 返回ICAT、T
+	 * 返回{ICAT}、{T}、""
 	 * @param key String
 	 * @return String
 	 */
 	public static final String getGenericKeyType(String key) {
-		return UtilsStringPrefix.getBig(key, false);//UtilsRegular.geCheckIntervalVal(ACC_SearchTypePattern, key);
+		String result= UtilsStringPrefix.getBig(key, false);//UtilsRegular.geCheckIntervalVal(ACC_SearchTypePattern, key);
+		if(result==null)return "";
+		return result;
 	}
 
 	/**
@@ -790,18 +731,9 @@ public final class UtilsJsoup {
 		String result = doc.html();
 		String cut = UtilsString.cutString(result, start, end);
 		if (cut == null) return null;
-		return UtilsJsoupCase.getDocument(cut, domain);
+		return UtilsJsoupCase.getDocument(domain,cut);
 	}
 
-	/**
-	 * 把字符串转成 Document，内容为null里则返回null
-	 * @param domain String
-	 * @param content String
-	 * @return Document
-	 */
-	public static final Document getRebuildDoc(String domain, String content) {
-		return UtilsJsoupCase.getDocument(content, domain);
-	}
 
 	/**
 	 * 从网址中某个长度的局部返回对象
@@ -824,9 +756,9 @@ public final class UtilsJsoup {
 	 * @param end String
 	 * @return Document
 	 */
-	public static final Elements getRebuildElements(String domain, Element e, String start, String end) {
+	public static final Elements getRebuildElements(Element e, String start, String end) {
 		if (e == null) return new Elements();
-		return getRebuildElementsByString(domain, e.html(), start, end);
+		return getRebuildElementsByString(e.baseUri(), e.html(), start, end);
 	}
 
 	/**
@@ -842,7 +774,7 @@ public final class UtilsJsoup {
 		Elements es = new Elements();
 		String[] arr = UtilsString.cutStrings(result, start, end);
 		for (String f : arr) {
-			Element t = UtilsJsoupCase.getDocument(f, domain);
+			Element t = UtilsJsoupCase.getDocument(domain,f);
 			if (t == null) continue;
 			es.add(t);
 		}
@@ -871,16 +803,6 @@ public final class UtilsJsoup {
 		return isInterval;
 	}
 
-	/**
-	 * 判断是否含有间断关键字
-	 * @param key String
-	 * @return boolean
-	 */
-	public static final boolean isCutInterval(String key) {
-		if(key==null || key.length()==0)return false;
-		String[] arr=key.split(ACC_JsoupRuleCutIntervalSplit);
-		return arr.length>1;
-	}
 	/**
 	 * 判断Element是否为空
 	 * @param e Element
@@ -913,7 +835,7 @@ public final class UtilsJsoup {
 
 	public static void main(String[] args) {
 		String[] arr = { "{IH}abe[0,1]", "abcc[a, ,-1,5]", "{ICE}XX", "{IH}XX[0,1,2]", "{abc}aa[1]", "de[1,2]f{123}", "a{XY}z", "{ICAT}classname" };
-		boolean a0 = false;
+		boolean a0 = true;
 		if (a0) for (String e : arr) {
 			String val = getGenericKeyType(e);
 			String va = getGenericKeyVal(e);
@@ -983,95 +905,6 @@ public final class UtilsJsoup {
 	}
 
 	/**
-	 * 递归调用，找到多个最后一个关键字的节点，保存到summary中进行汇总，可能会涉及到多个网页的节点
-	 * @param e Element
-	 * @param keyarr String[]
-	 */
-	public static final Elements relation(Element e, String... keyarr) {
-		Elements summary = new Elements();
-		if (e == null || keyarr.length == 0) return summary;
-		relation(summary, e, keyarr, 0);
-		return summary;
-	}
-
-	/**
-	 * 递归调用，找到多个最后一个关键字的节点，保存到summary中进行汇总，可能会涉及到多个网页的节点
-	 * @param summary Elements
-	 * @param e Element
-	 * @param keyarr String[]
-	 * @param index int
-	 */
-	private static final void relation(Elements summary, Element e, String[] keyarr, int index) {
-		if (e == null) return;
-		int len = keyarr.length;
-		if (index >= len) return;
-		String key = keyarr[index];
-		if (key == null) return;
-		key = key.trim();
-		if (key.length() == 0) return;
-		Elements es = UtilsJsoupLink.getHrefElementsAll(e, key);
-		if (index == len - 1) {
-			summary.addAll(es);
-			return;
-		}
-		for (Element f : es) {
-			List<String> list = UtilsJsoupLink.getHrefAll(f);
-			list = UtilsList.distinct(list);
-			for (String url : list) {
-				Element t = UtilsJsoup.getDoc(url);
-				if (t == null) continue;
-				relation(summary, t, keyarr, index + 1);
-			}
-		}
-
-	}
-
-	/**
-	 * 递归调用，找到多个最后一个关键字的节点，保存到summary中进行汇总，可能会涉及到多个网页的节点<br>
-	 * @param url String
-	 * @param keyarr String[]
-	 */
-	public static final Elements relation(String url, String... keyarr) {
-		Elements all = new Elements();
-		if (url == null || url.length() == 0) return all;
-		if (keyarr.length == 0) return all;
-		Elements es = UtilsJsoup.getAllElementsByKey(url, keyarr[0]);
-		if (keyarr.length == 1) return es;
-		for (Element e : es) {
-			Elements ess = new Elements();
-			relation(ess, e, keyarr, 1);
-			all.addAll(ess);
-		}
-		return all;
-	}
-
-	/**
-	 * 递归调用，找到多个最后一个关键字的节点，保存到summary中进行汇总，可能会涉及到多个网页的节点<br>
-	 * 以"|=&gt;|"为间隔
-	 * @param e Element
-	 * @param key String
-	 */
-	public static final Elements relationKey(Element e, String key) {
-		if (e == null || key == null || key.length() == 0) return new Elements();
-		if (key.indexOf(ACC_JsoupRulePrecisePositioningOutPage) == -1) return new Elements();
-		String[] keyarr = key.split(ACC_JsoupRulePrecisePositioningOutPageSplit);
-		return relation(e, keyarr);
-	}
-
-	/**
-	 * 递归调用，找到多个最后一个关键字的节点，保存到summary中进行汇总，可能会涉及到多个网页的节点<br>
-	 * 以"|=&gt;|"为间隔
-	 * @param key String
-	 */
-	public static final Elements relationKey(String url, String key) {
-		if (url == null || url.length() == 0 || key == null || key.length() == 0) return new Elements();
-		if (key.indexOf(ACC_JsoupRulePrecisePositioningOutPage) == -1) return new Elements();
-		String[] keyarr = key.split(ACC_JsoupRulePrecisePositioningOutPageSplit);
-		if (keyarr.length == 0) return new Elements();
-		return relation(url, keyarr);
-	}
-
-	/**
 	 * 按照id和class和Tag中的单元
 	 * @param source Element
 	 * @param arrs String[]
@@ -1117,7 +950,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void remove_Element(Element source, int style, String[] keyarrs, int... removearr) {
 		if (source == null || keyarrs.length == 0 || removearr.length == 0) return;
-		Elements es = UtilsJsoup.getElementsBy(source, style, keyarrs);
+		Elements es = UtilsJsoup.getElementsFinalBy(source, style, keyarrs);
 		for (int i = es.size() - 1; i >= 0; i--) {
 			if (UtilsString.isExist(i, removearr)) {
 				es.get(i).remove();
@@ -1143,7 +976,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void remove_ElementRev(Element source, int style, int size, String[] arrs, int... arr) {
 		if (source == null || size < 0 || arrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsBy(source, style, arrs);
+		Elements es = UtilsJsoup.getElementsFinalBy(source, style, arrs);
 		int len = es.size();
 		if (len == 0) return;
 		int index = (len - 1) - size;
@@ -1158,7 +991,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void remove_Tag(Element source, String p, int... keyarrs) {
 		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsByTag(source, p.trim());
+		Elements es = UtilsJsoup.getElementsFinalByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
 			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
 	}
@@ -1172,7 +1005,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void remove_TagEnd(Element source, String p, int... keyarrs) {
 		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsByTag(source, p.trim());
+		Elements es = UtilsJsoup.getElementsFinalByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
 			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
 	}
@@ -1228,7 +1061,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void removeClass(Element source, String... keyarrs) {
 		if (source == null || keyarrs.length == 0) return;
-		Elements list = UtilsJsoup.getElementsByClass(source, keyarrs);
+		Elements list = UtilsJsoup.getElementsFinalByClass(source, keyarrs);
 		for (Element e : list)
 			e.remove();
 	}
@@ -1240,7 +1073,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void removeID(Element source, String... arrs) {
 		if (source == null || arrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsByID(source, arrs);
+		Elements es = UtilsJsoup.getElementsFinalByID(source, arrs);
 		for (Element e : es)
 			e.remove();
 	}
@@ -1252,7 +1085,7 @@ public final class UtilsJsoup {
 	 */
 	public static final void removeTag(Element source, String... arrs) {
 		if (source == null || arrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsByTag(source, arrs);
+		Elements es = UtilsJsoup.getElementsFinalByTag(source, arrs);
 		for (Element e : es)
 			e.remove();
 	}

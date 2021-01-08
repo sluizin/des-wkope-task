@@ -37,6 +37,7 @@ public final class UtilsConvert {
 	 * @param list List&lt;String&gt;
 	 * @return int[]
 	 */
+	@Deprecated
 	public static final int[] convertIntArray(String... arrs) {
 		List<Integer> numList = new ArrayList<>(arrs.length);
 		for (String e : arrs)

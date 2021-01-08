@@ -569,7 +569,7 @@ public final class UtilsString {
 	}
 
 	/**
-	 * 截断字符串，如果没有找到，则返回null
+	 * 截断字符串，如果没有找到，则返回null，如果找到多个，则返回第1个
 	 * @param source String
 	 * @param start String
 	 * @param end String
@@ -581,7 +581,9 @@ public final class UtilsString {
 		return arr[0];
 	}
 	/**
-	 * 截取字符串，产生多个字符串，为开始与结尾之间的字符串
+	 * 截取字符串，产生多个字符串，为开始与结尾之间的字符串<br>
+	 * 如果开始为空串，则以最始点为开始<br>
+	 * 如果结尾为空串，则以最后点为结尾
 	 * @param source String
 	 * @param start String
 	 * @param end String
@@ -590,14 +592,29 @@ public final class UtilsString {
 	public static final String[] cutStrings(String source, String start, String end) {
 		String[] arrs = {};
 		if (source == null || source.length() == 0) return arrs;
-		if (start == null || start.length() == 0) return arrs;
-		if (end == null || end.length() == 0) return arrs;
+		if (start == null || end == null) return arrs;
+		if (start.length()==0 && end.length() == 0) return arrs;
+		String cut=null;
+		if(start.length()==0) {
+			int index=source.indexOf(end);
+			if(index==-1)return arrs;
+			cut = source.substring(0, index);
+		}
+		if(end.length()==0) {
+			int index=source.indexOf(start);
+			if(index==-1)return arrs;
+			cut = source.substring(index+start.length(), source.length());	
+		}
+		if(cut!=null) {
+			String[] a= {cut};
+			return a;
+		}
 		int index1 = 0, index2 = 0;
 		List<String> list = new ArrayList<>();
 		while ((index1 = source.indexOf(start, index1)) > -1) {
 			index2 = source.indexOf(end, index1);
 			if (index2 == -1) break;
-			String cut = source.substring(index1 + start.length(), index2);
+			cut = source.substring(index1 + start.length(), index2);
 			int lastStart = cut.lastIndexOf(start);
 			if (lastStart > -1) cut = cut.substring(lastStart + start.length());
 			list.add(cut);
@@ -678,6 +695,9 @@ public final class UtilsString {
 		for(String e:arr) {
 			System.out.println("e:"+e);
 		}
+		String str="abcd";
+		System.out.println("result:"+str.substring(2,4));
+		
 		/*
 		String content = "abcaa" + ACC_ENTER + "bbccaaee" + ACC_ENTER + "aaaaa";
 		String val = ACC_ENTER;

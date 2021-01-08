@@ -162,7 +162,7 @@ public final class UtilsJsoupCase {
 	 * @return int
 	 */
 	public static final int getBaseJsCount(Document doc) {
-		return UtilsJsoup.getElementsByTag(doc, "script").size();
+		return UtilsJsoup.getElementsFinalByTag(doc, "script").size();
 	}
 
 	/**
@@ -243,7 +243,7 @@ public final class UtilsJsoupCase {
 	public static final Element getElementClassKeyword(Elements es, String keyClassName, String keyword) {
 		for (int i = 0; i < es.size(); i++) {
 			Element e = es.get(i);
-			List<Element> list = UtilsJsoup.getElementsByClass(e, keyClassName);
+			List<Element> list = UtilsJsoup.getElementsFinalByClass(e, keyClassName);
 			for (Element ee : list)
 				if (ee.html().indexOf(keyword) > -1) return e;
 		}
@@ -315,7 +315,7 @@ public final class UtilsJsoupCase {
 		List<Element> list = new ArrayList<>();
 		if (tag == null || tag.length() == 0) return list;
 		if (alt == null || alt.length() == 0) return list;
-		List<Element> sList = UtilsJsoup.getElementsByTag(doc, tag);
+		List<Element> sList = UtilsJsoup.getElementsFinalByTag(doc, tag);
 		for (Element e : sList) {
 			String v = e.attr(alt);
 			if (v == null) continue;
@@ -401,7 +401,7 @@ public final class UtilsJsoupCase {
 	 * @return String
 	 */
 	public static final String getTextFirstByClass(Element doc, String classname, String def) {
-		List<Element> list = UtilsJsoup.getElementsByClass(doc, classname);
+		List<Element> list = UtilsJsoup.getElementsFinalByClass(doc, classname);
 		if (list.size() == 0) return def;
 		return getTextFirst(list, def);
 	}
@@ -416,7 +416,7 @@ public final class UtilsJsoupCase {
 		if (!UtilsVerification.isConnect(url)) return null;
 		Document doc = UtilsJsoup.getDoc(url);
 		if (doc == null) return null;
-		List<Element> list = UtilsJsoup.getElementsByTag(doc, "title");
+		List<Element> list = UtilsJsoup.getElementsFinalByTag(doc, "title");
 		return getTextFirst(list, null);
 
 	}
@@ -430,7 +430,7 @@ public final class UtilsJsoupCase {
 	 */
 	public static final String getWebSearchContent(String href, String contentkey, String filter) {
 		if (href == null || contentkey == null || contentkey.length() == 0) return "";
-		Elements es = UtilsJsoup.getAllElementsByKey(href, contentkey);
+		Elements es = UtilsJsoup.getElementAll(href, contentkey);
 		if (es.size() <= 0) return "";
 		Element e = es.first();
 		UtilsJsoup.remove(e, filter);
@@ -537,13 +537,21 @@ public final class UtilsJsoupCase {
 
 	/**
 	 * 重组Docment
-	 * @param content String
 	 * @param domain String
+	 * @param content String
 	 * @return Document
 	 */
-	public static final Document getDocument(String content, String domain) {
+	public static final Document getDocument(String domain,String content) {
 		if(content==null)return null;
 		if (domain == null) return Jsoup.parse(content);
 		return Jsoup.parse(content, domain);
+	}
+	/**
+	 * 重组Docment
+	 * @param content String
+	 * @return Document
+	 */
+	public static final Document getDocument(String content) {
+		return getDocument(null,content);
 	}
 }
