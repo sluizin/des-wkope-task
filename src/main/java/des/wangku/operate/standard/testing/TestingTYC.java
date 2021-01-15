@@ -19,7 +19,7 @@ import org.jsoup.select.Elements;
 import com.google.common.base.Joiner;
 
 import des.wangku.operate.standard.database.DBSource;
-import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupExt;
 import des.wangku.operate.standard.utls.UtilsRegular;
 
 public class TestingTYC {
@@ -39,7 +39,7 @@ public class TestingTYC {
 			String href="http://jinyici.xpcha.com/list_0_"+i+".html";
 			System.out.println("page:"+i);
 			System.out.println("href:"+href);
-			Document doc=UtilsJsoup.getDoc(href);
+			Document doc=UtilsJsoupExt.getDoc(href);
 			if(doc==null)continue;
 			Elements targetdivs=doc.getElementsByClass("shaixuan_5");
 			if(targetdivs.size()==0)continue;
@@ -51,7 +51,7 @@ public class TestingTYC {
 				String line=","+key+",";
 				String hr=link.attr("abs:href");
 				System.out.println("["+i+"]("+key+")hr:"+hr);
-				Document doc2=UtilsJsoup.getDoc(hr);
+				Document doc2=UtilsJsoupExt.getDoc(hr);
 				if(doc2==null)continue;
 				Elements arr2=doc2.getElementsByClass("shaixuan_1");
 				//System.out.println("arr2:"+arr2.size());
@@ -146,7 +146,7 @@ public class TestingTYC {
 		String href="http://www.hydcd.com/tongyicicidian.htm";
 		List<String> list=new ArrayList<>();
 		
-		Document doc=UtilsJsoup.getDoc(href);
+		Document doc=UtilsJsoupExt.getDoc(href);
 		if(doc==null)return list;
 		Element targetdiv=doc.getElementById("table1");
 		if(targetdiv==null)return list;
@@ -155,7 +155,7 @@ public class TestingTYC {
 			System.out.println("e:"+e.text());
 			String u=e.attr("abs:href");
 			String line="";
-			Document doc2=UtilsJsoup.getDoc(u);
+			Document doc2=UtilsJsoupExt.getDoc(u);
 			
 			Elements arr2=doc2.getElementsByAttributeValue("color", "#000020");
 			Element result=arr2.first();

@@ -10,7 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupExt;
 import des.wangku.operate.standard.utls.UtilsJsoupLink;
 import des.wangku.operate.standard.utls.UtilsString;
 
@@ -55,7 +55,7 @@ public class AIBaidurank {
 			String aizhan = "https://baidurank.aizhan.com/" + type + "/" + urlPath + "/-1/0/1/position/1/";
 			logger.debug("aizhan:"+aizhan);
 			URL url = new URL(aizhan);
-			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
+			Document doc = UtilsJsoupExt.getDoc(url, 1 + 2);
 			if (doc == null) return aiInfor;
 			List<String> resultlist=UtilsJsoupLink.getHrefAll(doc,"baidurank-pager");
 			//String[] arrs = UtilsJsoup.getAHrefTagArrayByClass(doc,true,removeclass, "baidurank-pager");
@@ -89,7 +89,7 @@ public class AIBaidurank {
 			Thread.sleep(1000);
 			//logger.debug("urlPath:" + aizhan);
 			URL url = new URL(aizhan);
-			Document doc = UtilsJsoup.getDoc(url, 1 + 2);
+			Document doc = UtilsJsoupExt.getDoc(url, 1 + 2);
 			Elements lis = doc.getElementsByClass("baidurank-list");
 			if (lis.size() == 0) return list;
 			Element div = lis.get(0);

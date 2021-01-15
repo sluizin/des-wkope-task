@@ -91,7 +91,7 @@ public final class UtilsJsoupLink {
 	 * @return List&lt;String&gt;
 	 */
 	public static final List<String> getHrefAll(String url, String... arrs) {
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		if (doc == null) return new ArrayList<>(0);
 		return getHrefAll(doc, arrs);
 	}
@@ -125,7 +125,7 @@ public final class UtilsJsoupLink {
 	 * @return List&lt;String&gt;
 	 */
 	public static final List<String> getHrefAllIndexOf(String url, String... arrs) {
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		return getHrefAllIndexOf(doc, arrs);
 	}
 
@@ -146,7 +146,7 @@ public final class UtilsJsoupLink {
 	 * @return String
 	 */
 	public static final String getHrefFirst(String url, String... arrs) {
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		return getHref(doc, 0, arrs);
 	}
 
@@ -187,7 +187,7 @@ public final class UtilsJsoupLink {
 	 * @return List&lt;String&gt;
 	 */
 	public static final List<String> getTextAll(String url, String... arrs) {
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		if (doc == null) return new ArrayList<>(0);
 		return getTextAll(doc, arrs);
 	}

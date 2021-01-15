@@ -15,6 +15,7 @@ import des.wangku.operate.standard.utls.UtilsCollect.CollectGroup;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsHtmlFilter;
 import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupExt;
 import des.wangku.operate.standard.utls.UtilsJsoupLink;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsReadURL;
@@ -32,8 +33,7 @@ public class BooksReadUtils {
 	static final void makebooks(String url) {
 		UnitClass e=BooksReadUtils.getUC(url);
 		if(e==null)return;
-		UtilsJsoup.ACC_BaiduDefaultTimeout = e.timeout;
-		Document doc=UtilsJsoup.getDoc(url);
+		Document doc=UtilsJsoupExt.getDoc(url);
 		if(doc==null)return;
 		String filename=UtilsJsoup.getElementFirstText(doc, e.keyName);
 		filename=getFilename(e,filename);
@@ -47,7 +47,6 @@ public class BooksReadUtils {
 		BooksReadUtils.make(e,url, filename, f.select("a"),true);
 	}
 	static final void make(UnitClass uc, String url, String filename, Elements lis,boolean ismove) {
-		UtilsJsoup.ACC_BaiduDefaultTimeout = uc.timeout;
 		filename = UtilsStringFilter.filterName(filename);
 		if (isexist(filename)) return;
 		String pathfile = ACC_Path + filename + ".txt";
@@ -231,7 +230,7 @@ public class BooksReadUtils {
 				isnew=false;
 				return;
 			};
-			Document doc=UtilsJsoup.getDoc(this.url);
+			Document doc=UtilsJsoupExt.getDoc(this.url);
 			if(doc==null) {
 				System.out.println("doc:null\t"+url);
 				isnew=false;
@@ -323,7 +322,7 @@ public class BooksReadUtils {
 	public static final void donwfile(String url) {
 		UnitClass ee=BooksReadUtils.getUC(url);
 		if(ee==null)return;
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		if(doc==null)return;
 		String filename=UtilsJsoup.getElementFirstText(doc, ee.keyName)+".txt";
 		if (isexist(filename)) return;

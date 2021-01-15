@@ -10,7 +10,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import des.wangku.operate.standard.Pv.Env;
 import des.wangku.operate.standard.desktop.DesktopConst;
+import des.wangku.operate.standard.utls.UtilsInetAddress;
 import des.wangku.operate.standard.utls.UtilsPathFile;
 
 /**
@@ -169,5 +171,14 @@ public class Pv {
 		File file = new File(path);
 		if (!file.exists()) file.mkdirs();
 		return path;
+	}
+	/**
+	 * 判断是否为本地测试使用
+	 * @return boolean
+	 */
+	public static final boolean isBasicENV() {
+		if (Pv.ACC_ENV == Env.DEV) return true;
+		if("UVMIQYVDHVCM2QN".equals(UtilsInetAddress.getBasicName()))return true;
+		return false;
 	}
 }

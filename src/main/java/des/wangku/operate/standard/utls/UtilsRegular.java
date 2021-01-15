@@ -185,26 +185,29 @@ public final class UtilsRegular {
 		return getSubArray(regex, content);
 	}
 	/**
-	 * 得到字符串以first开头以end结果的字符串，字符串中不可以含有first
+	 * 得到字符串以first开头以end结果的字符串，字符串中不可以含有first<br>
+	 * 过滤掉空值
 	 * @param content String
 	 * @param first String
 	 * @param end String
 	 * @return String[]
 	 */
 	public static final String[] getSubArrayVal(String content, String first, String end) {
+		String[] arr= {};
+		if(content==null ||content.length()==0)return arr;
+		if(first==null ||first.length()==0)return arr;
+		if(end==null ||end.length()==0)return arr;
 		String[] result=getSubArrayString(content,first,end);
+		if(result.length==0)return arr;
 		int firstlen=first.length();
 		int endlen=end.length();
-		for(int i=0;i<result.length;i++) {
-			String e=result[i];
-			if(e.length()<=firstlen+endlen) {
-				result[i]="";
-				continue;
-			}
+		List<String> list=new ArrayList<String>(result.length);
+		for(String e:result) {
+			if(e.length()<=firstlen+endlen)continue;
 			e=e.substring(firstlen, e.length() - endlen);
-			result[i]=e;
+			list.add(e);
 		}
-		return result;
+		return list.toArray(arr);
 	}
 	/**
 	 * 得到正则的结果数组

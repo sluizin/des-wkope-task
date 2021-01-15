@@ -1,22 +1,21 @@
 package des.wangku.operate.standard.utls;
 
-
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 import org.jsoup.select.Collector;
 import org.jsoup.select.Elements;
 import org.jsoup.select.Evaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import des.wangku.operate.standard.Pv;
+
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRuleCutIntervalSplit;
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningInPage;
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningOutPage;
@@ -56,7 +55,8 @@ public final class UtilsJsoup {
 
 	}
 
-	public static int ACC_BaiduDefaultTimeout = 30000;
+	/** 日志 */
+	static Logger logger = LoggerFactory.getLogger(UtilsJsoup.class);
 
 	static final List<STC> ACC_STCList = new ArrayList<>();
 
@@ -71,16 +71,7 @@ public final class UtilsJsoup {
 	/** 最低级分隔符或串 */
 	@Deprecated
 	static final String[] FixedInterval_2 = { ";" };
-	public static boolean isDynamicUrl = false;
 
-	/** 日志 */
-	static Logger logger = LoggerFactory.getLogger(UtilsJsoup.class);
-
-	public static final int MODE_Jsoup = 1;
-
-	public static final int MODE_Socket = 2;
-
-	public static final int MODE_URL = 4;
 
 	static {
 		ACC_STCList.add(new STC(-1, 'S'));// style:-1 Sub
@@ -110,7 +101,6 @@ public final class UtilsJsoup {
 		return list.toArray(a);
 	}
 
-
 	/**
 	 * 读取url，得到节点列表<br>
 	 * key:&lt;!--文章内容--&gt;|to|&lt;!--文章内容end--&gt;则读取url某2个字段之间的节点<br>
@@ -120,13 +110,13 @@ public final class UtilsJsoup {
 	 * @param key String
 	 * @return Elements
 	 */
-	 @Deprecated
+	@Deprecated
 	public static final Elements getAllElementsByKey(String url, String key) {
 		Elements es = new Elements();
 		if (url == null || url.length() == 0 || key == null || key.length() == 0) return es;
 		if (isCutInterval(key)) {
 			String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-			Document doc = UtilsJsoup.getDoc(url, arrs[0], arrs[1]);
+			Document doc = UtilsJsoupExt.getDoc(url, arrs[0], arrs[1]);
 			if (doc == null) return es;
 			es.add(doc.body());
 			return es;
@@ -134,150 +124,6 @@ public final class UtilsJsoup {
 		if (key.indexOf(';') > -1) return UtilsJsoup.getElementAll(url, key.split(";"));
 		if (key.indexOf(',') > -1) return UtilsJsoup.getElementAll(url, key.split(","));
 		return UtilsJsoup.getElementAll(url, key);
-	}
-
-	/**
-	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
-	 * @param url String
-	 * @return Document
-	 */
-	public static final Document getDoc(String url) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		try {
-			URL url1 = new URL(url);
-			return getDoc(url1);
-		} catch (IOException e) {
-			logger.debug("error:" + url);
-			//e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * 提取jsoup [1(MODE_Jsoup)] &gt; Document socket[2(MODE_Socket)] &gt; URL[4(MODE_URL)] 全部信息
-	 * @param url String
-	 * @param mode int
-	 * @return Document
-	 */
-	public static final Document getDoc(String url, int mode) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		try {
-			URL url1 = new URL(url);
-			return getDoc(url1, mode);
-		} catch (IOException e) {
-			logger.debug("error:" + url);
-			//e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * 从网址中某个长度的局部返回对象
-	 * @param url String
-	 * @param start String
-	 * @param end String
-	 * @return Document
-	 */
-	public static final Document getDoc(String url, String start, String end) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		Document doc = getDoc(url);
-		String head = UtilsReadURL.getUrlDomain(url);
-		return getRebuildDoc(head, doc, start, end);
-	}
-
-	/**
-	 * 提取jsoup &gt; Document socket&gt;URL 全部信息
-	 * @param url URL
-	 * @return Document
-	 */
-	public static final Document getDoc(URL url) {
-		if (url == null) return null;
-		return getDoc(url, MODE_Jsoup + MODE_Socket + MODE_URL);
-	}
-
-	/**
-	 * 提取jsoup [1(MODE_Jsoup)] &gt; Document socket[2(MODE_Socket)] &gt; URL[4(MODE_URL)] 全部信息
-	 * @param url URL
-	 * @param mode int
-	 * @return Document
-	 */
-	public static final Document getDoc(URL url, int mode) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		if (isDynamicUrl) return getDocJS(url);
-		int sleep = 0;
-		if (url.getHost().indexOf("baidu.com") > -1) sleep = ACC_BaiduDefaultTimeout;
-		return getDoc(url, null, sleep, false, mode, 30000);
-	}
-
-	/**
-	 * 提取jsoup [1(MODE_Jsoup)] &gt; Document socket[2(MODE_Socket)] &gt; URL[4(MODE_URL)] 全部信息<br>
-	 * sleetp 暂停时间:是否需要线程暂停多少毫秒，小于等于0时，则不暂停<br>
-	 * istest 是否读取测试<br>
-	 * @param url URL
-	 * @param newCode String
-	 * @param sleep int
-	 * @param istest boolean
-	 * @param mode int
-	 * @param timeout int
-	 * @return Document
-	 */
-	public static final Document getDoc(URL url, String newCode, int sleep, boolean istest, int mode, int timeout) {
-		if (url == null) return null;
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		if (sleep > 0) UtilsThread.ThreadSleep(sleep);
-		if (istest && !UtilsReadURL.isConnection(url)) return null;
-		if (UtilsShiftCompare.isCompare(mode, MODE_Jsoup)) {
-			logger.debug(getMessage(url, "Jsoup", timeout));
-			try {
-				Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
-				Document document = connect.timeout(timeout).maxBodySize(0).get();
-				if (document != null) return document;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		if (newCode == null || newCode.length() == 0) newCode = UtilsJsoupCase.getCode(url);
-		String domain = UtilsReadURL.getUrlDomain(url);
-		if (UtilsShiftCompare.isCompare(mode, MODE_Socket)) {
-			logger.debug(getMessage(url, "socket", timeout));
-			String content = UtilsReadURL.getSocketContent(url, newCode, timeout);
-			if (content != null && content.length() > 0) { return UtilsJsoupCase.getDocument(domain,content); }
-		}
-		if (UtilsShiftCompare.isCompare(mode, MODE_URL)) {
-			logger.debug(getMessage(url, "UrlRead", timeout));
-			String content = UtilsReadURL.getUrlContent(url, newCode, timeout);
-			if (content != null && content.length() > 0) return UtilsJsoupCase.getDocument(domain,content);
-		}
-		return null;
-	}
-
-	/**
-	 * 提取全部信息 运行JS
-	 * @param url String
-	 * @return Document
-	 */
-	public static final Document getDocJS(String url) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		try {
-			URL url1 = new URL(url);
-			return getDocJS(url1);
-		} catch (IOException e) {
-			logger.debug("error:" + url);
-			//e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * 提取全部信息 运行JS
-	 * @param url URL
-	 * @return Document
-	 */
-	public static final Document getDocJS(URL url) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
-		String content = UtilsReadURL.getReadUrlJsDefault(url.toString());
-		String domain = UtilsReadURL.getUrlDomain(url);
-		return UtilsJsoupCase.getDocument(domain,content);
 	}
 
 	/**
@@ -290,7 +136,7 @@ public final class UtilsJsoup {
 		if (key == null || key.length() == 0) return null;
 		if (!isCutInterval(key)) return null;
 		String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-		Document doc = UtilsJsoup.getRebuildDoc(e.baseUri(), e, arrs[0], arrs[1]);
+		Document doc = UtilsJsoupExt.getRebuildDoc(e.baseUri(), e, arrs[0], arrs[1]);
 		if (doc == null) return null;
 		return doc;
 	}
@@ -309,7 +155,7 @@ public final class UtilsJsoup {
 		String domain = UtilsReadURL.getUrlDomain(source);
 		String cut = UtilsString.cutString(result, start, end);
 		if (cut == null) return null;
-		return UtilsJsoupCase.getDocument(domain,cut);
+		return UtilsJsoupCase.getDocument(domain, cut);
 	}
 
 	/**
@@ -338,7 +184,7 @@ public final class UtilsJsoup {
 	 * @return Elements
 	 */
 	public static final Elements getElementAll(String url, String... arr) {
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		if (doc == null) return new Elements();
 		return getElementAll(doc, arr);
 	}
@@ -390,6 +236,7 @@ public final class UtilsJsoup {
 		if (e == null) return null;
 		return e.text();
 	}
+
 	/**
 	 * 读取Element得到 name 这个字符串，id class tag attribname,text，所有单元 过滤掉重复项<br>
 	 * 以下划线区分切块，即先判断下划线，如果有，则切块，后再以,进行多个区分，允许精确定位<br>
@@ -405,7 +252,7 @@ public final class UtilsJsoup {
 		if (key.indexOf(ACC_JsoupRulePrecisePositioningOutPage) > -1) {
 			Elements ees = UtilsJsoupConst.relationKey(f, key);
 			es.addAll(ees);
-		}else {
+		} else {
 			if (key.indexOf(ACC_JsoupRulePrecisePositioningInPage) > -1) {
 				Elements ees = UtilsJsoupConst.forwardKey(f, key);
 				es.addAll(ees);
@@ -437,7 +284,7 @@ public final class UtilsJsoup {
 	 */
 	public static final Elements getElements(String url, String start, String end) {
 		if (UtilsConsts.isErrorUrl(url)) return null;
-		Document doc = getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		String head = UtilsReadURL.getUrlDomain(url);
 		return getRebuildElements(head, doc, start, end);
 	}
@@ -469,7 +316,7 @@ public final class UtilsJsoup {
 				es.addAll(els);
 				continue;
 			}
-			es.addAll(UtilsJsoupConst.setMainKeyRange(els,surplus));
+			es.addAll(UtilsJsoupConst.setMainKeyRange(els, surplus));
 		}
 		//if (es.size() > 1) es = UtilsList.distinctHtml(es);/* 去重 */
 		return es;
@@ -495,20 +342,19 @@ public final class UtilsJsoup {
 		return getElementsFinalBy(source, 1, arrs);
 	}
 
-
 	/**
 	 * 以|To|线进行区分切块
 	 * @param e Element
 	 * @param arrs String[]
 	 * @return Elements
 	 */
-	public static final Elements getElementsFinalByCut(Element e,String... arrs) {
+	public static final Elements getElementsFinalByCut(Element e, String... arrs) {
 		if (e == null || arrs.length == 0) return new Elements(0);
-		Elements es=new Elements();
-		for(String key:arrs) {
+		Elements es = new Elements();
+		for (String key : arrs) {
 			if (!isCutInterval(key)) return new Elements();
 			String[] keyarrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-			Elements result= UtilsJsoup.getRebuildElements(e, keyarrs[0], keyarrs[1]);
+			Elements result = UtilsJsoup.getRebuildElements(e, keyarrs[0], keyarrs[1]);
 			es.addAll(result);
 		}
 		return es;
@@ -533,7 +379,6 @@ public final class UtilsJsoup {
 	public static final Elements getElementsFinalByID(Element source, String... arrs) {
 		return getElementsFinalBy(source, 0, arrs);
 	}
-
 
 	/**
 	 * 通过Tag查找节点
@@ -624,7 +469,7 @@ public final class UtilsJsoup {
 		case -1:/* S */
 			if (!isCutInterval(key)) return new Elements();
 			String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-			es= UtilsJsoup.getRebuildElements( source, arrs[0], arrs[1]);
+			es = UtilsJsoup.getRebuildElements(source, arrs[0], arrs[1]);
 			//es = source.getElementsByClass(e);aaa
 			break;
 		case 1:/* 1 */
@@ -663,9 +508,9 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getGenericKeyRange(String key) {
-		String result= getGenericKeyRangeAll(key);		
-		if(result==null||result.length()<3)return "";
-		return result.substring(1,result.length()-1);
+		String result = getGenericKeyRangeAll(key);
+		if (result == null || result.length() < 3) return "";
+		return result.substring(1, result.length() - 1);
 	}
 
 	/**
@@ -676,11 +521,12 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getGenericKeyRangeAll(String key) {
-		String result= UtilsStringPrefix.getMiddle(key, true);		
-		if(result==null)return "";
+		String result = UtilsStringPrefix.getMiddle(key, true);
+		if (result == null) return "";
 		return result;
 		//UtilsRegular.geCheckIntervalVal(ACC_SearchRangePattern, key);
 	}
+
 	/**
 	 * 返回检索关键的类型判断，如没有限制，则返回null，否则返回类型字符串，即{}之间的字符串<br>
 	 * 以{}为开头的字符串，如:"{ICAT}classname1","{T}IDname1"<br>
@@ -689,8 +535,8 @@ public final class UtilsJsoup {
 	 * @return String
 	 */
 	public static final String getGenericKeyType(String key) {
-		String result= UtilsStringPrefix.getBig(key, false);//UtilsRegular.geCheckIntervalVal(ACC_SearchTypePattern, key);
-		if(result==null)return "";
+		String result = UtilsStringPrefix.getBig(key, false);//UtilsRegular.geCheckIntervalVal(ACC_SearchTypePattern, key);
+		if (result == null) return "";
 		return result;
 	}
 
@@ -705,33 +551,6 @@ public final class UtilsJsoup {
 	public static final String getGenericKeyVal(final String key) {
 		if (key == null || key.length() == 0) return key;
 		return UtilsStringPrefix.getValue(key);
-	}
-
-	/**
-	 * 重组日志内容
-	 * @param url URL
-	 * @param type String
-	 * @param timeout int
-	 * @return String
-	 */
-	private static final String getMessage(URL url, String type, int timeout) {
-		return "[" + timeout + "]读取网址方式: " + type + "!\t" + url.toString();
-	}
-
-	/**
-	 * 从网址中某个长度的局部返回对象
-	 * @param domain String
-	 * @param doc Document
-	 * @param start String
-	 * @param end String
-	 * @return Document
-	 */
-	public static final Document getRebuildDoc(String domain, Document doc, String start, String end) {
-		if (doc == null) return null;
-		String result = doc.html();
-		String cut = UtilsString.cutString(result, start, end);
-		if (cut == null) return null;
-		return UtilsJsoupCase.getDocument(domain,cut);
 	}
 
 
@@ -762,6 +581,64 @@ public final class UtilsJsoup {
 	}
 
 	/**
+	 * 把多个Element合并成一个Element<br>
+	 * 主Element为空，再依次添加Element
+	 * @param es Elements
+	 * @return Element
+	 */
+	public static final Element getRebuildElement(Elements es) {
+		if (es.size() == 0) return null;
+		Element[] arr = new Element[0];
+		arr = es.toArray(arr);
+		return getRebuildElement(arr);
+	}
+
+	/**
+	 * 把多个Element合并成一个Element<br>
+	 * 主Element为空，再依次添加Element
+	 * @param arr Element[]
+	 * @return Element
+	 */
+	public static final Element getRebuildElement(Element... arr) {
+		if (arr.length == 0) return null;
+		Tag tag = null;
+		for (Element e : arr) {
+			if (e == null) continue;
+			if (tag != null) break;
+			tag = e.tag();
+			break;
+		}
+		if (tag == null) return null;
+		Element result = new Element(tag, "", null);
+		for (Element e : arr) {
+			if (e == null) continue;
+			result.appendChild(e);
+		}
+		return result;
+	}
+	public static final Element merge(boolean isDistinct,Element ...arr) {
+		if (arr.length == 0) return null;
+		Tag tag = null;
+		for (Element e : arr) {
+			if (e == null) continue;
+			if (tag != null) break;
+			tag = e.tag();
+			break;
+		}
+		if (tag == null) return null;
+		Element result = new Element(tag, "", null);
+		
+		
+		
+		return null;
+	}
+	public static final boolean isContain(Element source,Element e) {
+		if(source==null||e==null)return false;
+		
+		return false;
+	}
+
+	/**
 	 * 从网址中某个长度的局部返回对象
 	 * @param domain String
 	 * @param result String
@@ -774,7 +651,7 @@ public final class UtilsJsoup {
 		Elements es = new Elements();
 		String[] arr = UtilsString.cutStrings(result, start, end);
 		for (String f : arr) {
-			Element t = UtilsJsoupCase.getDocument(domain,f);
+			Element t = UtilsJsoupCase.getDocument(domain, f);
 			if (t == null) continue;
 			es.add(t);
 		}
@@ -801,18 +678,6 @@ public final class UtilsJsoup {
 			}
 		}
 		return isInterval;
-	}
-
-	/**
-	 * 判断Element是否为空
-	 * @param e Element
-	 * @return boolean
-	 */
-	public static final boolean isEmpty(Element e) {
-		if (e == null) return false;
-		String result = e.html().trim();
-		result = UtilsHtmlFilter.filter(result);
-		return result.length()!=0;
 	}
 
 
@@ -889,6 +754,25 @@ public final class UtilsJsoup {
 		 * for (Element e : es)
 		 * System.out.println("eeee:" + e.html());
 		 */
+		String content = "<div class='a1'>aa<div class='a2'>bb<div class='a3'>c<div class='a1'>cc</div>c</div></div></div>";
+		Document doc = UtilsJsoupCase.getDocument("http//www.99114.com/", content);
+		Element obj = doc.body();
+		System.out.println("==============================" + obj.html());
+		Elements ess = obj.getElementsByClass("a1");
+		System.out.println("doc:" + doc.html());
+		System.out.println("obj:" + obj.html());
+		System.out.println("objtext:" + obj.text());
+		System.out.println("obj:" + obj.hashCode());
+		for (Element ee : ess) {
+			System.out.println("-------------------------------" + ee.html());
+			ee.remove();
+		}
+		System.out.println("obj:" + obj.html());
+		Tag tag = obj.tag();
+		Element tt = new Element(tag, "", null);
+		tt.appendChild(ess.get(1));
+		tt.appendChild(ess.get(0));
+		System.out.println("tt:" + tt.html());
 		/*
 		 * //File file = UtilsReadURL.downfile("https://www.book9.info/modules/article/txtarticle.php?id=3473", "G:/Download/");
 		 * //BooksReadUtils.movefile(file);
@@ -905,14 +789,26 @@ public final class UtilsJsoup {
 	}
 
 	/**
-	 * 按照id和class和Tag中的单元
+	 * 删除单元
 	 * @param source Element
 	 * @param arrs String[]
 	 */
 	public static final void remove(Element source, String... arrs) {
-		removeID(source, arrs);
-		removeClass(source, arrs);
-		removeTag(source, arrs);
+		if (source == null || arrs.length == 0) return;
+		Elements es = UtilsJsoup.getElementAll(source, arrs);
+		for (Element e : es)
+			e.remove();
+	}
+
+	/**
+	 * 删除单元
+	 * @param source Elements
+	 * @param arrs String[]
+	 */
+	public static final void remove(Elements source, String... arrs) {
+		if (source == null || arrs.length == 0) return;
+		for (Element e : source)
+			remove(e, arrs);
 	}
 
 	/**
@@ -1010,85 +906,6 @@ public final class UtilsJsoup {
 			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
 	}
 
-	/**
-	 * 移除所有text为空的区块
-	 * @param source Element
-	 * @return Element
-	 */
-	public static final Element remove_TextEmptyAll(Element source) {
-		return remove_TextEmptyAll(source, false);
-	}
-
-	/**
-	 * 移除所有text为空的区块<br>
-	 * 是否过滤所有&lt;&gt;标记
-	 * @param source Element
-	 * @param filterTags boolean
-	 * @return Element
-	 */
-	public static final Element remove_TextEmptyAll(Element source, boolean filterTags) {
-		Elements childen = source.getAllElements();
-		for (Element e : childen) {
-			if (e == null) continue;
-			String result = UtilsHtmlFilter.filterHtmlSymbol(e.html()).trim();
-			if (result.length() == 0) e.remove();
-		}
-		return source;
-	}
-
-	public static final Elements remove_TextEmptyAll(Elements es, boolean filterTags) {
-
-		return es;
-	}
-
-	/**
-	 * 移除所有text为空的子类区块
-	 * @param source Element
-	 * @return Element
-	 */
-	public static final Element remove_TextEmptyChild(Element source) {
-		Elements childen = source.children();
-		for (Element e : childen) {
-			if (e.text().trim().length() == 0) e.remove();
-		}
-		return source;
-	}
-
-	/**
-	 * 按照class中的单元移除
-	 * @param source Element
-	 * @param keyarrs String[]
-	 */
-	public static final void removeClass(Element source, String... keyarrs) {
-		if (source == null || keyarrs.length == 0) return;
-		Elements list = UtilsJsoup.getElementsFinalByClass(source, keyarrs);
-		for (Element e : list)
-			e.remove();
-	}
-
-	/**
-	 * 按照id中的单元移除
-	 * @param source Element
-	 * @param arrs String[]
-	 */
-	public static final void removeID(Element source, String... arrs) {
-		if (source == null || arrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsFinalByID(source, arrs);
-		for (Element e : es)
-			e.remove();
-	}
-
-	/**
-	 * 按照tag中的单元移除所有单元
-	 * @param source Element
-	 * @param arrs String[]
-	 */
-	public static final void removeTag(Element source, String... arrs) {
-		if (source == null || arrs.length == 0) return;
-		Elements es = UtilsJsoup.getElementsFinalByTag(source, arrs);
-		for (Element e : es)
-			e.remove();
-	}
 
 	/**
 	 * 按照tag中的单元 移除指定数组中下标的单元

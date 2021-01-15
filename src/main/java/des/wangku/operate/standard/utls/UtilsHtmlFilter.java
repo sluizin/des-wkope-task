@@ -48,7 +48,14 @@ public class UtilsHtmlFilter {
 		if (content == null || content.length() == 0 || tag == null || tag.length() == 0) return content;
 		return Pattern.compile("(<" + tag + "\\b.*?(?:\\>|\\/>))", Pattern.CASE_INSENSITIVE).matcher(content).replaceAll("");
 	}
-
+	static final String[] HTMLTag= {};
+	public static final String filterTagHtml(String content) {
+		if (content == null || content.length() == 0) return content;
+		for(String e:HTMLTag)
+			content = filterTag(content, e);
+		
+		return content;
+	}
 	/**
 	 * 过滤掉空格与间括号换行符,制表符
 	 * @param content String
@@ -77,12 +84,12 @@ public class UtilsHtmlFilter {
 	}
 
 	/**
-	 * 更改特殊字符
+	 * 更改特殊字符--数字
 	 * @param content String
 	 * @return String
 	 */
-	public static final String filterBookHtmlSymbol(String content) {
-		content = content.replaceAll("sè", "色");
+	public static final String filterNumberHtmlSymbol(String content) {
+		if(content==null||content.length()==0)return content;
 		content = content.replaceAll("０", "0");
 		content = content.replaceAll("１", "1");
 		content = content.replaceAll("２", "2");
@@ -106,11 +113,19 @@ public class UtilsHtmlFilter {
 		if (content == null || content.length() == 0) return "";
 		content = filterscript(content);
 		content = filterscriptvar(content);
-		content = filterTag(content, "img");
 		content = filterHtmlEscapecharacter(content);
+		content = filterTag(content,"img");
+		
 		content = filterHtmlSymbol(content);
 		content = filterSpecialCharacter(content);
 		return content;
+	}
+	public static final boolean isEmpty(String content) {
+		content=filter(content);
+		if(content.length()==0)return true;
+		
+		
+		return false;
 	}
 
 	static final String SpecialChar = "＊◆★↑↗▅◢☆" 
@@ -142,8 +157,8 @@ public class UtilsHtmlFilter {
 	}
 
 	//
-	static final String FilterBadWordTitle = "卫健委,新冠,肺炎,疫情,疫,部门,卫建委,病例,美国,国家,企业,股份,有限,公司,集团,组织,工厂,厂家，商家,厂商,厂,企业,医疗,董事,疗效,功效,国";
-
+	static final String FilterBadWordTitle = "卫健委,新冠,肺炎,疫情,疫,部门,卫建委,病例,美国,国家,企业,股份,有限,公司,集团,组织,工厂,厂家，商家,厂商,厂,企业,医疗,董事,疗效,功效,国,症状,确诊,毒株,阳性,患者";
+	@Deprecated
 	public static final String filterBadWord(String content) {
 		if (content == null || content.length() == 0) return content;
 		String[] arr = FilterBadWordTitle.split(",");

@@ -2,6 +2,7 @@ package des.wangku.operate.standard.subengineering.reediting;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import des.wangku.operate.standard.utls.UtilsFile;
@@ -24,12 +25,14 @@ public class Badword {
 		list=UtilsList.getOrderListByLenDESC(list);
 	}
 	public String getResult(String content) {
+		List<String> resultlist=new LinkedList<>();
 		for(String e:list) {
 			int index=content.indexOf(e);
-			if(index>0) {
-				System.out.println("find bad:"+index+"["+e+"]");
-				content=content.replaceAll(e, rep(e.length()));
-			}
+			if(index>0)resultlist.add(e);
+		}
+		System.out.println("find bad words:"+resultlist);
+		for(String e:resultlist) {
+			content=content.replaceAll(e, rep(e.length()));
 		}
 		return content;
 	}

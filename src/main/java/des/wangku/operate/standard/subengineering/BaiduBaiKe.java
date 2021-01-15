@@ -74,16 +74,16 @@ public class BaiduBaiKe {
 		out.text=content;
 		
 		String[] removeClass= {
-				"excellent-icon","lemma-summary","city-guide",
-				"basic-info","lemmaWgt-lemmaCatalog","lemmaWgt-promotion-leadPVBtn",
-				"lemmaWgt-lemmaTitle","lemmaWgt-declaration","promotion-declaration",
-				"top-tool","anchor-list",
-				"album-list","tashuo-bottom",
-				"lemma-reference","side-content","configModuleBanner"
+				"{C}excellent-icon","{C}lemma-summary","{C}city-guide",
+				"{C}basic-info","{C}lemmaWgt-lemmaCatalog","{C}lemmaWgt-promotion-leadPVBtn",
+				"{C}lemmaWgt-lemmaTitle","{C}lemmaWgt-declaration","{C}promotion-declaration",
+				"{C}top-tool","{C}anchor-list",
+				"{C}album-list","{C}tashuo-bottom",
+				"{C}lemma-reference","{C}side-content","{C}configModuleBanner"
 				};
-		UtilsJsoup.removeClass(maincontent, removeClass);
-		String[] removeID= {"hotspotmining_s"};
-		UtilsJsoup.removeID(maincontent, removeID);
+		UtilsJsoup.remove(maincontent, removeClass);
+		String[] removeID= {"{I}hotspotmining_s"};
+		UtilsJsoup.remove(maincontent, removeID);
 		
 				
 		
@@ -91,7 +91,7 @@ public class BaiduBaiKe {
 		Elements level2s=maincontent.getElementsByClass("level-2");
 		for(Element level2:level2s) {
 			Element elsTitle=level2.getElementsByClass("title-text").first();
-			UtilsJsoup.removeClass(elsTitle, "title-prefix");
+			UtilsJsoup.remove(elsTitle, "{C}title-prefix");
 			String key2=elsTitle.text();
 			
 			Element next=level2.nextElementSibling();
@@ -103,7 +103,7 @@ public class BaiduBaiKe {
 					if(next.hasClass("level-2"))break;
 					if(next.hasClass("level-3")) {
 						Element elselevel3=next.getElementsByClass("title-text").first();
-						UtilsJsoup.removeClass(elselevel3, "title-prefix");
+						UtilsJsoup.remove(elselevel3, "{C}title-prefix");
 						String key3=elselevel3.text();
 						BakeClass level_3=new BakeClass(key3,"","");
 						

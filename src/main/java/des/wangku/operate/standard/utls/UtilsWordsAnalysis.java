@@ -26,21 +26,32 @@ public final class UtilsWordsAnalysis {
 	
 	
 	
-	public static final List<WordsPart> wlteaAnalyzer(String content,IKSegmenter ik) {
+	public static final List<WordsPart> wlteaAnalyzer(final String content,IKSegmenter ik) {
 		List<WordsPart> list = new ArrayList<>();
 		if(content==null || content.length()==0)return list;
+		Lexeme before = null;
+		Lexeme lex = null;
 		try {
-			Lexeme before = null;
-			Lexeme lex = null;
+			//System.out.println(("content.length():"+content.length()));
 			while ((lex = ik.next()) != null) {
 				String word = lex.getLexemeText();
+				//System.out.println(("word:"+word));
 				String left = appendSymbolLeft(content,before, lex);
+				//System.out.println(("left:"+left));
 				list.add(new WordsPart(left,word,""));
 				before = lex;
 			}
-			long end = before.getEndPosition();
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+		try {
+			int end = before.getEndPosition();
 			if (end < content.length()) {
-				String left = appendWhiteSpace(content.substring((int)end));
+				//System.out.println(("end:"+end));
+				//System.out.println(("content.length():"+content.length()));
+				String str=content.substring(end);
+				//System.out.println(("str:"+str));
+				String left = appendWhiteSpace(str);
 				list.add(new WordsPart(left,"",""));
 			}
 		} catch (Exception ex) {
@@ -57,8 +68,13 @@ public final class UtilsWordsAnalysis {
 			point = before.getEndPosition();
 		}
 		int start = cur.getBegin();
-		if (start == point) return "";
-		return appendWhiteSpace(content.substring(point, start));
+		if (start <= point) return "";
+		//System.out.println("content:"+content.length());
+		//System.out.println("point:"+point);
+		//System.out.println("start:"+start);
+		String str=content.substring(point, start);
+		//System.out.println("str:"+str);
+		return appendWhiteSpace(str);
 	}
 
 	private static String appendWhiteSpace(String src) {

@@ -15,9 +15,13 @@ public final class UtilsJsoupConst {
 	public static final String ACC_JsoupRuleIntervalSplit = "\\|\\;\\|";
 	/** jsoup关键字规则，用于页内精确定位 主要用于通过与id、class等相似的规则，进行定位 */
 	public static final String ACC_JsoupRulePrecisePositioningInPage = "|->|";
+	/** jsoup关键字规则，用于页内精确定位 主要用于通过与id、class等相似的规则，进行定位 */
+	public static final String ACC_InPage = ACC_JsoupRulePrecisePositioningInPage;
 	public static final String ACC_JsoupRulePrecisePositioningInPageSplit = "\\|->\\|";
 	/** jsoup关键字规则，用于页外精确定位 主要用于通过链接的连锁，定位节点 */
 	public static final String ACC_JsoupRulePrecisePositioningOutPage = "|=>|";
+	/** jsoup关键字规则，用于页外精确定位 主要用于通过链接的连锁，定位节点 */
+	public static final String ACC_OutPage = ACC_JsoupRulePrecisePositioningOutPage;
 	public static final String ACC_JsoupRulePrecisePositioningOutPageSplit = "\\|=>\\|";
 
 	/**
@@ -232,7 +236,7 @@ public final class UtilsJsoupConst {
 			List<String> list = UtilsJsoupLink.getHrefAll(f);
 			list = UtilsList.distinct(list);
 			for (String url : list) {
-				Element t = UtilsJsoup.getDoc(url);
+				Element t = UtilsJsoupExt.getDoc(url);
 				if (t == null) continue;
 				relation(summary, t, keyarr, index + 1);
 			}

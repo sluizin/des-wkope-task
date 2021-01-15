@@ -85,7 +85,7 @@ public class Reediting {
 					newword = changeword;
 				}
 				String left = appendSymbolLeft(before, lex);
-				System.out.println(left);
+				//System.out.println(left);
 				sb.append(left + newword);
 				before = lex;
 			}

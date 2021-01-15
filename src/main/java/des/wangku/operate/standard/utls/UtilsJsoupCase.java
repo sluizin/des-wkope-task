@@ -134,7 +134,7 @@ public final class UtilsJsoupCase {
 	 */
 	public static final Elements commonGetList(String url, String tagli) {
 		if (url == null || url.length() == 0) return new Elements(0);
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		return commonGetList(doc, tagli);
 	}
 
@@ -229,7 +229,7 @@ public final class UtilsJsoupCase {
 	@Deprecated
 	public static final List<Element> getCommonList(String url, String tagli) {
 		if (url == null || url.length() == 0) return new ArrayList<>(0);
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		return getCommonList(doc, tagli);
 	}
 
@@ -414,7 +414,7 @@ public final class UtilsJsoupCase {
 	public static final String getURLTitle(String url) {
 		if (url == null || url.trim().length() == 0) return null;
 		if (!UtilsVerification.isConnect(url)) return null;
-		Document doc = UtilsJsoup.getDoc(url);
+		Document doc = UtilsJsoupExt.getDoc(url);
 		if (doc == null) return null;
 		List<Element> list = UtilsJsoup.getElementsFinalByTag(doc, "title");
 		return getTextFirst(list, null);
@@ -477,7 +477,7 @@ public final class UtilsJsoupCase {
 					while (p < 100) {
 						url = "http://m.99114.com/gongying/" + encode + "_-_-_" + p + "_-_-.html";
 						System.out.println(url);
-						Document doc = UtilsJsoup.getDoc(url);//,UtilsJsoup.MODE_URL);
+						Document doc = UtilsJsoupExt.getDoc(url);//,UtilsJsoup.MODE_URL);
 						if (doc.text().length() < 100) break;
 						System.out.println(smallcategory + ":" + p);
 						Elements gs = doc.getElementsByClass("firstLine");

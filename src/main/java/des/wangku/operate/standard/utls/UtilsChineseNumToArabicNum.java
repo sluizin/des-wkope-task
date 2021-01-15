@@ -1,10 +1,5 @@
 package des.wangku.operate.standard.utls;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * 中文数值转阿拉伯数字
  * @author Sunjian
@@ -123,8 +118,8 @@ public class UtilsChineseNumToArabicNum {
 	 */
 	public static boolean isChineseNum(String chineseStr) {
 		char[] ch = chineseStr.toCharArray();
-		for (char c : ch) 
-			if (!allChineseNum.contains(String.valueOf(c))) return false; 
+		for (char c : ch)
+			if (!allChineseNum.contains(String.valueOf(c))) return false;
 		return true;
 	}
 
@@ -137,34 +132,50 @@ public class UtilsChineseNumToArabicNum {
 		String reg = "[0-9]+";
 		return str.matches(reg);
 	}
+
 	/**
 	 * 替换数字片段<br>
 	 * 如把字符串中的所有 "第一百二十篇"转成"第120篇"
 	 * @return String
 	 */
-	public static final String replaceDigitalClip(String content,String first,String end) {
-		String[] arr=UtilsRegular.getSubArrayString(content, first, end);
-		for(String e:arr) {
-
-			System.out.println("Str:"+e);
+	/**
+	 * 替换数字片段<br>
+	 * 如把字符串中的所有 "第一百二十篇"转成"第120篇"<br>
+	 * 是否格式化数字，如果格式化数字，则以长度最长的数字为标准，长度不足以0补齐，例:002
+	 * @param content String
+	 * @param intFormat boolean
+	 * @param first String
+	 * @param end String
+	 * @return String
+	 */
+	public static final String replaceDigitalClip(String content, boolean intFormat, String first, String end) {
+		String[] arr = UtilsRegular.getSubArrayVal(content, first, end);
+		int intLen = 1;
+		if (intFormat) {/* 得到最长的值的宽度 */
+			for (String e : arr) {
+				int val = chineseNumToArabicNum(e);/* 55 */
+				String va = String.valueOf(val);
+				if (va.length() > intLen) intLen = va.length();
+			}
 		}
-		String[] arr2=UtilsRegular.getSubArrayVal(content, first, end);
-		for(String e:arr2) {
-
-			System.out.println("Strval:"+e);
-		}	
-		
-		return null;
+		for (String e : arr) {
+			String old = first + e + end;/* 第五十五章 */
+			int val = chineseNumToArabicNum(e);/* 55 */
+			String va = String.format("%0" + intLen + "d", val);
+			String newe = first + va + end;/* 第55章 */
+			content = content.replaceAll(old, newe);
+		}
+		return content;
 	}
 
 	public static void main(String[] args) {
 		System.out.println(arabicNumToChineseNum(39999));
 		System.out.println(chineseNumToArabicNum("二百零二"));
 		System.out.println(chineseNumToArabicNum("一五aa"));
-		String content="第二章aXXbbb第三ccc第四章eeeuj章eeff第二十五章aeaa第xxx第20章dd第第章a";
-		System.out.println("content:"+content);
-		System.out.println(replaceDigitalClip(content,"第","章a"));
-		
+		String content = "第二章aXXbbb第三cc第六百零八章c第四章eeeuj章eeff第二十五章aeaa第xxx第20章dd第第二百五十六章第章a";
+		System.out.println("content:" + content);
+		System.out.println(replaceDigitalClip(content, true, "第", "章"));
+
 	}
 
 }

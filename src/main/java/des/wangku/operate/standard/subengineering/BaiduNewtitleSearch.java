@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsJsoup;
+import des.wangku.operate.standard.utls.UtilsJsoupConst;
 import des.wangku.operate.standard.utls.UtilsString;
 
 /**
@@ -78,7 +79,7 @@ public class BaiduNewtitleSearch {
 		key=key.trim();
 		if(key.length()==0)return false;
 		String url="https://www.baidu.com/s?wd="+key;
-		Elements es=UtilsJsoup.getElementAll(url, "{C}result->{T}h3");
+		Elements es=UtilsJsoup.getElementAll(url, "{C}result"+UtilsJsoupConst.ACC_InPage+"{T}h3");
 		for(Element e:es) {
 			String text=e.text();
 			if(UtilsString.repetitionRate(text, key)>=repetionrate)return true;
