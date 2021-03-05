@@ -99,6 +99,7 @@ public final class UtilsReadURL {
 	}
 
 	static final BrowserVersion BrowserVer = BrowserVersion.BEST_SUPPORTED;
+	static final BrowserVersion BrowserVer2 = BrowserVersion.INTERNET_EXPLORER;
 
 	static Map<String, String> datas2 = new HashMap<>();
 
@@ -308,7 +309,7 @@ public final class UtilsReadURL {
 			 * 获取登陆提交的表单信息，及修改其提交data数据（login，password）
 			 */
 			Connection con = Jsoup.connect(para.logUrl);  // 获取connection
-			con.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
+			con.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
 			Response rs = con.execute();                // 获取响应
 			Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
 			/*
@@ -326,7 +327,7 @@ public final class UtilsReadURL {
 			 * 第二次请求，以post方式提交表单数据以及cookie信息
 			 */
 			Connection con2 = Jsoup.connect(para.logcheckUrl);
-			con2.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+			con2.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 			con2.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0");
 			// 设置cookie和post上面的map数据
 			Response login = con2.ignoreContentType(true).followRedirects(true).method(Method.POST).data(datas).cookies(rs.cookies()).execute();
@@ -723,7 +724,7 @@ public final class UtilsReadURL {
 		StringBuilder sb = new StringBuilder();
 		String http = url.getProtocol().toLowerCase();
 		/* 只支持http与https协议 */
-		if (!UtilsString.isExist(http, "http", "https")) return "";
+		if (!UtilsArrays.isExist(http, "http", "https")) return "";
 		int port = url.getPort();
 		if ("http".equals(http)) {
 			if (port == -1) port = 80;
@@ -850,7 +851,7 @@ public final class UtilsReadURL {
 			 * 获取登陆提交的表单信息，及修改其提交data数据（login，password）
 			 */
 			Connection con = Jsoup.connect(url);  // 获取connection
-			con.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
+			con.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
 			Response rs = con.execute();                // 获取响应
 			Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
 			/*
@@ -868,7 +869,7 @@ public final class UtilsReadURL {
 			}
 			/* 第二次请求，以post方式提交表单数据以及cookie信息 */
 			Connection con2 = Jsoup.connect(postUrl);
-			con2.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+			con2.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 			/* 设置cookie和post上面的map数据 */
 			Response login = con2.ignoreContentType(true).followRedirects(true).method(method).data(datas).cookies(rs.cookies()).execute();
 			if (login != null) return login.body();
@@ -1107,7 +1108,7 @@ public final class UtilsReadURL {
 		if (url == null) return false;
 		String http = url.getProtocol().toLowerCase();
 		/* 只支持http与https协议 */
-		if (!UtilsString.isExist(http, "http", "https")) return false;
+		if (!UtilsArrays.isExist(http, "http", "https")) return false;
 		//int port = url.getPort();
 		String host = url.getHost();
 		if (host == null) return false;
@@ -1168,7 +1169,7 @@ public final class UtilsReadURL {
 			 * 获取登陆提交的表单信息，及修改其提交data数据（login，password）
 			 */
 			Connection con = Jsoup.connect(href);  // 获取connection
-			con.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
+			con.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
 			//Response rs = con.execute();                // 获取响应
 			//Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
 			/*
@@ -1233,12 +1234,12 @@ public final class UtilsReadURL {
 			//String content=getReadUrlJs(newurl, setold, "utf-8", "https://fanyi.baidu.com/");
 
 			Connection con3 = Jsoup.connect(href);  // 获取connection
-			con3.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
+			con3.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);// 配置模拟浏览器
 			Response rs = con3.execute();                // 获取响应
 			Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树
 
 			Connection con2 = Jsoup.connect(newurl);
-			con2.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+			con2.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 			con2.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36");
 
 			// 设置cookie和post上面的map数据

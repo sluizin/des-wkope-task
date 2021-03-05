@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Collector;
 import org.jsoup.select.Elements;
@@ -14,7 +15,6 @@ import org.jsoup.select.Evaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import des.wangku.operate.standard.Pv;
 
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRuleCutIntervalSplit;
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningInPage;
@@ -126,20 +126,6 @@ public final class UtilsJsoup {
 		return UtilsJsoup.getElementAll(url, key);
 	}
 
-	/**
-	 * 以|To|进行区分切块
-	 * @param e Document
-	 * @param key String
-	 * @return Element
-	 */
-	public static final Document getDocumentCutByKey(Document e, String key) {
-		if (key == null || key.length() == 0) return null;
-		if (!isCutInterval(key)) return null;
-		String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
-		Document doc = UtilsJsoupExt.getRebuildDoc(e.baseUri(), e, arrs[0], arrs[1]);
-		if (doc == null) return null;
-		return doc;
-	}
 
 	/**
 	 * 从网址中某个长度的局部返回对象
@@ -155,7 +141,7 @@ public final class UtilsJsoup {
 		String domain = UtilsReadURL.getUrlDomain(source);
 		String cut = UtilsString.cutString(result, start, end);
 		if (cut == null) return null;
-		return UtilsJsoupCase.getDocument(domain, cut);
+		return UtilsJsoupExt.getDocument(domain, cut);
 	}
 
 	/**
@@ -189,18 +175,6 @@ public final class UtilsJsoup {
 		return getElementAll(doc, arr);
 	}
 
-	/**
-	 * 获取第一个节点的text内容<br>
-	 * 如果没有找到，则返回null
-	 * @param url String
-	 * @param arr String[]
-	 * @return String
-	 */
-	public static final String getElementAllFirstText(String url, String... arr) {
-		Element e = getElementFirst(url, arr);
-		if (e == null) return null;
-		return e.text();
-	}
 
 	/**
 	 * 读取Element得到 name 这个字符串，id class tag attribname,text，第一个节点<br>
@@ -224,18 +198,6 @@ public final class UtilsJsoup {
 		return getElementSingle(url, 0, arr);
 	}
 
-	/**
-	 * 获取第一个节点的text内容<br>
-	 * 如果没有找到，则返回null
-	 * @param f Element
-	 * @param arr String[]
-	 * @return String
-	 */
-	public static final String getElementFirstText(Element f, String... arr) {
-		Element e = getElementFirst(f, arr);
-		if (e == null) return null;
-		return e.text();
-	}
 
 	/**
 	 * 读取Element得到 name 这个字符串，id class tag attribname,text，所有单元 过滤掉重复项<br>
@@ -283,7 +245,7 @@ public final class UtilsJsoup {
 	 * @return Elements
 	 */
 	public static final Elements getElements(String url, String start, String end) {
-		if (UtilsConsts.isErrorUrl(url)) return null;
+		if (UtilsUrl.isErrorUrl(url)) return null;
 		Document doc = UtilsJsoupExt.getDoc(url);
 		String head = UtilsReadURL.getUrlDomain(url);
 		return getRebuildElements(head, doc, start, end);
@@ -469,6 +431,7 @@ public final class UtilsJsoup {
 		case -1:/* S */
 			if (!isCutInterval(key)) return new Elements();
 			String[] arrs = key.split(ACC_JsoupRuleCutIntervalSplit);
+			if(arrs.length<2)break;
 			es = UtilsJsoup.getRebuildElements(source, arrs[0], arrs[1]);
 			//es = source.getElementsByClass(e);aaa
 			break;
@@ -575,69 +538,24 @@ public final class UtilsJsoup {
 	 * @param end String
 	 * @return Document
 	 */
-	public static final Elements getRebuildElements(Element e, String start, String end) {
+	public static final Elements getRebuildElements(Node e, String start, String end) {
+		if (e == null) return new Elements();
+		return getRebuildElementsByString(e.baseUri(), e.outerHtml(), start, end);
+	}
+	/**
+	 * 从网址中某个长度的局部返回对象
+	 * @param domain String
+	 * @param e Element
+	 * @param start String
+	 * @param end String
+	 * @return Document
+	 */
+	public static final Elements getRebuildElementsdef(Element e, String start, String end) {
 		if (e == null) return new Elements();
 		return getRebuildElementsByString(e.baseUri(), e.html(), start, end);
 	}
 
-	/**
-	 * 把多个Element合并成一个Element<br>
-	 * 主Element为空，再依次添加Element
-	 * @param es Elements
-	 * @return Element
-	 */
-	public static final Element getRebuildElement(Elements es) {
-		if (es.size() == 0) return null;
-		Element[] arr = new Element[0];
-		arr = es.toArray(arr);
-		return getRebuildElement(arr);
-	}
-
-	/**
-	 * 把多个Element合并成一个Element<br>
-	 * 主Element为空，再依次添加Element
-	 * @param arr Element[]
-	 * @return Element
-	 */
-	public static final Element getRebuildElement(Element... arr) {
-		if (arr.length == 0) return null;
-		Tag tag = null;
-		for (Element e : arr) {
-			if (e == null) continue;
-			if (tag != null) break;
-			tag = e.tag();
-			break;
-		}
-		if (tag == null) return null;
-		Element result = new Element(tag, "", null);
-		for (Element e : arr) {
-			if (e == null) continue;
-			result.appendChild(e);
-		}
-		return result;
-	}
-	public static final Element merge(boolean isDistinct,Element ...arr) {
-		if (arr.length == 0) return null;
-		Tag tag = null;
-		for (Element e : arr) {
-			if (e == null) continue;
-			if (tag != null) break;
-			tag = e.tag();
-			break;
-		}
-		if (tag == null) return null;
-		Element result = new Element(tag, "", null);
-		
-		
-		
-		return null;
-	}
-	public static final boolean isContain(Element source,Element e) {
-		if(source==null||e==null)return false;
-		
-		return false;
-	}
-
+	
 	/**
 	 * 从网址中某个长度的局部返回对象
 	 * @param domain String
@@ -651,7 +569,7 @@ public final class UtilsJsoup {
 		Elements es = new Elements();
 		String[] arr = UtilsString.cutStrings(result, start, end);
 		for (String f : arr) {
-			Element t = UtilsJsoupCase.getDocument(domain, f);
+			Element t = UtilsJsoupExt.getDocument(domain, f);
 			if (t == null) continue;
 			es.add(t);
 		}
@@ -755,7 +673,7 @@ public final class UtilsJsoup {
 		 * System.out.println("eeee:" + e.html());
 		 */
 		String content = "<div class='a1'>aa<div class='a2'>bb<div class='a3'>c<div class='a1'>cc</div>c</div></div></div>";
-		Document doc = UtilsJsoupCase.getDocument("http//www.99114.com/", content);
+		Document doc = UtilsJsoupExt.getDocument("http//www.99114.com/", content);
 		Element obj = doc.body();
 		System.out.println("==============================" + obj.html());
 		Elements ess = obj.getElementsByClass("a1");
@@ -848,7 +766,7 @@ public final class UtilsJsoup {
 		if (source == null || keyarrs.length == 0 || removearr.length == 0) return;
 		Elements es = UtilsJsoup.getElementsFinalBy(source, style, keyarrs);
 		for (int i = es.size() - 1; i >= 0; i--) {
-			if (UtilsString.isExist(i, removearr)) {
+			if (UtilsArrays.isExist(i, removearr)) {
 				es.get(i).remove();
 			}
 		}
@@ -889,7 +807,7 @@ public final class UtilsJsoup {
 		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
 		Elements es = UtilsJsoup.getElementsFinalByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
-			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
+			if (UtilsArrays.isExist(i, keyarrs)) es.get(i).remove();
 	}
 
 	/**
@@ -903,7 +821,7 @@ public final class UtilsJsoup {
 		if (source == null || p == null || p.trim().length() == 0 || keyarrs.length == 0) return;
 		Elements es = UtilsJsoup.getElementsFinalByTag(source, p.trim());
 		for (int i = es.size() - 1; i >= 0; i--)
-			if (UtilsString.isExist(i, keyarrs)) es.get(i).remove();
+			if (UtilsArrays.isExist(i, keyarrs)) es.get(i).remove();
 	}
 
 

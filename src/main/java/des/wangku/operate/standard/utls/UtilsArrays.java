@@ -421,13 +421,25 @@ public class UtilsArrays {
 	}
 
 	/**
+	 * 判断 数值 是否在数组中
+	 * @param key int
+	 * @param arrs int[]
+	 * @return boolean
+	 */
+	public static final boolean isExist(int key, int... arrs) {
+		if (arrs == null) return false;
+		for (int i = 0; i < arrs.length; i++)
+			if (key == arrs[i]) return true;
+		return false;
+	}
+	/**
 	 * 是否存在字符串，允许null判断
 	 * @param key String
 	 * @param arr String[]
 	 * @return boolean
 	 */
-	public static final boolean isExist(String key, String[] arr) {
-		return isExistIndex(key, arr) > -1;
+	public static final boolean isExist(String key, String... arr) {
+		return isExistIndex(key, arr) != -1;
 	}
 
 	/**
@@ -436,7 +448,8 @@ public class UtilsArrays {
 	 * @param arr String[]
 	 * @return int
 	 */
-	public static final int isExistIndex(String key, String[] arr) {
+	public static final int isExistIndex(String key, String... arr) {
+		if(arr==null)return -1;
 		for (int i = 0; i < arr.length; i++) {
 			String e = arr[i];
 			if ((key == null && e == null) || (key != null && key.equals(e))) return i;

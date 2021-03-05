@@ -1,11 +1,12 @@
 package des.wangku.operate.standard.subengineering;
 
-import org.slf4j.Logger;import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import com.alibaba.fastjson.JSON;
-import des.wangku.operate.standard.utls.UtilsConsts;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 /**
  * @author Sunjian
@@ -29,7 +30,7 @@ public class SearchKeySeodo {
 		if (key.length() == 0) return NoFindNull;
 		try {
 			String url = "http://www.seodo.cn/api/quote";
-			Connection connect = Jsoup.connect(url).headers(UtilsConsts.getRndHeadMap())/*UtilsConsts.header_b)*/.timeout(2000).ignoreContentType(true).data("id", key);
+			Connection connect = Jsoup.connect(url).headers(UtilsConstsRequestHeader.getRndHeadMap())/*UtilsConsts.header_b)*/.timeout(2000).ignoreContentType(true).data("id", key);
 			Response res = connect.execute();
 			String body = res.body();
 			Result result = JSON.parseObject(body, Result.class);

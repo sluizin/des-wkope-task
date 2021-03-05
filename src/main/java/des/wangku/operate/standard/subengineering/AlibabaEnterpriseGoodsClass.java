@@ -10,12 +10,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsFile;
 import des.wangku.operate.standard.utls.UtilsJsoupCase;
 import des.wangku.operate.standard.utls.UtilsJsoupCase.RegularElement;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsString;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 /**
  * 阿里里的商家供应商品
@@ -254,7 +254,7 @@ public class AlibabaEnterpriseGoodsClass {
 	public static final List<GoodsCategoryClass> getShopGoodsCategoryList(String shopUrl) {
 		List<GoodsCategoryClass> list = new ArrayList<>();
 		String urlString = shopUrl + "/page/offerlist.htm";
-		Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+		Connection connect = Jsoup.connect(urlString).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 		try {
 			logger.debug("urlString:"+urlString);
 			Document document = connect.timeout(20000).maxBodySize(0).get();
@@ -585,7 +585,7 @@ public class AlibabaEnterpriseGoodsClass {
 		 * 按类分解url得到各主类或子类的列表，并提出产品列表
 		 */
 		public void splitUrl() {
-			Connection connect = Jsoup.connect(categoryurl).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+			Connection connect = Jsoup.connect(categoryurl).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 			try {
 				Document doc = connect.timeout(10000).maxBodySize(0).get();
 				if (doc == null) return;
@@ -614,7 +614,7 @@ public class AlibabaEnterpriseGoodsClass {
 		static final List<Goods> getlist(String categoryurl) {
 			List<Goods> list = new ArrayList<>();
 
-			Connection connect = Jsoup.connect(categoryurl).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+			Connection connect = Jsoup.connect(categoryurl).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 			try {
 				Document doc = connect.timeout(10000).maxBodySize(0).get();
 				if (doc == null) return list;

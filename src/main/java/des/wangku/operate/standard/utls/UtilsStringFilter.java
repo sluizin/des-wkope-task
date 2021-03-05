@@ -103,7 +103,24 @@ public class UtilsStringFilter {
 		name = name.replace("\"", "");
 		return name;
 	}
+	/**
+	 * 过滤掉字符串中的域名或链接
+	 * @param content String
+	 * @return String
+	 */
+	public static final String filterWebsite(String content) {
+		if(content==null || content.length()==0)return content;
+		String[] arr=UtilsString.getContainWebsite(content);
+		for(String e:arr)
+			content=content.replaceAll(e,"");
+		return content;
+	}
 
+
+	
+	
+		
+	
 	public static void main(String[] args) {
 		System.out.println("Hello World!");
 		String content = "D<p>    </p>EF<p></p>1<p>3</p>4<p> 	 </p><p></p>a<div>bc<p>d<br>e</div>f</p>c(def)hij(lmn)km()n[123]d<p>e<div>e<br/>e</p>dd{cc}<p class='t'>123<p a>34<br>5<pl>";

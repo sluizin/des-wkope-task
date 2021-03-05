@@ -81,7 +81,7 @@ public class CustomExcel {
 	public String getValue(int x, int y) {
 		Cell cell = getCell(x, y);
 		if (cell == null) return null;
-		String value = UtilsPOI.getCellValueByString(cell,false);
+		String value = UtilsPOI.getCellVal(cell);
 		return "" + value;
 	}
 

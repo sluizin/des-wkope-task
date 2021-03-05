@@ -17,6 +17,7 @@ import des.wangku.operate.standard.utls.UtilsHtmlFilter;
 import des.wangku.operate.standard.utls.UtilsJsoup;
 import des.wangku.operate.standard.utls.UtilsJsoupExt;
 import des.wangku.operate.standard.utls.UtilsJsoupLink;
+import des.wangku.operate.standard.utls.UtilsJsoupText;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsStringFilter;
@@ -35,7 +36,7 @@ public class BooksReadUtils {
 		if(e==null)return;
 		Document doc=UtilsJsoupExt.getDoc(url);
 		if(doc==null)return;
-		String filename=UtilsJsoup.getElementFirstText(doc, e.keyName);
+		String filename=UtilsJsoupText.getTextFirst(doc, e.keyName);
 		filename=getFilename(e,filename);
 		//System.out.println("doc:"+doc.html());
 		System.out.println("filename:"+filename);
@@ -236,7 +237,7 @@ public class BooksReadUtils {
 				isnew=false;
 				return;
 			};
-			this.filename=UtilsJsoup.getElementFirstText(doc, e.keyName);
+			this.filename=UtilsJsoupText.getTextFirst(doc, e.keyName);
 			this.filename=getFilename(e,filename);
 			if (isexist(filename)) {
 				isnew=false;
@@ -324,7 +325,7 @@ public class BooksReadUtils {
 		if(ee==null)return;
 		Document doc = UtilsJsoupExt.getDoc(url);
 		if(doc==null)return;
-		String filename=UtilsJsoup.getElementFirstText(doc, ee.keyName)+".txt";
+		String filename=UtilsJsoupText.getTextFirst(doc, ee.keyName)+".txt";
 		if (isexist(filename)) return;
 		List<String> list=UtilsJsoupLink.getHrefAllIndexOf(doc, ee.downfilehrefkey);
 		if(list.size()==0)return;

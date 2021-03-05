@@ -8,10 +8,10 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsJsoup;
 import des.wangku.operate.standard.utls.UtilsJsoupConst;
 import des.wangku.operate.standard.utls.UtilsString;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 /**
  * 从百度中提出某个新闻标题的位置或比例数
@@ -37,7 +37,7 @@ public class BaiduNewtitleSearch {
 
 		try {
 			if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime);
-			Connection connect = Jsoup.connect(url).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_m);
+			Connection connect = Jsoup.connect(url).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_m);
 			Document document = connect.timeout(20000).maxBodySize(0).get();
 			if (document == null) return false;
 			if(redMaxPercent<=0)return false;

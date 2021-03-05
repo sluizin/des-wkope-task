@@ -330,7 +330,7 @@ public final class UtilsList {
 		sb.append("<dd><a href='/7.html'>7</a></dd>");
 		sb.append("<dd><a href='/4.html'>4</a></dd>");
 
-		Document doc = UtilsJsoupCase.getDocument("http://www.99114.com", sb.toString());
+		Document doc = UtilsJsoupExt.getDocument("http://www.99114.com", sb.toString());
 		System.out.println("doc.html():" + doc.html());
 
 		System.out.println("--------------------------------------------------------");

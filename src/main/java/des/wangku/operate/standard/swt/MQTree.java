@@ -39,11 +39,11 @@ import des.wangku.operate.standard.desktop.LoadTaskUtils;
 import des.wangku.operate.standard.dialog.HelpDialog;
 import des.wangku.operate.standard.dialog.SearchText;
 import des.wangku.operate.standard.task.AbstractTask;
+import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsClipboard;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 import des.wangku.operate.standard.utls.UtilsSWTTree;
-import des.wangku.operate.standard.utls.UtilsString;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
@@ -178,7 +178,7 @@ public class MQTree extends Tree {
 		String[] arr = getIDAll();
 		for (int i = 1; i < ACC_AutoIDNumMax; i++) {
 			String id = ACC_AutoIDHead + i;
-			if (!UtilsString.isExist(id, arr)) return id;
+			if (!UtilsArrays.isExist(id, arr)) return id;
 		}
 		return null;
 	}

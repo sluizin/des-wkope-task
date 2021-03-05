@@ -21,9 +21,9 @@ import org.jsoup.select.Elements;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsCpdetector;
 import des.wangku.operate.standard.utls.UtilsReadURL;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 /**
  * 映射单元
@@ -344,7 +344,7 @@ public final class News_Mapping {
 	public final Document getDoc(URL url) {
 		String newCode = getCode(url);
 		try {
-			Connection connect = Jsoup.connect(url.toString()).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a
+			Connection connect = Jsoup.connect(url.toString()).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a
 			Document document = connect.timeout(timeout).maxBodySize(0).get();
 			if (document != null) return document;
 		} catch (IOException e) {

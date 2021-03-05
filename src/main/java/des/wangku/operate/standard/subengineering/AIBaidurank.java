@@ -174,7 +174,7 @@ public class AIBaidurank {
 		}
 
 		public final int getPosidInteger() {
-			return UtilsString.getNumbersIntTemplateAIZhan(posid);
+			return UtilsString.getNumbersIntRankPosid(posid);
 		}
 		
 		public final void setPosid(String posid) {

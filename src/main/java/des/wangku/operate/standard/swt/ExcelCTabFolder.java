@@ -231,7 +231,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 			for (int ii = 0; ii <= cellLen; ii++) {
 				if (!showHiddenColumn && sheet.isColumnHidden(ii)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
 				Cell cell = r.getCell(ii);
-				String value = UtilsPOI.getCellValueByString(cell, true);
+				String value = UtilsPOI.getCellVal(cell);
 				if (t.getEctpara().isTrim) value = value.trim();
 				list.add(value);
 			}
@@ -257,7 +257,7 @@ public class ExcelCTabFolder extends AbstractCTabFolder {
 		List<String> list = new ArrayList<>(cellLen);
 		for (int i = 0; i < cellLen; i++) {
 			if (!showHiddenColumn && sheet.isColumnHidden(i)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
-			if (!isBadSuffix) value = UtilsPOI.getCellValueByString(first.getCell(i), true);
+			if (!isBadSuffix) value = UtilsPOI.getCellVal(first.getCell(i));
 			else value = "" + i;
 			list.add(value);
 		}

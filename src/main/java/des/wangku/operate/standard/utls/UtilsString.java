@@ -107,7 +107,7 @@ public final class UtilsString {
 	 * @param arrs String[]
 	 * @return boolean
 	 */
-	public static final boolean isExist(String key, String... arrs) {
+	public static final boolean isExistdef(String key, String... arrs) {
 		if (key == null) return false;
 		for (String e : arrs)
 			if (key.equals(e)) return true;
@@ -124,19 +124,6 @@ public final class UtilsString {
 		if (line == null) return false;
 		for (String e : arrs)
 			if (line.indexOf(e) > -1) return true;
-		return false;
-	}
-
-	/**
-	 * 判断 数值 是否在数组中
-	 * @param key int
-	 * @param arrs int[]
-	 * @return boolean
-	 */
-	public static final boolean isExist(int key, int... arrs) {
-		if (arrs == null) return false;
-		for (int i = 0; i < arrs.length; i++)
-			if (key == arrs[i]) return true;
 		return false;
 	}
 
@@ -207,7 +194,8 @@ public final class UtilsString {
 
 	/**
 	 * 第50(页/条/位)<br>
-	 * getNumbersInt(str, "第","页")
+	 * getNumbersInt(str, "第","页")<br>
+	 * 没有找到，则返回-1
 	 * @param content String
 	 * @param before String
 	 * @param after String
@@ -219,7 +207,8 @@ public final class UtilsString {
 
 	/**
 	 * 第50(页/条/位)<br>
-	 * getNumbers(str, "第\\d+页")
+	 * getNumbers(str, "第\\d+页")<br>
+	 * 没有找到，则返回-1
 	 * @param content String
 	 * @param str String
 	 * @return int
@@ -250,14 +239,31 @@ public final class UtilsString {
 	}
 
 	/**
-	 * 爱站中排名的转换 "第1页 第7位"
+	 * 权重中排名的转换 "第1页 第7位"
 	 * @param content String
 	 * @return int
 	 */
-	public static int getNumbersIntTemplateAIZhan(String content) {
-		int page = getNumbersInt(content, "第\\d+页");
-		int p = getNumbersInt(content, "第\\d+位");
-		return (page - 1) * 10 + p;
+	public static int getNumbersIntRankPosid(String content) {
+		return getNumbersIntRankPosid(content, "第", "页", "第", "位");
+	}
+
+	/**
+	 * 权重中排名的转换 "第1页 第7位"<br>
+	 * (content,"第","页", "第","位")
+	 * @param content String
+	 * @param pageFirs String
+	 * @param pageEnd String
+	 * @param pointFist String
+	 * @param pointEnd String
+	 * @return int
+	 */
+	public static int getNumbersIntRankPosid(String content, String pageFirst, String pageEnd, String pointFist, String pointEnd) {
+		int sort = 0;
+		int page = getNumbersInt(content, pageFirst, pageEnd);
+		if (page > 0) sort = (page - 1) * 10;
+		int p = getNumbersInt(content, pointFist, pointEnd);
+		if (p > 0) sort += p;
+		return sort;
 	}
 
 	/**
@@ -434,7 +440,17 @@ public final class UtilsString {
 		}
 		return index;
 	}
-
+	 
+	/**
+	 * 格式化字符串，先判断是否为数字。如果为数字，则前面补0，如果为字符串，则左对齐
+	 * @param id String
+	 * @param maxlen int
+	 * @return String
+	 */
+	public static final String format(String id, int maxlen) {
+		if (UtilsVerification.isNumeric(id)) return String.format("%0" + maxlen + "d", Integer.parseInt(id));
+		return String.format("%1$-" + maxlen + "s", id);
+	}
 	/**
 	 * 格式化正整数
 	 * @param val int
@@ -576,10 +592,11 @@ public final class UtilsString {
 	 * @return String
 	 */
 	public static final String cutString(String source, String start, String end) {
-		String[] arr=cutStrings(source,start,end);
-		if(arr.length==0)return null;
+		String[] arr = cutStrings(source, start, end);
+		if (arr.length == 0) return null;
 		return arr[0];
 	}
+
 	/**
 	 * 截取字符串，产生多个字符串，为开始与结尾之间的字符串<br>
 	 * 如果开始为空串，则以最始点为开始<br>
@@ -593,20 +610,20 @@ public final class UtilsString {
 		String[] arrs = {};
 		if (source == null || source.length() == 0) return arrs;
 		if (start == null || end == null) return arrs;
-		if (start.length()==0 && end.length() == 0) return arrs;
-		String cut=null;
-		if(start.length()==0) {
-			int index=source.indexOf(end);
-			if(index==-1)return arrs;
+		if (start.length() == 0 && end.length() == 0) return arrs;
+		String cut = null;
+		if (start.length() == 0) {
+			int index = source.indexOf(end);
+			if (index == -1) return arrs;
 			cut = source.substring(0, index);
 		}
-		if(end.length()==0) {
-			int index=source.indexOf(start);
-			if(index==-1)return arrs;
-			cut = source.substring(index+start.length(), source.length());	
+		if (end.length() == 0) {
+			int index = source.indexOf(start);
+			if (index == -1) return arrs;
+			cut = source.substring(index + start.length(), source.length());
 		}
-		if(cut!=null) {
-			String[] a= {cut};
+		if (cut != null) {
+			String[] a = { cut };
 			return a;
 		}
 		int index1 = 0, index2 = 0;
@@ -689,20 +706,122 @@ public final class UtilsString {
 		return replaceAllStr(new String(rs), target, replacement);
 	}
 
-	public static void main(String[] args) {
-		String content="aa<b>bb<b>cc</b>dd<b>ee</b>ff<b>xx<b>hh</b>gg";
-		String[] arr=cutStrings(content,"<b>","</b>");
-		for(String e:arr) {
-			System.out.println("e:"+e);
+	/**
+	 * 找到指定位置的的字符串，替换成新的字符串<br>
+	 * 不区分大小写
+	 * @param content String
+	 * @param key String
+	 * @param rep String
+	 * @param arr int[]
+	 * @return String
+	 */
+	public static final String replacePointStr(String content, String key, String rep, int... arr) {
+		if (content == null || content.length() == 0) return content;
+		if (key == null || key.length() == 0) return content;
+		StringBuilder sb = new StringBuilder(content.length());
+		Pattern r = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+		String[] arrs = r.split(content);
+		for (int i = 0; i < arrs.length; i++) {
+			String e = arrs[i];
+			sb.append(e);
+			if (UtilsArrays.isExist(i, arr)) if (rep != null) sb.append(rep);
+			else sb.append(key);
 		}
-		String str="abcd";
-		System.out.println("result:"+str.substring(2,4));
-		
+		return sb.toString();
+	}
+
+	/**
+	 * 得到字符串中含有的域名<br>
+	 * http://xxx.com/abc<br>
+	 * www.abc.com
+	 * @param content
+	 * @return
+	 */
+	public static final String[] getContainWebsite(String content) {
+		String[] arr = {};
+		if (content == null || content.length() == 0) return arr;
+		List<String> list = new ArrayList<>();
+		StringBuilder sb = new StringBuilder();
+		String regex = "^((https|http|ftp|rtsp|mms)?://)" + "?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" //ftp的user@  
+				+ "(([0-9]{1,3}\\.){3}[0-9]{1,3}" // IP形式的URL- 199.194.52.184  
+				+ "|" // 允许IP和DOMAIN（域名） 
+				+ "([0-9a-z_!~*'()-]+\\.)*" // 域名- www.  
+				+ "([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\." // 二级域名  
+				+ "[a-z]{2,6})" // first level domain- .com or .museum  
+				+ "(:[0-9]{1,4})?" // 端口- :80  
+				+ "((/?)|" // a slash isn't required if there is no file name  
+				+ "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
+		sb.append("(");
+
+		sb.append("(");
+		sb.append("(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|]");
+		sb.append(")");
+
+		sb.append("|");
+
+		sb.append("(");
+		sb.append("[-A-Z0-9.]*\\.(com|cn|net|org|biz|info|cc|tv)");
+		sb.append(")");
+
+		sb.append("|");
+
+		sb.append("(");
+		sb.append(regex);
+		sb.append(")");
+
+		sb.append(")+");
+		Pattern p = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(content);
+		while (m.find())
+			list.add((m.group()));
+		return list.toArray(arr);
+	}
+
+	public static void main(String[] args) {
+		String content = "<br>aa<b>bb<b>c<br>c</b>d<br>d<b>e<br>e</b>f<br>f<b>xx<b>h<br>h</b>g<br>g";
+		System.out.println(content);
+		System.out.println("" + replacePointStr(content, "<br>", "<bbr>", 1, 2, 5));
+		String[] arr = cutStrings(content, "<b>", "</b>");
+		for (String e : arr) {
+			System.out.println("e:" + e);
+		}
+		String str = "abcd";
+		System.out.println("result:" + str.substring(2, 4));
+
+		{
+			String url = "中aaaaanotherbug.blog.chinajavaworld.com/entry/4545/0/";
+			Pattern p = Pattern.compile("[-A-Z0-9+&@#/%?=~_|!:,.;]*\\.(com|cn|net|org|biz|info|cc|tv)", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = p.matcher(url);
+			matcher.find();
+			System.out.println(matcher.group());
+
+		}
+
+		{
+			String url = "aaanotherbug.blog.chinajavaworld.com/entry/4545/0/";
+			Pattern p = Pattern.compile("(http://|https://|\\.)[^.]*?\\.(com|cn|net|org|biz|info|cc|tv)", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = p.matcher(url);
+			matcher.find();
+			System.out.println(matcher.group());
+
+		}
+
+		{
+			String url = "aeehttp://anotherbug.blog.chinajavaworld.com/entry/4545/0/eee,中ww" + "w.xxx.com中国?xxx.com.cn,!www.abc.org!!" + "aa汉ftp://abc.com.cn/zbc/aa.rar#a?2=3离";
+			Pattern p = Pattern.compile("(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|]", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = p.matcher(url);
+			matcher.find();
+			System.out.println(matcher.group());
+			String[] arrs22 = getContainWebsite(url);
+			for (String e : arrs22)
+				System.out.println("::" + e);
+
+		}
 		/*
-		String content = "abcaa" + ACC_ENTER + "bbccaaee" + ACC_ENTER + "aaaaa";
-		String val = ACC_ENTER;
-		System.out.println("count:" + UtilsRegular.getPatternCount(content, val));
-	*/
+		 * String content = "abcaa" + ACC_ENTER + "bbccaaee" + ACC_ENTER + "aaaaa";
+		 * String val = ACC_ENTER;
+		 * System.out.println("count:" + UtilsRegular.getPatternCount(content, val));
+		 */
 		/*
 		 * String content="aa<font>bb<font>cc</font>dd</font>";
 		 * String str=cutString(content,"<font>","</font>");

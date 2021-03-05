@@ -51,6 +51,16 @@ public final class UtilsSWTTableSQL {
 	 * @param e Table
 	 * @param x int
 	 * @param y int
+	 * @param value int
+	 */
+	public static final synchronized void update(Table e, int x, int y, int value) {
+		update(e,x,y,value+"");
+	}
+	/**
+	 * 更新
+	 * @param e Table
+	 * @param x int
+	 * @param y int
 	 * @param value String
 	 */
 	public static final synchronized void update(Table e, int x, int y, String value) {

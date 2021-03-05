@@ -616,6 +616,9 @@ public final class UtilsFile {
 		} catch (Exception e) {
 		}
 	}
+	/**
+	 * 要显示的长字符串时头部保留用于logger里显示时的字符串长度
+	 */
 	static final int ACC_ShowLogger_WriteFileInforLen=26;
 	/**
 	 * 写文件，以追加的方式

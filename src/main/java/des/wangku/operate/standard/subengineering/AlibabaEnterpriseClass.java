@@ -10,10 +10,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsJsoupCase;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsRnd;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 /**
  * 阿里企业信息
@@ -150,7 +150,7 @@ public class AlibabaEnterpriseClass {
 	 */
 	public void getArchives() {
 		String urlString = this.url + "/page/creditdetail.htm";
-		Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a
+		Connection connect = Jsoup.connect(urlString).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a
 		try {
 			Document document = connect.timeout(10000).maxBodySize(0).get();
 			if (document == null) return;
@@ -200,7 +200,7 @@ public class AlibabaEnterpriseClass {
 	 */
 	public void getContactinformation() {
 		String urlString = this.url + "/page/contactinfo.htm";
-		Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+		Connection connect = Jsoup.connect(urlString).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 		try {
 			Document document = connect.timeout(10000).maxBodySize(0).get();
 			if (document == null) return;
@@ -315,7 +315,7 @@ public class AlibabaEnterpriseClass {
 					String picurlString = baiduUrl;//.substring(0, baiduUrl.indexOf('?'));
 					//String pageXml2=UtilsReadURL.getReadUrlJs(picurlString);
 					//Document docpic = Jsoup.parse(pageXml2,this.url);
-					Connection connect = Jsoup.connect(picurlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+					Connection connect = Jsoup.connect(picurlString).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 					Document docpic = connect.timeout(10000).maxBodySize(0).get();
 					Element imagelistall = docpic.getElementById("image-list-container");
 					if (imagelistall == null) return;

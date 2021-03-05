@@ -42,9 +42,11 @@ import des.wangku.operate.standard.dialog.SearchText;
 import des.wangku.operate.standard.task.AbstractTask;
 import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsClipboard;
+import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsSWTMessageBox;
 import des.wangku.operate.standard.utls.UtilsSWTTools;
 import des.wangku.operate.standard.utls.UtilsSWTTree;
+import des.wangku.operate.standard.utls.UtilsString;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
@@ -390,9 +392,9 @@ public class MultiTree extends Tree {
 	 * @return String
 	 */
 	public final String getAutoID() {
-		for (int i = 1; i < ACC_AutoIDNumMax; i++) {
-			String newid = format(i + "", ACC_AutoIDNumLen);
-			String id = ACC_AutoIDPrefix + newid;
+		for (int i = 1; i < UtilsConsts.ACC_AutoIDNumMax; i++) {
+			String newid = UtilsString.format(i + "", UtilsConsts.ACC_AutoIDNumLen);
+			String id = UtilsConsts.ACC_AutoIDPrefix + newid;
 			if (!isExist(id)) return id;
 		}
 		return null;
@@ -2062,11 +2064,6 @@ public class MultiTree extends Tree {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(MultiTree.class);
 
-	public static final String ACC_AutoIDPrefix = "sj";
-
-	public static final int ACC_AutoIDNumMax = 1000;
-
-	public static final int ACC_AutoIDNumLen = 4;
 
 	/**
 	 * 合并多个list，并过滤重复单元
@@ -2105,16 +2102,6 @@ public class MultiTree extends Tree {
 		expandedParent(parent, isExpanded);
 	}
 
-	/**
-	 * 格式化字符串，先判断是否为数字。如果为数字，则前面补0，如果为字符串，则左对齐
-	 * @param id String
-	 * @param maxlen int
-	 * @return String
-	 */
-	static final String format(String id, int maxlen) {
-		if (UtilsVerification.isNumeric(id)) return String.format("%0" + maxlen + "d", Integer.parseInt(id));
-		return String.format("%1$-" + maxlen + "s", id);
-	}
 
 	/**
 	 * 得到深度的静态方法
@@ -2205,7 +2192,7 @@ public class MultiTree extends Tree {
 	 */
 	static final String getTagTitle(int maxlen, String id, String name) {
 		if (id == null) return name;
-		String newid = format(id, maxlen);//String.format("%1$4s", id);
+		String newid = UtilsString.format(id, maxlen);//String.format("%1$4s", id);
 		return "[" + newid + "]" + name;
 	}
 

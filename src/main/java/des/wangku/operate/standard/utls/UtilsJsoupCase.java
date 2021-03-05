@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -91,7 +90,7 @@ public final class UtilsJsoupCase {
 	 */
 	public static final String cleanHtml(String content, String domain) {
 		if (content == null) return null;
-		Document e = getDocument(content, domain);
+		Document e = UtilsJsoupExt.getDocument(content, domain);
 		if (e == null) return null;
 		return e.text();
 	}
@@ -535,23 +534,4 @@ public final class UtilsJsoupCase {
 		}
 	}
 
-	/**
-	 * 重组Docment
-	 * @param domain String
-	 * @param content String
-	 * @return Document
-	 */
-	public static final Document getDocument(String domain,String content) {
-		if(content==null)return null;
-		if (domain == null) return Jsoup.parse(content);
-		return Jsoup.parse(content, domain);
-	}
-	/**
-	 * 重组Docment
-	 * @param content String
-	 * @return Document
-	 */
-	public static final Document getDocument(String content) {
-		return getDocument(null,content);
-	}
 }

@@ -9,7 +9,6 @@ import org.eclipse.swt.graphics.Point;
 
 import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsPOI;
-import des.wangku.operate.standard.utls.UtilsString;
 
 /**
  * 针对POI中的sheet进行扩展
@@ -88,7 +87,7 @@ public class POISheetExt {
 				setCellValue(true, i, y, "");
 				break;
 			}
-			String value = UtilsPOI.getCellValueByString(sheet, i + 1, y, false, "");
+			String value = UtilsPOI.getCellVal(sheet, i + 1, y, "");
 			if (value == null) value = "";
 			setCellValue(true, i, y, value);
 		}
@@ -110,7 +109,7 @@ public class POISheetExt {
 				setCellValue(true, i, y, "");
 				break;
 			}
-			String value = UtilsPOI.getCellValueByString(sheet, i - 1, y, false, "");
+			String value = UtilsPOI.getCellVal(sheet, i - 1, y, "");
 			if (value == null) value = "";
 			setCellValue(true, i, y, value);
 		}
@@ -308,7 +307,7 @@ public class POISheetExt {
 		for (int i = sheet.getLastRowNum(); i > -1; i--) {
 			if (sheet.getRow(i) == null) continue;
 			if (sheet.getRow(i).getCell(y) == null) continue;
-			String value = UtilsPOI.getCellValueByString(sheet, i, y, isTrim, "");
+			String value = UtilsPOI.getCellVal(sheet, i, y, "");
 			if (value == null || value.length() == 0) continue;
 			if (isTrim && value.trim().length() == 0) continue;
 			return i;
@@ -352,7 +351,7 @@ public class POISheetExt {
 		int len = getWidthMax();
 		int extremum = 0;
 		for (int i = 0; i <= len; i++) {
-			if (UtilsString.isExist(i, filterColumns)) continue;
+			if (UtilsArrays.isExist(i, filterColumns)) continue;
 			int deep = getDepth(i, isTrim);
 			if (isMax) {/* 最大深度 */
 				if (deep > extremum) extremum = deep;
@@ -374,7 +373,7 @@ public class POISheetExt {
 		if (sheet == null) return -1;
 		int rowsLen = sheet.getLastRowNum();
 		for (int i = start; i <= rowsLen; i++) {
-			String value = UtilsPOI.getCellValueByString(sheet, i, y, false, "");
+			String value = UtilsPOI.getCellVal(sheet, i, y, "");
 			if (value == null) continue;
 			if (value.equals(key)) return i;
 		}

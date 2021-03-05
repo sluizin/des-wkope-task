@@ -25,9 +25,9 @@ public class Testing {
 			List<Unit> list=new ArrayList<>();
 			for (int i = 1; i <= rowslen; i++) {
 				Row row = sheet.getRow(i);
-				String name = UtilsPOI.getCellValueByString(row.getCell(1), true);
-				String url = UtilsPOI.getCellValueByString(row.getCell(2), true);
-				String key = UtilsPOI.getCellValueByString(row.getCell(3), true);
+				String name = UtilsPOI.getCellVal(row.getCell(1));
+				String url = UtilsPOI.getCellVal(row.getCell(2));
+				String key = UtilsPOI.getCellVal(row.getCell(3));
 				if(name==null || name.length()==0)continue;
 				//System.out.println(name+"\t"+url);
 				list.add(new Unit(name,url,key));			

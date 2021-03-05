@@ -10,6 +10,14 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static des.wangku.operate.standard.utls.UtilsJsoupConst.ACC_JsoupRulePrecisePositioningOutPage;
+/**
+ * Jsoup工具<br>
+ * 提取链接
+ * 
+ * @author Sunjian
+ * @version 1.0
+ * @since jdk1.8
+ */
 public final class UtilsJsoupLink {
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsJsoupLink.class);
@@ -297,7 +305,7 @@ public final class UtilsJsoupLink {
 		content +="<div class='a22'>eee</div>";
 		content +="<div class='a22'></div>";
 		content +="<div class='a22'><a href='/abc.html'>xxx</a></div>";
-		Document doc = UtilsJsoupCase.getDocument(content,"http://www.99114.com/");
+		Document doc = UtilsJsoupExt.getDocument(content,"http://www.99114.com/");
 		Element obj = doc.body();
 		List<String> list = UtilsJsoupLink.getHrefAll(obj, "ccd");
 		for (String e : list) {

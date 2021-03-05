@@ -11,9 +11,9 @@ import org.jsoup.select.Elements;
 
 import des.wangku.operate.standard.swt.ResultTable;
 import des.wangku.operate.standard.task.InterfaceThreadRunUnit;
-import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsReadURL;
 import des.wangku.operate.standard.utls.UtilsString;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 import des.wangku.operate.standard.utls.UtilsVerification;
 
 /**
@@ -43,7 +43,7 @@ public class BaiduKeySearchPosid {
 			String urlString = "https://www.baidu.com/s?wd=" + key + "&pn=" + i;
 			try {
 				//URL u = new URL(urlString);
-				Connection connect = Jsoup.connect(urlString).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+				Connection connect = Jsoup.connect(urlString).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 				Document document = connect.timeout(15000).maxBodySize(0).get();
 				if (document == null) return null;
 				if (document.html().indexOf(url) == -1) continue;
@@ -130,7 +130,7 @@ public class BaiduKeySearchPosid {
 			logger.debug("search:"+baiduUrlHref);
 			try {
 				if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime);
-				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_m);
+				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_m);
 				Document document = connect.timeout(timeout).maxBodySize(0).get();
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
@@ -203,7 +203,7 @@ public class BaiduKeySearchPosid {
 			logger.debug("search:"+baiduUrlHref);
 			try {
 				if(BaiduSleepTime > 0)Thread.sleep(BaiduSleepTime*10);
-				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_m);
+				Connection connect = Jsoup.connect(baiduUrlHref).headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_m);
 				Document document = connect.timeout(15000).maxBodySize(0).get();
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());
 				//Document document = UtilsReadURL.getReadUrlJsDocument(sb.toString());

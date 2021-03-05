@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -33,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 针对POI的基本操作
+ * 针对POI的基本操作<br>
  * @author Sunjian
  * @version 1.0
  * @since jdk1.8
@@ -41,7 +40,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({ "resource", "deprecation" })
 public final class UtilsPOI {
 	/** 格式化字符串 */
-	private static final DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
+	static final DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
 
 	/** 日志 */
 	static Logger logger = LoggerFactory.getLogger(UtilsPOI.class);
@@ -188,40 +187,17 @@ public final class UtilsPOI {
 	 * 复制单元格
 	 * @param srcCell
 	 * @param distCell
-	 * @param copyValueFlag true则连同cell的内容一起复制
+	 * @param copyVal true则连同cell的内容一起复制
 	 */
-	public static void copyCell(Workbook srcWb, Cell srcCell, Cell distCell, boolean copyValueFlag) {
-		CellStyle newstyle = srcWb.createCellStyle();
-		copyCellStyle(srcCell.getCellStyle(), newstyle);
+	public static void copyCell(Cell srcCell, Cell distCell, boolean copyVal) {
+		CellStyle cs = srcCell.getCellStyle();
+		CellStyle to = distCell.getCellStyle();
+		copyCellStyle(cs, to);
 		//样式
-		distCell.setCellStyle(newstyle);
-		//评论
-		if (srcCell.getCellComment() != null) {
-			distCell.setCellComment(srcCell.getCellComment());
-		}
-		// 不同数据类型处理
-		int srcCellType = srcCell.getCellType();
-		distCell.setCellType(srcCellType);
-		if (copyValueFlag) {
-			if (srcCellType == HSSFCell.CELL_TYPE_NUMERIC) {
-				if (HSSFDateUtil.isCellDateFormatted(srcCell)) {
-					distCell.setCellValue(srcCell.getDateCellValue());
-				} else {
-					distCell.setCellValue(srcCell.getNumericCellValue());
-				}
-			} else if (srcCellType == HSSFCell.CELL_TYPE_STRING) {
-				distCell.setCellValue(srcCell.getRichStringCellValue());
-			} else if (srcCellType == HSSFCell.CELL_TYPE_BLANK) {
-				// nothing21
-			} else if (srcCellType == HSSFCell.CELL_TYPE_BOOLEAN) {
-				distCell.setCellValue(srcCell.getBooleanCellValue());
-			} else if (srcCellType == HSSFCell.CELL_TYPE_ERROR) {
-				distCell.setCellErrorValue(srcCell.getErrorCellValue());
-			} else if (srcCellType == HSSFCell.CELL_TYPE_FORMULA) {
-				distCell.setCellFormula(srcCell.getCellFormula());
-			} else { // nothing29
-			}
-		}
+		distCell.setCellStyle(to);
+		if (!copyVal) return;
+		String val = getCellVal(srcCell);
+		distCell.setCellValue(val);
 	}
 
 	/**
@@ -239,7 +215,7 @@ public final class UtilsPOI {
 		toStyle.setFillBackgroundColor(fromStyle.getFillBackgroundColor());
 		toStyle.setFillForegroundColor(fromStyle.getFillForegroundColor());
 		toStyle.setDataFormat(fromStyle.getDataFormat());
-		//		toStyle.setFont(fromStyle.getFont(null));
+		//toStyle.setFont(fromStyle.getFont(null));
 		toStyle.setHidden(fromStyle.getHidden());
 		toStyle.setIndention(fromStyle.getIndention());//首行缩进
 		toStyle.setLocked(fromStyle.getLocked());
@@ -268,35 +244,33 @@ public final class UtilsPOI {
 	}
 
 	/**
-	 * 行复制功能
-	 * @param srcWb Workbook
+	 * 复制某行
 	 * @param fromRow Row
 	 * @param toRow Row
-	 * @param copyValueFlag boolean
+	 * @param copyVal false
 	 */
-	public static final void copyRow(Workbook srcWb, Row fromRow, Row toRow, boolean copyValueFlag) {
+	public static final void copyRow(Row fromRow, Row toRow, boolean copyVal) {
+		if (fromRow == null || toRow == null) return;
 		for (Iterator<Cell> cellIt = fromRow.cellIterator(); cellIt.hasNext();) {
 			Cell tmpCell = cellIt.next();
-			//HSSFCell newCell = toRow.createCell(tmpCell.getCellNum());
 			Cell newCell = toRow.createCell(tmpCell.getColumnIndex());
-			copyCell(srcWb, tmpCell, newCell, copyValueFlag);
+			copyCell(tmpCell, newCell, copyVal);
 		}
 	}
 
 	/**
 	 * Sheet复制
-	 * @param srcWb Workbook
 	 * @param fromSheet Sheet
 	 * @param toSheet Sheet
-	 * @param copyValueFlag boolean
+	 * @param copyVal boolean
 	 */
-	public static final void copySheet(Workbook srcWb, Sheet fromSheet, Sheet toSheet, boolean copyValueFlag) {
+	public static final void copySheet(Sheet fromSheet, Sheet toSheet, boolean copyVal) {
 		//合并区域处理
 		mergerRegion(fromSheet, toSheet);
 		for (Iterator<Row> rowIt = fromSheet.rowIterator(); rowIt.hasNext();) {
 			Row tmpRow = rowIt.next();
 			Row newRow = toSheet.createRow(tmpRow.getRowNum());
-			copyRow(srcWb, tmpRow, newRow, copyValueFlag);//行复制
+			copyRow(tmpRow, newRow, copyVal);//行复制
 		}
 	}
 
@@ -334,15 +308,6 @@ public final class UtilsPOI {
 	/**
 	 * 删除单元
 	 * @param sheet Sheet
-	 * @param p Point
-	 * @return boolean
-	 */
-	public static final boolean delete(final Sheet sheet, Point p) {
-		return delete(sheet,p.x,p.y);
-	}
-	/**
-	 * 删除单元
-	 * @param sheet Sheet
 	 * @param x int
 	 * @param y int
 	 * @return boolean
@@ -352,6 +317,16 @@ public final class UtilsPOI {
 		Cell cell = getCell(sheet, x, y);
 		if (cell == null) return false;
 		return delete(sheet, cell);
+	}
+
+	/**
+	 * 删除单元
+	 * @param sheet Sheet
+	 * @param p Point
+	 * @return boolean
+	 */
+	public static final boolean delete(final Sheet sheet, Point p) {
+		return delete(sheet, p.x, p.y);
 	}
 
 	/**
@@ -387,7 +362,7 @@ public final class UtilsPOI {
 	 * @param y int
 	 * @return Cell
 	 */
-	public static Cell getCell(Sheet sheet, int x, int y) {
+	public static final Cell getCell(Sheet sheet, int x, int y) {
 		if (sheet == null) return null;
 		Row row = sheet.getRow(x);
 		if (row == null) return null;
@@ -471,7 +446,8 @@ public final class UtilsPOI {
 	}
 
 	/**
-	 * 复制单元格
+	 * 复制单元格<br>
+	 * 不进行运算
 	 * @param fromCell Cell
 	 * @param toCell Cell
 	 * @return Cell
@@ -482,7 +458,7 @@ public final class UtilsPOI {
 		short oldheight = toCell.getRow().getHeight();
 		if (oldheight > newheight) newheight = oldheight;
 		toCell.getRow().setHeight(newheight);
-		String obj = getCellValueByString(fromCell);
+		String obj = getCellVal(fromCell);
 		toCell.setCellComment(fromCell.getCellComment());
 		toCell.setCellStyle(fromCell.getCellStyle());
 		toCell.setCellType(fromCell.getCellType());
@@ -491,6 +467,43 @@ public final class UtilsPOI {
 		copyRange(fromCell, toCell);
 		setCellValue(toCell, obj);
 		return toCell;
+	}
+
+	/**
+	 * 得到单元格里对象
+	 * @param cell Cell
+	 * @return String
+	 */
+	public static Object getCellObject(Cell cell) {
+		if (cell == null) return null;
+		if (cell.toString().length() == 0) return "";
+		switch (cell.getCellTypeEnum()) {
+		case NUMERIC:
+			if (HSSFDateUtil.isCellDateFormatted(cell)) { return convertCellToString(cell); }
+			//double dd = cell.getNumericCellValue();
+			//return decimalFormat.format(dd);
+			return cell.getNumericCellValue();
+		case STRING:
+			return cell.getStringCellValue();
+		case FORMULA:
+			try {
+				return cell.getNumericCellValue();
+			} catch (Exception e) {
+				try {
+					return cell.getRichStringCellValue();
+				} catch (Exception f) {
+					return null;
+				}
+			}
+		case BLANK:
+			return null;
+		case BOOLEAN:
+			return cell.getBooleanCellValue();
+		case ERROR:
+			return cell.getRichStringCellValue();
+		default:
+			return null;
+		}
 	}
 
 	/**
@@ -553,6 +566,169 @@ public final class UtilsPOI {
 	}
 
 	/**
+	 * 得到单元格里的字符串<br>
+	 * @param cell Cell
+	 * @return String
+	 */
+	public static final String getCellVal(Cell cell) {
+		return getCell(cell, true);
+	}
+
+	/**
+	 * 得到单元格里的字符串<br>
+	 * @param cell Cell
+	 * @return String
+	 */
+	public static final String getCellValFORMULA(Cell cell) {
+		return getCell(cell, true);
+	}
+	public static final String getFORMULAVal(Cell cell) {
+		CellType ct=cell.getCellTypeEnum();
+		//System.out.println("error:"+ct);
+		if (ct != CellType.FORMULA) return null;
+		//System.out.println("error--ok:"+ct);
+		try {
+			return String.valueOf(cell.getNumericCellValue());
+		} catch (IllegalStateException e) {
+			//System.out.println("error--ok:"+ct);
+			return null;
+		}
+		
+	}
+	/**
+	 * 得到单元格里的字符串<br>
+	 * 是否进行运算
+	 * @param cell Cell
+	 * @param isFORMULA boolean
+	 * @return String
+	 */
+	public static String getCell(Cell cell, boolean isFORMULA) {
+		if (cell == null) return null;
+		if (cell.toString().length() == 0) return "";
+
+		if (isFORMULA) {
+			String val=getFORMULAVal(cell);
+			if(val!=null)return val;
+		}
+		Object obj = getCellObject(cell);
+		if (obj == null) return null;
+		return String.valueOf(obj);
+		/*
+		 * switch(cell.getCellTypeEnum()) {
+		 * case NUMERIC:
+		 * if (HSSFDateUtil.isCellDateFormatted(cell)) {
+		 * return convertCellToString(cell);
+		 * }
+		 * //double dd = cell.getNumericCellValue();
+		 * //return decimalFormat.format(dd);
+		 * return String.valueOf(cell.getNumericCellValue());
+		 * case STRING:
+		 * return String.valueOf(cell.getRichStringCellValue());
+		 * case FORMULA:
+		 * if(!isFORMULA) String.valueOf(cell.getRichStringCellValue());
+		 * try {
+		 * return String.valueOf(cell.getNumericCellValue());
+		 * } catch (IllegalStateException e) {
+		 * return String.valueOf(cell.getRichStringCellValue());
+		 * }
+		 * case BLANK:
+		 * return null;
+		 * case BOOLEAN:
+		 * boolean bb = cell.getBooleanCellValue();
+		 * return String.valueOf(bb);
+		 * default:
+		 * return null;
+		 * }
+		 */
+	}
+
+	/**
+	 * 得到单元格里的字符串
+	 * @param cell Cell
+	 * @param def String
+	 * @return String
+	 */
+	public static String getCellVal(Cell cell, String def) {
+		if (cell == null || cell.toString().length() == 0) return def;
+		String val = getCellVal(cell);
+		if (val == null) return def;
+		return val;
+	}
+
+	/**
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @return String
+	 */
+	public static String getCellVal(Sheet sheet, int x, int y) {
+		return getCellVal(sheet, x, y, "");
+	}
+
+	/**
+	 * 从表中得到数值，如果为空或null，则返回def
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @param def String
+	 * @return String
+	 */
+	public static String getCellVal(Sheet sheet, int x, int y, String def) {
+		Cell cell = getCell(sheet, x, y);
+		if (cell == null) return null;
+		return getCellVal(cell, def);
+	}
+
+	/**
+	 * 得到单元格里的数值<br>
+	 * 如果为null或空或其它错误，则返回0
+	 * @param cell Cell
+	 * @return int
+	 */
+	public static int getCellValInteger(Cell cell) {
+		return getCellValInteger(cell, 0);
+	}
+
+	/**
+	 * 得到单元格里的数值<br>
+	 * @param cell Cell
+	 * @param def int
+	 * @return int
+	 */
+	public static int getCellValInteger(Cell cell, int def) {
+		if (cell == null || cell.toString().length() == 0) return def;
+		String val = getCellVal(cell);
+		if (val == null) return def;
+		if (!UtilsVerification.isNumeric(val)) return def;
+		return Integer.parseInt(val);
+	}
+
+	/**
+	 * 从表中得到数值，如果为空或null，则返回def<br>
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @return int
+	 */
+	public static int getCellValInteger(Sheet sheet, int x, int y) {
+		return getCellValInteger(sheet, x, y, 0);
+	}
+
+	/**
+	 * 从表中得到数值，如果为空或null，则返回def<br>
+	 * @param sheet Sheet
+	 * @param x int
+	 * @param y int
+	 * @param def int
+	 * @return int
+	 */
+	public static int getCellValInteger(Sheet sheet, int x, int y, int def) {
+		Cell cell = getCell(sheet, x, y);
+		if (cell == null) return def;
+		return getCellValInteger(cell, def);
+	}
+
+	/**
 	 * 获取单元格各类型值，返回字符串类型<br>
 	 * 如果为null，则返回 空串 def
 	 * @param cell Cell
@@ -587,160 +763,6 @@ public final class UtilsPOI {
 	}
 
 	/**
-	 * 获取单元格各类型值，返回字符串类型<br>
-	 * 如果为null，则返回 空串 ""<br>
-	 * 默认不过滤Trim
-	 * @param cell Cell
-	 * @return String
-	 */
-	public static String getCellValueByString(Cell cell) {
-		return getCellValueByString(cell, false, "");
-	}
-
-	/**
-	 * 获取单元格各类型值，返回字符串类型<br>
-	 * 如果为null，则返回 空串 ""
-	 * @param cell Cell
-	 * @param isTrim boolean
-	 * @return String
-	 */
-	public static String getCellValueByString(Cell cell, boolean isTrim) {
-		return getCellValueByString(cell, isTrim, "");
-	}
-
-	/**
-	 * 获取单元格各类型值，返回字符串类型<br>
-	 * 如果为null，则返回 空串 def
-	 * @param cell Cell
-	 * @param isTrim boolean
-	 * @param def String
-	 * @return String
-	 */
-	public static String getCellValueByString(Cell cell, boolean isTrim, String def) {
-		if (cell == null || cell.toString().length() == 0) return def;
-		if (isTrim && cell.toString().trim().length() == 0) return def;
-		CellType cellType = cell.getCellTypeEnum();
-		if (cellType == null) return def;
-		String value = "";
-		switch (cellType) {
-		case STRING:
-			value = cell.getStringCellValue();
-			break;
-		case NUMERIC://判断日期类型
-			if (HSSFDateUtil.isCellDateFormatted(cell)) {
-				value = convertCellToString(cell);
-				break;
-			}
-			double dd = cell.getNumericCellValue();
-			value = decimalFormat.format(dd);
-			break;
-		case BOOLEAN:
-			boolean bb = cell.getBooleanCellValue();
-			value = String.valueOf(bb);
-			break;
-		default:
-			return def;
-		}
-		if (value == null) return def;
-		return isTrim ? value.trim() : value;
-	}
-
-	/**
-	 * @param sheet Sheet
-	 * @param x int
-	 * @param y int
-	 * @return String
-	 */
-	public static String getCellValueByString(Sheet sheet, int x, int y) {
-		return getCellValueByString(sheet, x, y, false, "");
-	}
-
-	/**
-	 * 获取单元格各类型值，返回字符串类型<br>
-	 * 如果没有单元格，则返回null<br>
-	 * 如果有单元格，则返回值，如值为null，则返回def
-	 * @param sheet Sheet
-	 * @param x int
-	 * @param y int
-	 * @param isTrim boolean
-	 * @param def String
-	 * @return String
-	 */
-	public static String getCellValueByString(Sheet sheet, int x, int y, boolean isTrim, String def) {
-		Cell cell = getCell(sheet, x, y);
-		if (cell == null) return null;
-		return getCellValueByString(cell, isTrim, def);
-	}
-
-	/**
-	 * 得到excel运行函数结果
-	 * @param cell Cell
-	 * @return String
-	 */
-	public static String getCellValueFormula(Cell cell) {
-		if (cell == null) return null;
-		switch (cell.getCellType()) {
-		case HSSFCell.CELL_TYPE_FORMULA:
-			try {
-				return String.valueOf(cell.getNumericCellValue());
-			} catch (IllegalStateException e) {
-				return String.valueOf(cell.getRichStringCellValue());
-			}
-		case HSSFCell.CELL_TYPE_NUMERIC:
-			return String.valueOf(cell.getNumericCellValue());
-		case HSSFCell.CELL_TYPE_STRING:
-			return String.valueOf(cell.getRichStringCellValue());
-		default:
-			return null;
-		}
-	}
-
-	/**
-	 * 得到excel运行函数结果
-	 * @param sheet Sheet
-	 * @param x int
-	 * @param y int
-	 * @param def int
-	 * @return int
-	 */
-	public static int getCellValueFormula(Sheet sheet, int x, int y, int def) {
-		String value = getCellValueFormula(sheet, x, y, def + "");
-		value = UtilsString.getLeftPoint(value);
-		return Integer.parseInt(value);
-	}
-
-	/**
-	 * 得到excel运行函数结果
-	 * @param sheet Sheet
-	 * @param x int
-	 * @param y int
-	 * @param def String
-	 * @return String
-	 */
-	public static String getCellValueFormula(Sheet sheet, int x, int y, String def) {
-		Cell cell = getCell(sheet, x, y);
-		if (cell == null) return def;
-		String value = getCellValueFormula(cell);
-		if (value == null) return def;
-		return value;
-	}
-
-	/**
-	 * 得到数值型
-	 * @param sheet Sheet
-	 * @param x int
-	 * @param y int
-	 * @param def int
-	 * @return int
-	 */
-	public static int getCellValueInteger(Sheet sheet, int x, int y, int def) {
-		Cell cell = getCell(sheet, x, y);
-		if (cell == null) return def;
-		String value = getCellValueByString(cell, true, "" + def);
-		return Integer.parseInt(value);
-	}
-
-	/**
 	 * 得到表格最大/最小层数
 	 * @param sheet Sheet
 	 * @param isMax boolean
@@ -752,7 +774,7 @@ public final class UtilsPOI {
 		int len = getWidthMax(sheet);
 		int extremum = 0;
 		for (int i = 0; i <= len; i++) {
-			if (UtilsString.isExist(i, filterColumns)) continue;
+			if (UtilsArrays.isExist(i, filterColumns)) continue;
 			int deep = getDepth(sheet, i, isTrim);
 			if (isMax) {/* 最大深度 */
 				if (deep > extremum) extremum = deep;
@@ -775,7 +797,7 @@ public final class UtilsPOI {
 		for (int i = sheet.getLastRowNum(); i > -1; i--) {
 			if (sheet.getRow(i) == null) continue;
 			if (sheet.getRow(i).getCell(y) == null) continue;
-			String value = getCellValueByString(sheet, i, y, isTrim, "");
+			String value = getCellVal(sheet, i, y, "");
 			if (value == null || value.length() == 0) continue;
 			if (isTrim && value.trim().length() == 0) continue;
 			return i;
@@ -872,7 +894,7 @@ public final class UtilsPOI {
 		if (sheet == null) return -1;
 		int rowsLen = sheet.getLastRowNum();
 		for (int i = start; i <= rowsLen; i++) {
-			String value = getCellValueByString(sheet, i, y, false, "");
+			String value = getCellVal(sheet, i, y, "");
 			if (value == null) continue;
 			if (value.equals(key)) return i;
 		}
@@ -1030,6 +1052,27 @@ public final class UtilsPOI {
 	}
 
 	/**
+	 * 把Row转在List&lt;String&gt;<br>
+	 * 不进行运算
+	 * @param row Row
+	 * @return List&lt;String&gt;
+	 */
+	public static final List<String> getValuesList(Row row) {
+		if (row == null) return new ArrayList<>();
+		List<String> list = new ArrayList<>();
+		for (int i = 0, len = row.getLastCellNum(); i <= len; i++) {
+			Cell cell = row.getCell(i);
+			if (cell == null) {
+				list.add("");
+				continue;
+			}
+			String value = getCellVal(cell);
+			list.add(value);
+		}
+		return list;
+	}
+
+	/**
 	 * 从sheet内容转成list格式
 	 * @param sheet Sheet
 	 * @return List&lt;List&lt;String&gt;&gt;
@@ -1041,25 +1084,6 @@ public final class UtilsPOI {
 			Row row = sheet.getRow(i);
 			List<String> newlist = getValuesList(row);
 			list.add(newlist);
-		}
-		return list;
-	}
-	/**
-	 * 把Row转在List&lt;String&gt;
-	 * @param row Row
-	 * @return List&lt;String&gt;
-	 */
-	public static final List<String> getValuesList(Row row) {
-		if(row==null)return new ArrayList<>();
-		List<String> list = new ArrayList<>();
-		for (int i = 0, len = row.getLastCellNum(); i <= len; i++) {
-			Cell cell = row.getCell(i);
-			if (cell == null) {
-				list.add("");
-				continue;
-			}
-			String value = getCellValueByString(cell);
-			list.add(value);
 		}
 		return list;
 	}
@@ -1327,7 +1351,7 @@ public final class UtilsPOI {
 				setCellValue(sheet, true, i, y, "");
 				break;
 			}
-			String value = getCellValueByString(sheet, i - 1, y, false, "");
+			String value = getCellVal(sheet, i - 1, y, "");
 			if (value == null) value = "";
 			setCellValue(sheet, true, i, y, value);
 		}
@@ -1349,7 +1373,7 @@ public final class UtilsPOI {
 				setCellValue(sheet, true, i, y, "");
 				break;
 			}
-			String value = getCellValueByString(sheet, i + 1, y, false, "");
+			String value = getCellVal(sheet, i + 1, y, "");
 			if (value == null) value = "";
 			setCellValue(sheet, true, i, y, value);
 		}
@@ -1421,7 +1445,7 @@ public final class UtilsPOI {
 		Sheet sheet = cell.getSheet();
 		int downX = x;
 		for (int i = x + 1; i <= sheet.getLastRowNum(); i++) {
-			String value = getCellValueByString(sheet.getRow(i).getCell(y), true);
+			String value = getCellVal(sheet.getRow(i).getCell(y));
 			if (value == null || value.length() == 0) downX = i;
 			else break;
 		}

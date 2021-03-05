@@ -11,7 +11,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import des.wangku.operate.standard.utls.UtilsConsts;
+import des.wangku.operate.standard.utls.UtilsConstsRequestHeader;
 
 public class GITHUBLoginApater {
 
@@ -51,7 +51,7 @@ public class GITHUBLoginApater {
 		//System.out.print("document:"+pageXml);
 
 		Connection con = Jsoup.connect(logurl);  // 获取connection
-		con.headers(UtilsConsts.getRndHeadMap());//UtilsConsts.header_a);
+		con.headers(UtilsConstsRequestHeader.getRndHeadMap());//UtilsConsts.header_a);
 		// con.header(USER_AGENT, USER_AGENT_VALUE);   // 配置模拟浏览器
 		Response rs = con.execute();                // 获取响应
 		Document d1 = Jsoup.parse(rs.body());       // 转换为Dom树

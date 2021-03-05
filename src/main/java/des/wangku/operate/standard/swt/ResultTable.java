@@ -41,6 +41,7 @@ import des.wangku.operate.standard.task.InterfaceExcelChange;
 import des.wangku.operate.standard.task.InterfaceTablesDialog;
 import des.wangku.operate.standard.utls.UtilsArrays;
 import des.wangku.operate.standard.utls.UtilsClipboard;
+import des.wangku.operate.standard.utls.UtilsConsts;
 import des.wangku.operate.standard.utls.UtilsList;
 import des.wangku.operate.standard.utls.UtilsPOI;
 import des.wangku.operate.standard.utls.UtilsSQL;
@@ -116,7 +117,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @return boolean
 	 */
 	public final synchronized boolean add(List<String> list) {
-		if (list.size() == 0) return false;
 		String[] arr = {};
 		add(list.toArray(arr));
 		return true;
@@ -160,7 +160,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		for (int i = 0; i <= cellLen; i++) {
 			if (!ectf.showHiddenColumn && sheet.isColumnHidden(i)) continue;/* 如果不允许显示隐藏列，则过滤掉 */
 			Cell cell = row.getCell(i);
-			String value = UtilsPOI.getCellValueByString(cell, true);
+			String value = UtilsPOI.getCellVal(cell);
 			if (getEctpara().isTrim) value = value.trim();
 			list.add(value);
 		}
@@ -205,15 +205,73 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
-	 * 添加list List&lt;String&gt;
+	 * 添加String[]<br>
+	 * 如为空，则添加一条新记录<br>
+	 * 如果多余列，则舍去
 	 * @param arrs String []
 	 * @return boolean
 	 */
 	public final synchronized boolean add(String... arrs) {
-		if (arrs.length == 0) return false;
 		String[] newArr = getFormatArray(arrs);
 		addTableItem(-1, newArr);
 		return true;
+	}
+
+	/**
+	 * 添加空行
+	 * @param rows int
+	 * @return boolean
+	 */
+	public final synchronized boolean addEmptyLine(int rows) {
+		if (rows <= 0) return false;
+		for (int i = 0; i < rows; i++)
+			add();
+		return true;
+	}
+	/**
+	 * 扩展宽高到指定行数与列数
+	 * @param width int
+	 * @param height int
+	 */
+	public final void extendTo(int width, int height) {
+		extend(width-this.getColumnCount(),height-this.getItemCount());
+	}
+	/**
+	 * 扩展宽高到指定行数与列数，添加多行多列
+	 * @param width int
+	 * @param height int
+	 */
+	public final void extend(int width, int height) {
+		if (width > 0) {
+			addColumn(width - getColumnCount());
+		}
+		if (height > 0) {
+			addEmptyLine(height - getItemCount());
+		}
+	}
+
+	/**
+	 * 添加某列底端值，返回添加到的行数下标<br>
+	 * 如果返回-1，则失败，没有添加<br>
+	 * @param y int
+	 * @param val String
+	 * @return int
+	 */
+	public final synchronized int addButtom(int y, String val) {
+		if (!isValidY(y)) return -1;
+		int max = getMaxBottom(y, true);
+		int x = max + 1, rows = getItemCount();
+		if (max == -1 && rows == 0) {
+			add();
+			x = 0;
+		}
+		if (max == rows - 1) {/* 如果下标为最后一行，则需要添加一行新空行 */
+			add();
+			x = getItemCount() - 1;
+		}
+		if (!isValidX(x)) return -1;
+		set(true, x, y, val);
+		return x;
 	}
 
 	/**
@@ -263,11 +321,21 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
-	 * 默认添加新列
-	 * @param name String 列名
+	 * 默认添加新列 宽度默认为150
+	 * @param arr String[] 列名
 	 */
-	public final void addColumn(String name) {
-		addColumn(name, 150);
+	public final void addColumn(String... arr) {
+		addColumn(ACC_ColumnDefaultWidth, arr);
+	}
+
+	/**
+	 * 默认添加新列
+	 * @param width int
+	 * @param arr String[] 列名
+	 */
+	public final void addColumn(int width, String... arr) {
+		for (String name : arr)
+			addColumn(name, width);
 	}
 
 	/**
@@ -277,7 +345,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @return boolean
 	 */
 	public final boolean addColumn(String columnName, int width) {
-		if (columnName == null) return false;
+		if (columnName == null || width <= 0) return false;
 		TableColumn e = getDefaultTableColumn(SWT.LEFT, width, columnName);
 		setDefaultTableColumnPos(e);
 		return true;
@@ -285,14 +353,14 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 
 	/**
 	 * 自动添加新列
-	 * @param size int
+	 * @param n int
 	 * @return boolean
 	 */
-	public final boolean addColumnAuto(int size) {
-		for (int i = 0; i < size; i++) {
+	public final boolean addColumn(int n) {
+		for (int i = 0; i < n; i++) {
 			String name = getAutoTitle();
 			if (name == null) return false;
-			addColumn(name, 150);
+			addColumn(name, ACC_ColumnDefaultWidth);
 		}
 		return true;
 	}
@@ -316,7 +384,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @param table Table
 	 * @return KeyListener
 	 */
-	 final KeyListener addKeyListenerTable() {
+	final KeyListener addKeyListenerTable() {
 		Display display = parent.getDisplay();
 		Shell shell = parent.getShell();
 		KeyListener t = new KeyListener() {
@@ -410,74 +478,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 			addTableItem(-1, arrs);
 	}
 
-	public static final class TableItemJson {
-		int index;
-		boolean checked = false;
-		String[] val = {};
-
-		public TableItemJson(TableItem e) {
-			this(UtilsSWTTable.getIndex(e), e.getChecked(), tableItemValToArray(e));
-		}
-
-		public TableItemJson(int index, boolean checked, String[] val) {
-			this.index = index;
-			this.checked = checked;
-			this.val = val;
-		}
-
-		public static final List<TableItemJson> getList(TableItem... arr) {
-			if (arr == null || arr.length == 0) return new ArrayList<>(0);
-			List<TableItemJson> list = new ArrayList<>(arr.length);
-			for (TableItem e : arr)
-				list.add(new TableItemJson(e));
-			return list;
-		}
-
-		public String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append("{");
-			sb.append("\"index\":" + index + ",");
-			sb.append("\"checked\":" + checked + ",");
-			sb.append("\"val\":[");
-			for (int i = 0, len = val.length; i < len; i++) {
-				String v = val[i];
-				if (v == null) v = "";
-				sb.append("\"" + v + "\"");
-				if (i < len - 1) sb.append(",");
-			}
-			sb.append("]");
-			sb.append("}");
-			return sb.toString();
-		}
-
-		public final int getIndex() {
-			return index;
-		}
-
-		public final void setIndex(int index) {
-			this.index = index;
-		}
-
-		public final boolean isChecked() {
-			return checked;
-		}
-
-		public final void setChecked(boolean checked) {
-			this.checked = checked;
-		}
-
-		public final String[] getVal() {
-			return val;
-		}
-
-		public final void setVal(String[] val) {
-			this.val = val;
-		}
-		
-		
-		
-	}
-
 	/**
 	 * 添加记录，如果point在[0---len-1]之间，则为插入，否则为添加
 	 * @param point int
@@ -487,6 +487,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		TableItem item = null;
 		if (point > -1 && point < getItemCount()) item = new TableItem(this, SWT.NONE, point);
 		else item = new TableItem(this, SWT.NONE);
+		arrs = getFormatArray(arrs);
 		item.setText(arrs);
 	}
 
@@ -599,9 +600,9 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * @return String
 	 */
 	public final String getAutoTitle() {
-		for (int i = 1; i < 10000; i++) {
-			String newid = MultiTree.format(i + "", MultiTree.ACC_AutoIDNumLen);
-			String id = MultiTree.ACC_AutoIDPrefix + newid;
+		for (int i = 1; i < UtilsConsts.ACC_AutoIDNumMax; i++) {
+			String newid = UtilsString.format(i + "", UtilsConsts.ACC_AutoIDNumLen);
+			String id = UtilsConsts.ACC_AutoIDPrefix + newid;
 			if (!isColumn(id)) return id;
 		}
 		return null;
@@ -675,24 +676,24 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	 * 得到某列的数组，如果isChecked为null，则得到某列所有单元<br>
 	 * 如果isChecked，为判断提取标签
 	 * @param isChecked Boolean
-	 * @param col int
+	 * @param y int
 	 * @return List&lt;String&gt;
 	 */
-	public final List<String> getColumnList(Boolean isChecked, int col) {
-		if (col < 0 || col >= this.getColumnCount()) return new ArrayList<>();
+	public final List<String> getColumnList(Boolean isChecked, int y) {
+		if (y < 0 || y >= this.getColumnCount()) return new ArrayList<>();
 		List<String> list = new ArrayList<>();
 		if (isChecked != null) {
 			int[] arr = this.getCheckedAll();
 			for (int i = 0, len = getItemCount(); i < len; i++) {
 				boolean isexist = UtilsArrays.isfilterArr(i, arr);
 				if ((isChecked && isexist) || (!isChecked && !isexist)) {
-					String v = get(i, col);
+					String v = get(i, y);
 					list.add(v);
 				}
 			}
 		} else {
 			for (int i = 0, len = getItemCount(); i < len; i++) {
-				String v = get(i, col);
+				String v = get(i, y);
 				list.add(v);
 			}
 		}
@@ -701,39 +702,25 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 
 	/**
 	 * 得到某列的所有值，如果有行号，则按行提取，如果没有行号，则返回所有行的某列
-	 * @param col int
+	 * @param y int
 	 * @param linearr int
 	 * @return List&lt;String&gt;
 	 */
-	public final List<String> getColumnList(int col, int... linearr) {
+	public final List<String> getColumnList(int y, int... linearr) {
 		List<String> list = new ArrayList<>();
-		if(col<0)return list;
+		if (y < 0) return list;
 		if (linearr.length > 0) for (int e : linearr) {
-			String v = get(e, col);
+			String v = get(e, y);
 			list.add(v);
 		}
 		else {
-			if(getItemCount()==0)return list;
+			if (getItemCount() == 0) return list;
 			for (int i = 0, len = getItemCount(); i < len; i++) {
-				String v = get(i, col);
+				String v = get(i, y);
 				list.add(v);
 			}
 		}
 		return list;
-	}
-	/**
-	 * 得到某列所有的值，以列为标准
-	 * @param col int
-	 * @return String[]
-	 */
-	public final String[] getColumnVal(int col) {
-		int len=getItemCount();
-		String[] arr=new String[len];
-		for (int i = 0; i < len; i++) {
-			String v = get(i, col);
-			arr[i]=(v==null?"":v);
-		}
-		return arr;
 	}
 
 	/**
@@ -753,6 +740,21 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
+	 * 得到某列所有的值，以列为标准
+	 * @param col int
+	 * @return String[]
+	 */
+	public final String[] getColumnVal(int col) {
+		int len = getItemCount();
+		String[] arr = new String[len];
+		for (int i = 0; i < len; i++) {
+			String v = get(i, col);
+			arr[i] = (v == null ? "" : v);
+		}
+		return arr;
+	}
+
+	/**
 	 * 得到某列的宽度
 	 * @param p int
 	 * @return int
@@ -768,12 +770,31 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		return data;
 	}
 
+	/**
+	 * 设置默认列
+	 * @param table ResultTable
+	 * @param align int
+	 * @param len int
+	 * @param text String
+	 * @return TableColumn
+	 */
+	public final TableColumn getDefaultTableColumn(int align, int len, String text) {
+		TableColumn tc = new TableColumn(this, SWT.BORDER | SWT.NONE | SWT.FULL_SELECTION | SWT.MULTI);
+		tc.setWidth(len);
+		tc.setText(text);
+		tc.setAlignment(align);
+		tc.setMoveable(true);/* 设置表头可移动，默认为false */
+		tc.setResizable(true);
+		return tc;
+	}
+
 	public final ResultTableParameter getEctpara() {
 		return ectpara;
 	}
 
 	/**
-	 * 得到扩展数组值，规则化
+	 * 得到扩展数组值，规则化<br>
+	 * 如输入为空，则返回一个空的数组，内部全部空字符串
 	 * @param arrs String[]
 	 * @return String[]
 	 */
@@ -782,6 +803,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		for (int i = 0; i < len; i++)
 			arrs[i] = (arrs[i] == null ? "" : arrs[i]);
 		String[] arr = new String[getColumnCount()];
+		Arrays.fill(arr, "");
 		for (int i = 0; i < arr.length; i++)
 			arr[i] = (i < arrs.length && arrs[i] != null) ? arrs[i] : "";
 		return arr;
@@ -842,6 +864,127 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 			}
 		};
 		return t;
+	}
+
+	/**
+	 * 得到表格最大/最小下标 底部 包括多个空格也为空
+	 * @param isMax boolean
+	 * @return int
+	 */
+	public final int getMaxBottom(boolean isMax) {
+		return getMaxBottom(isMax, true);
+	}
+
+	/**
+	 * 得到表格最大/最小下标 底部<br>
+	 * 如果某列所有行没有有效单元，则返回-1
+	 * @param isMax boolean
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public final int getMaxBottom(boolean isMax, boolean isTrim) {
+		int len = getColumnCount();
+		int v = -1;
+		for (int i = 0; i < len; i++) {
+			int deep = getMaxBottom(i, isTrim);
+			if (isMax) {/* 最大深度 */
+				if (deep > v) v = deep;
+			} else {/* 最小深度 */
+				if (v == 0 || deep < v) v = deep;
+			}
+		}
+		return v;
+	}
+
+	/**
+	 * 得到表格某列底度 不过滤两侧空格<br>
+	 * 节点为null或空字符，则不为底<br>
+	 * 如果过滤空格为真，则判断此节点为null
+	 * @param y int
+	 * @return int
+	 */
+	public final int getMaxBottom(int y) {
+		return getMaxBottom(y, false);
+	}
+
+	/**
+	 * 得到表格某列底度 是否过滤空格<br>
+	 * 节点为null或空字符，则不为底<br>
+	 * 如果过滤空格为真，则判断此节点为null<br>
+	 * 如果某列所有行没有有效单元，则返回-1
+	 * @param y int
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public final int getMaxBottom(int y, boolean isTrim) {
+		if (y < 0 || y >= getColumnCount()) return -1;
+		for (int i = getItemCount() - 1; i > -1; i--) {
+			String value = get(i, y);
+			if (value == null || value.length() == 0) continue;
+			if (isTrim && value.trim().length() == 0) continue;
+			return i;
+		}
+		return -1;
+	}
+
+	/**
+	 * 得到表格最大/最小下标 顶部 包括多个空格也为空
+	 * @param isMax boolean
+	 * @return int
+	 */
+	public final int getMaxTop(boolean isMax) {
+		return getMaxTop(isMax, true);
+	}
+
+	/**
+	 * 得到表格最大/最小下标 底部<br>
+	 * 如果某列所有行没有有效单元，则返回-1
+	 * @param isMax boolean
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public final int getMaxTop(boolean isMax, boolean isTrim) {
+		int v = -1;
+		for (int i = 0, len = getColumnCount(); i < len; i++) {
+			int deep = getMaxTop(i, isTrim);
+			if (isMax) {/* 最大深度 */
+				if (deep > v) v = deep;
+			} else {/* 最小深度 */
+				if (v == 0 || deep < v) v = deep;
+			}
+		}
+		return v;
+	}
+
+	/**
+	 * 得到表格某列顶度 不过滤两侧空格<br>
+	 * 节点为null或空字符，则不为顶<br>
+	 * 如果过滤空格为真，则判断此节点为null
+	 * @param y int
+	 * @return int
+	 */
+	public final int getMaxTop(int y) {
+		return getMaxTop(y, false);
+	}
+
+	/**
+	 * 得到表格某列顶度 是否过滤空格<br>
+	 * 节点为null或空字符，则不为顶<br>
+	 * 如果过滤空格为真，则判断此节点为null<br>
+	 * 如果某列所有行没有有效单元，则返回-1
+	 * @param y int
+	 * @param isTrim boolean
+	 * @return int
+	 */
+	public final int getMaxTop(int y, boolean isTrim) {
+		if (y < 0 || y >= getColumnCount()) return -1;
+		for (int i = 0; i < getItemCount(); i++) {
+			String value = get(i, y);
+			if (value == null || value.length() == 0) continue;
+			if (isTrim && value.trim().length() == 0) continue;
+			return i;
+		}
+		return -1;
 	}
 
 	public final ExcelCTabFolder getParentExcelCTabFolder() {
@@ -962,7 +1105,7 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	/**
 	 * 初始化
 	 */
-	 final void Init() {
+	final void Init() {
 		this.addKeyListener(addKeyListenerTable());
 		this.setMenu(menuResultTable);
 		InitializationMenuItem(menuResultTable);
@@ -1138,42 +1281,19 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		}
 		return false;
 	}
-
 	/**
-	 * 判断某行是否选中
-	 * @param rows int
-	 * @return boolean
-	 */
-	public final boolean isSelected(int rows) {
-		return UtilsArrays.isfilterArr(rows, getSelectionIndices());
-	}
-
-	/**
-	 * 判断x与y是否有效<br>
-	 * 返回true，则x与y都是有效的
-	 * @param x int
+	 * 判断某例中是否含有关键字
 	 * @param y int
+	 * @param key String
 	 * @return boolean
 	 */
-	public final boolean isValid(int x, int y) {
-		if (x < 0 || x >= getItemCount()) return false;
-		if (y < 0 || y >= getColumnCount()) return false;
-		return true;
-	}
-
-	/**
-	 * 设置ResultTable头部信息
-	 * @param arrs String[]
-	 */
-	public final void mkResultTableHead(String... arrs) {
-		String value = null;
-		cleanAllTable();
-		for (int i = 0; i < arrs.length; i++) {
-			value = (arrs[i] == null) ? "" + i : arrs[i];
-			if (ectpara.attrSuffix) value = "[" + i + "]" + value;
-			int align = ectpara.getSWTAlign(i);
-			setTableColumn(align, value, getColumnWidth(i));
-		}
+	public final synchronized boolean isExist(int y,String key) {
+		if(key==null)return false;
+		if(y<0 || y>=getColumnCount())return false;
+		List<String> list= getColumnList(y);
+		for(String e:list)
+			if(key.equals(e))return true;
+		return false;
 	}
 
 	/**
@@ -1193,6 +1313,63 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 			if (val != null && val.length() > 0) return false;
 		}
 		return true;
+	}
+
+	/**
+	 * 判断某行是否选中
+	 * @param rows int
+	 * @return boolean
+	 */
+	public final boolean isSelected(int rows) {
+		return UtilsArrays.isfilterArr(rows, getSelectionIndices());
+	}
+
+	/**
+	 * 判断x与y是否有效<br>
+	 * 返回true，则x与y都是有效的
+	 * @param x int
+	 * @param y int
+	 * @return boolean
+	 */
+	public final boolean isValid(int x, int y) {
+		return isValidX(x) & isValidY(y);
+	}
+
+	/**
+	 * 判断x是否有效<br>
+	 * 返回true，则x都是有效的
+	 * @param x int
+	 * @return boolean
+	 */
+	public final boolean isValidX(int x) {
+		if (x < 0 || x >= getItemCount()) return false;
+		return true;
+	}
+
+	/**
+	 * 判断y是否有效<br>
+	 * 返回true，则y都是有效的
+	 * @param y int
+	 * @return boolean
+	 */
+	public final boolean isValidY(int y) {
+		if (y < 0 || y >= getColumnCount()) return false;
+		return true;
+	}
+
+	/**
+	 * 设置ResultTable头部信息
+	 * @param arrs String[]
+	 */
+	public final void mkResultTableHead(String... arrs) {
+		String value = null;
+		cleanAllTable();
+		for (int i = 0; i < arrs.length; i++) {
+			value = (arrs[i] == null) ? "" + i : arrs[i];
+			if (ectpara.attrSuffix) value = "[" + i + "]" + value;
+			int align = ectpara.getSWTAlign(i);
+			setTableColumn(align, value, getColumnWidth(i));
+		}
 	}
 
 	/**
@@ -1234,16 +1411,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 
 	/**
 	 * 删除指定下标多行
-	 * @param list List&lt;Integer&gt;
-	 */
-	public final synchronized void removeRows(List<Integer> list) {
-		if (list == null || list.size() == 0) return;
-		int[] arr = list.stream().mapToInt(Integer::valueOf).toArray();
-		removeRows(arr);
-	}
-
-	/**
-	 * 删除指定下标多行
 	 * @param arrs int[]
 	 */
 	public final synchronized void removeRows(int... arrs) {
@@ -1264,22 +1431,50 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 	}
 
 	/**
-	 * 设置某行某列中的字符串 如果value为null，则添加空
+	 * 删除指定下标多行
+	 * @param list List&lt;Integer&gt;
+	 */
+	public final synchronized void removeRows(List<Integer> list) {
+		if (list == null || list.size() == 0) return;
+		int[] arr = list.stream().mapToInt(Integer::valueOf).toArray();
+		removeRows(arr);
+	}
+
+	/**
+	 * 设置某行某列中的字符串 如果value为null，则添加空<br>
+	 * 异步更新
 	 * @param x int
 	 * @param y int
 	 * @param val String
 	 * @return boolean
 	 */
 	public final synchronized boolean set(int x, int y, String val) {
+		return set(false, x, y, val);
+	}
+
+	/**
+	 * 设置某行某列中的字符串 如果value为null，则添加空<br>
+	 * 是否同步，如果false，则异步
+	 * @param isSync boolean
+	 * @param x int
+	 * @param y int
+	 * @param val String
+	 * @return boolean
+	 */
+	public final synchronized boolean set(boolean isSync, int x, int y, String val) {
 		if (!isValid(x, y)) return false;
 		TableItem e = getItem(x);
 		if (e == null) return false;
-		e.getParent().getParent().getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				e.setText(y, val == null ? "" : val);
-			}
-		});
+		if (isSync) {
+			e.setText(y, val == null ? "" : val);
+		} else {
+			e.getParent().getParent().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					e.setText(y, val == null ? "" : val);
+				}
+			});
+		}
 		return true;
 	}
 
@@ -1325,151 +1520,6 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 
 	public final void setIsAscend(Boolean isAscend) {
 		this.isAscend = isAscend;
-	}
-
-	/**
-	 * 设置弹出菜单 - 汇总
-	 * @param name
-	 * @param index
-	 */
-	void setMenuItemCollect(Menu parent) {
-
-	}
-
-	/**
-	 * 设置某一个单元格
-	 * @param align int
-	 * @param text String
-	 * @param len int
-	 */
-	public final void setTableColumn(int align, String text, int len) {
-		TableColumn e = getDefaultTableColumn(align, len, text);
-		setDefaultTableColumnPos(e);
-	}
-
-	/**
-	 * 更新指定行列的内容，如果没有此行此列，则添加多行多列
-	 * @param x int
-	 * @param y int
-	 * @param value String
-	 */
-	public final synchronized void setUpdate(int x, int y, String value) {
-		if (value == null || x < 0 || y < 0) return;
-		int colcount = getColumnCount();
-		if (y >= colcount) {
-			int size = y - colcount + 1;
-			if (!addColumnAuto(size)) return;/* 添加列时失败，不能添加某列，可能会已经添加了几列 */
-		}
-		int rowcount = getItemCount();
-		if (x >= rowcount) {
-			int size = x - rowcount + 1;
-			addTableItem(size);
-		}
-		set(x, y, value);
-	}
-
-	/**
-	 * 汇总某列所有值的和
-	 * @param y int
-	 * @param filterLine int[]
-	 * @return long
-	 */
-	public final synchronized long SortY(int y, int... filterLine) {
-		long sort = 0;
-		for (int i = 0, len = getItemCount(); i < len; i++) {
-			if (UtilsString.isExist(i, filterLine)) continue;
-			String value = get(i, y);
-			if (!UtilsVerification.isNumeric(value)) continue;
-			int v = Integer.parseInt(value);
-			sort += v;
-		}
-		return sort;
-	}
-
-	/**
-	 * 得到表格的表头列表
-	 * @return List&lt;String&gt;
-	 */
-	public final List<String> toColumnsList() {
-		TableColumn[] arrs = this.getColumns();
-		List<String> list = new ArrayList<>(arrs.length);
-		for (TableColumn e : arrs) {
-			list.add(e.getText());
-		}
-		return list;
-	}
-
-	/**
-	 * 把表格内容提取
-	 * @param epc ExcelParaClass
-	 * @return List&lt;List&lt;String&gt;&gt;
-	 */
-	public final List<List<String>> toList(ExcelParaClass epc) {
-		List<List<String>> list = new ArrayList<>();
-		int size = this.getItemCount();
-		if (epc != null && epc.isHead()) list.add(toColumnsList());
-		for (int i = 0; i < size; i++)
-			list.add(toList(i));
-		return list;
-	}
-
-	/**
-	 * 得到某行的数据列表
-	 * @param index int
-	 * @return List&lt;String&gt;
-	 */
-	public final List<String> toList(int index) {
-		List<String> list = new ArrayList<>();
-		TableItem e = this.getItem(index);
-		if (e == null) return list;
-		int len = getColumnCount();
-		for (int i = 0; i < len; i++) {
-			String value = e.getText(i);
-			if (value == null) value = "";
-			list.add(value);
-		}
-		return list;
-	}
-
-	/**
-	 * 更新
-	 * @param x int
-	 * @param y int
-	 * @param value String
-	 */
-	public final synchronized void update(int x, int y, String value) {
-		if (value == null) return;
-		if (!isValid(x, y)) return;
-		TableItem f = getItem(x);
-		if (f == null) return;
-		f.setText(y, value);
-	}
-
-	/** ResultTable的标准样式 */
-	public static final int ACC_ResultTableState = SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL;
-
-	/** ResultTable的标准样式 单选 */
-	public static final int ACC_ResultTableStateRadio = SWT.BORDER | SWT.RADIO | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL;
-
-	/** 日志 */
-	static Logger logger = LoggerFactory.getLogger(ResultTable.class);
-
-	/**
-	 * 设置默认列
-	 * @param table ResultTable
-	 * @param align int
-	 * @param len int
-	 * @param text String
-	 * @return TableColumn
-	 */
-	public final TableColumn getDefaultTableColumn(int align, int len, String text) {
-		TableColumn tc = new TableColumn(this, SWT.BORDER | SWT.NONE | SWT.FULL_SELECTION | SWT.MULTI);
-		tc.setWidth(len);
-		tc.setText(text);
-		tc.setAlignment(align);
-		tc.setMoveable(true);/* 设置表头可移动，默认为false */
-		tc.setResizable(true);
-		return tc;
 	}
 
 	/**
@@ -1520,4 +1570,204 @@ public class ResultTable extends Table implements InterfaceExcelChange {
 		addSelectionMenu(parent, "选择-取消选择", getListenerTableSelectAll(base, false));
 
 	}
+
+	/**
+	 * 设置弹出菜单 - 汇总
+	 * @param name
+	 * @param index
+	 */
+	void setMenuItemCollect(Menu parent) {
+
+	}
+
+	/**
+	 * 设置某一个单元格
+	 * @param align int
+	 * @param text String
+	 * @param len int
+	 */
+	public final void setTableColumn(int align, String text, int len) {
+		TableColumn e = getDefaultTableColumn(align, len, text);
+		setDefaultTableColumnPos(e);
+	}
+
+	/**
+	 * 更新指定行列的内容，如果没有此行此列，则添加多行多列<br>
+	 * 同步更新
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 */
+	public final synchronized void setUpdate(int x, int y, String value) {
+		if (value == null || x < 0 || y < 0) return;
+		int colcount = getColumnCount();
+		if (y >= colcount) {
+			int size = y - colcount + 1;
+			if (!addColumn(size)) return;/* 添加列时失败，不能添加某列，可能会已经添加了几列 */
+		}
+		int rowcount = getItemCount();
+		if (x >= rowcount) {
+			int size = x - rowcount + 1;
+			addTableItem(size);
+		}
+		set(true,x, y, value);
+	}
+
+	/**
+	 * 汇总某列所有值的和
+	 * @param y int
+	 * @param filterLine int[]
+	 * @return long
+	 */
+	public final synchronized long SortY(int y, int... filterLine) {
+		long sort = 0;
+		for (int i = 0, len = getItemCount(); i < len; i++) {
+			if (UtilsArrays.isExist(i, filterLine)) continue;
+			String value = get(i, y);
+			if (!UtilsVerification.isNumeric(value)) continue;
+			int v = Integer.parseInt(value);
+			sort += v;
+		}
+		return sort;
+	}
+
+	/**
+	 * 得到表格的表头列表
+	 * @return List&lt;String&gt;
+	 */
+	public final List<String> toColumnsList() {
+		TableColumn[] arrs = this.getColumns();
+		List<String> list = new ArrayList<>(arrs.length);
+		for (TableColumn e : arrs) {
+			list.add(e.getText());
+		}
+		return list;
+	}
+
+	/**
+	 * 把表格内容提取
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public final List<List<String>> toList() {
+		return toList(null);
+	}
+;	/**
+	 * 把表格内容提取
+	 * @param epc ExcelParaClass
+	 * @return List&lt;List&lt;String&gt;&gt;
+	 */
+	public final List<List<String>> toList(ExcelParaClass epc) {
+		List<List<String>> list = new ArrayList<>();
+		int size = this.getItemCount();
+		if (epc != null && epc.isHead()) list.add(toColumnsList());
+		for (int i = 0; i < size; i++)
+			list.add(toList(i));
+		return list;
+	}
+
+	/**
+	 * 得到某行的数据列表
+	 * @param y int
+	 * @return List&lt;String&gt;
+	 */
+	public final List<String> toList(int y) {
+		List<String> list = new ArrayList<>();
+		TableItem e = this.getItem(y);
+		if (e == null) return list;
+		for (int i = 0, len = getColumnCount(); i < len; i++) {
+			String value = e.getText(i);
+			if (value == null) value = "";
+			list.add(value);
+		}
+		return list;
+	}
+
+	/**
+	 * 更新
+	 * @param x int
+	 * @param y int
+	 * @param value String
+	 */
+	public final synchronized void update(int x, int y, String value) {
+		if (value == null) return;
+		if (!isValid(x, y)) return;
+		TableItem f = getItem(x);
+		if (f == null) return;
+		f.setText(y, value);
+	}
+
+	public static final class TableItemJson {
+		boolean checked = false;
+		int index;
+		String[] val = {};
+
+		public TableItemJson(int index, boolean checked, String[] val) {
+			this.index = index;
+			this.checked = checked;
+			this.val = val;
+		}
+
+		public TableItemJson(TableItem e) {
+			this(UtilsSWTTable.getIndex(e), e.getChecked(), tableItemValToArray(e));
+		}
+
+		public final int getIndex() {
+			return index;
+		}
+
+		public final String[] getVal() {
+			return val;
+		}
+
+		public final boolean isChecked() {
+			return checked;
+		}
+
+		public final void setChecked(boolean checked) {
+			this.checked = checked;
+		}
+
+		public final void setIndex(int index) {
+			this.index = index;
+		}
+
+		public final void setVal(String[] val) {
+			this.val = val;
+		}
+
+		public String toJson() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{");
+			sb.append("\"index\":" + index + ",");
+			sb.append("\"checked\":" + checked + ",");
+			sb.append("\"val\":[");
+			for (int i = 0, len = val.length; i < len; i++) {
+				String v = val[i];
+				if (v == null) v = "";
+				sb.append("\"" + v + "\"");
+				if (i < len - 1) sb.append(",");
+			}
+			sb.append("]");
+			sb.append("}");
+			return sb.toString();
+		}
+
+		public static final List<TableItemJson> getList(TableItem... arr) {
+			if (arr == null || arr.length == 0) return new ArrayList<>(0);
+			List<TableItemJson> list = new ArrayList<>(arr.length);
+			for (TableItem e : arr)
+				list.add(new TableItemJson(e));
+			return list;
+		}
+
+	}
+	static final int ACC_ColumnDefaultWidth= 150;
+	/** ResultTable的标准样式 */
+	public static final int ACC_ResultTableState = SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL;
+
+	/** ResultTable的标准样式 单选 */
+	public static final int ACC_ResultTableStateRadio = SWT.BORDER | SWT.RADIO | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL;
+
+	/** 日志 */
+	static Logger logger = LoggerFactory.getLogger(ResultTable.class);
 }
